@@ -19,7 +19,7 @@ export const ResearchLab = ({ image }) => {
           </div>
           
           <div>
-            <h2 className="text-2xl md:text-4xl md: text-xl md:text-xl font-medium text-vmanous-navy-deep mb-6">
+            <h2 className="text-2xl md:text-4xl font-medium text-vmanous-navy-deep mb-6">
               Think Beyond the Classroom
             </h2>
             <p className="text-lg text-gray-600 mb-10 leading-relaxed">
@@ -61,7 +61,7 @@ export const InternshipPathwayVisual = () => {
     <section className="pt-4 md:pt-6 pb-4 md:pb-6 bg-gradient-to-br from-[#050816] to-[#0A102A] relative overflow-hidden">
       <Container className="relative z-10">
         <div className="text-center max-w-3xl mx-auto mb-6 md:mb-8">
-          <h2 className="text-2xl md:text-4xl md: text-xl md:text-xl font-medium text-white mb-6">
+          <h2 className="text-2xl md:text-4xl font-medium text-white mb-6">
             Learning Can Lead to Experience
           </h2>
           <p className="text-lg text-gray-400">

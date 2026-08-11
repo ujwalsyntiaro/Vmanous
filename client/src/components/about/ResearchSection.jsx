@@ -3,12 +3,12 @@ import { motion } from 'framer-motion';
 
 const ResearchSection = () => {
   return (
-    <section className="bg-[#050816] text-white py-24 md:py-32 px-6 relative overflow-hidden">
+    <section className="bg-[#050816] text-white py-6 md:py-8 px-6 relative overflow-hidden">
       {/* Background accents */}
       <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-gradient-to-br from-[#7C3AED]/20 to-transparent rounded-full blur-3xl opacity-50 transform translate-x-1/3 -translate-y-1/3 pointer-events-none" />
       
       <div className="max-w-7xl mx-auto relative z-10">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
           
           {/* Image */}
           <motion.div
@@ -37,10 +37,10 @@ const ResearchSection = () => {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="order-1 lg:order-2"
           >
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-medium mb-8 leading-tight">
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-medium mb-4 leading-tight">
               Research That Turns Ideas Into Possibilities
             </h2>
-            <p className="text-lg text-gray-400 mb-10 leading-relaxed">
+            <p className="text-lg text-gray-400 mb-6 leading-relaxed">
               VMANOUS encourages students to move beyond foundational learning and explore the frontiers of technology through active research and development.
             </p>
             

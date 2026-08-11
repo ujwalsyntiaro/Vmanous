@@ -6,7 +6,7 @@ export const aiSummit = {
   description: "An immersive AI experience combining practical learning, innovation, research and industry-focused projects.",
   
   images: {
-    hero: "/images/ai-summit/hero.jpg",
+    hero: "/images/ai-summit/hero.png",
     gallery: [
       "/images/ai-summit/gallery-1.jpg",
       "/images/ai-summit/gallery-2.jpg",

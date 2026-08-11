@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 
 export const SummitPrograms = ({ programs }) => {
   return (
-    <section id="programs" className="pt-4 md:pt-6 pb-4 md:pb-6 bg-vmanous-light">
+    <section id="programs" className="pt-4 md:pt-6 pb-4 md:pb-6 bg-white">
       <Container>
         <div className="text-center max-w-3xl mx-auto mb-6 md:mb-8">
           <h2 className="text-3xl md:text-4xl font-medium text-vmanous-navy-deep mb-6">
@@ -24,7 +24,7 @@ export const SummitPrograms = ({ programs }) => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: index * 0.1 }}
-              className="bg-white rounded-3xl p-8 md:p-10 border border-gray-100 shadow-sm hover:shadow-xl transition-shadow flex flex-col h-full"
+              className="bg-[#F8FAFC] rounded-3xl p-8 md:p-10 border border-gray-100 shadow-sm hover:bg-white hover:border-[#16A34A]/40 hover:shadow-xl transition-all flex flex-col h-full"
             >
               <div className="flex justify-between items-start mb-6">
                 <div className="text-xs font-medium text-vmanous-ai-blue tracking-widest uppercase">
@@ -68,7 +68,7 @@ export const SummitPrograms = ({ programs }) => {
               ) : (
                 <Link 
                   to={program.link} 
-                  className="inline-flex items-center justify-center w-full md:w-auto px-8 py-4 bg-vmanous-navy-deep text-white font-medium rounded-xl hover:bg-gray-800 transition-colors"
+                  className="inline-flex items-center justify-center self-start px-5 py-2.5 bg-white text-vmanous-navy-deep text-sm font-medium rounded-xl border border-gray-300 hover:border-[#16A34A] hover:text-[#16A34A] shadow-xs hover:shadow-md transition-all duration-300"
                 >
                   {program.cta}
                 </Link>

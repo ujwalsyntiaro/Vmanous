@@ -2,18 +2,18 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import Container from '../ui/Container';
 import Logo from '../ui/Logo';
-import { MapPin, Phone, Mail, MessageSquare } from 'lucide-react';
+import { Phone, Mail, MessageSquare } from 'lucide-react';
 
 const Footer = () => {
   return (
-    <footer className="bg-white text-vmanous-navy-dark pt-12 pb-6 border-t border-gray-200">
+    <footer className="bg-white text-vmanous-navy-dark pt-8 pb-3 border-t border-gray-200">
       <Container>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-8 lg:gap-10 mb-12 lg:pl-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-8 lg:gap-10 mb-4 lg:pl-4">
           {/* Column 1: Brand & Contact Address */}
           <div className="lg:col-span-2 space-y-4 lg:pr-8">
             <div>
               <Logo />
-              <div className="text-xs font-semibold text-gray-500 mt-1">Open Source</div>
+              <div className="text-sm font-semibold text-gray-500 mt-1 pl-[74px]">Open Source</div>
             </div>
 
             <p className="text-gray-500 text-xs leading-relaxed max-w-xs">
@@ -24,16 +24,14 @@ const Footer = () => {
               CIN: U62099PN2024PTC229219
             </div>
 
-            <div className="flex items-start gap-2 text-xs text-gray-500 leading-relaxed">
-              <MapPin size={16} className="text-vmanous-green flex-shrink-0 mt-0.5" />
+            <div className="text-xs text-gray-500 leading-relaxed">
               <span>ABC Junction Sector 26 Nigdi Pradhikaran, Near Akurdi Railway Station, Pune - 411044</span>
             </div>
           </div>
 
           {/* Column 2: Services */}
           <div>
-            <h4 className="text-sm font-bold text-vmanous-navy-dark">Services</h4>
-            <div className="h-0.5 w-7 bg-vmanous-green mt-1 mb-4 rounded-full" />
+            <h4 className="text-sm font-bold text-vmanous-navy-dark mb-3">Services</h4>
             <ul className="space-y-2.5 text-xs">
               <li><span className="text-gray-600 hover:text-vmanous-green transition-colors cursor-pointer font-medium">Strategic Consulting</span></li>
               <li><span className="text-gray-600 hover:text-vmanous-green transition-colors cursor-pointer font-medium">Data Architecture</span></li>
@@ -46,11 +44,11 @@ const Footer = () => {
 
           {/* Column 3: Quick Links */}
           <div>
-            <h4 className="text-sm font-bold text-vmanous-navy-dark">Quick Links</h4>
-            <div className="h-0.5 w-7 bg-vmanous-green mt-1 mb-4 rounded-full" />
+            <h4 className="text-sm font-bold text-vmanous-navy-dark mb-3">Quick Links</h4>
             <ul className="space-y-2.5 text-xs">
               <li><Link to="/" className="text-gray-600 hover:text-vmanous-green transition-colors font-medium">Home</Link></li>
-              <li><Link to="/about" className="text-gray-600 hover:text-vmanous-green transition-colors font-medium">About Us</Link></li>
+              <li><Link to="/about" className="text-gray-600 hover:text-vmanous-green transition-colors font-medium">About</Link></li>
+              <li><Link to="/gallery" className="text-gray-600 hover:text-vmanous-green transition-colors font-medium">Gallery</Link></li>
               <li><Link to="/ai-summit" className="text-gray-600 hover:text-vmanous-green transition-colors font-medium">Solutions</Link></li>
               <li><Link to="/case-studies" className="text-gray-600 hover:text-vmanous-green transition-colors font-medium">Case Studies</Link></li>
               <li><Link to="/blog" className="text-gray-600 hover:text-vmanous-green transition-colors font-medium">Blog & Insights</Link></li>
@@ -59,8 +57,7 @@ const Footer = () => {
 
           {/* Column 4: Legal */}
           <div>
-            <h4 className="text-sm font-bold text-vmanous-navy-dark">Legal</h4>
-            <div className="h-0.5 w-7 bg-vmanous-green mt-1 mb-4 rounded-full" />
+            <h4 className="text-sm font-bold text-vmanous-navy-dark mb-3">Legal</h4>
             <ul className="space-y-2.5 text-xs">
               <li><a href="#" className="text-gray-600 hover:text-vmanous-green transition-colors font-medium">Privacy Policy</a></li>
               <li><a href="#" className="text-gray-600 hover:text-vmanous-green transition-colors font-medium">Terms of Service</a></li>
@@ -71,8 +68,7 @@ const Footer = () => {
 
           {/* Column 5: Get In Touch & Socials */}
           <div>
-            <h4 className="text-sm font-bold text-vmanous-navy-dark">Get In Touch</h4>
-            <div className="h-0.5 w-7 bg-vmanous-green mt-1 mb-4 rounded-full" />
+            <h4 className="text-sm font-bold text-vmanous-navy-dark mb-3">Get In Touch</h4>
 
             <div className="space-y-3 text-xs mb-6">
               <a href="tel:+919112113322" className="flex items-center gap-2.5 text-gray-600 hover:text-vmanous-green transition-colors font-medium">
@@ -128,7 +124,7 @@ const Footer = () => {
         </div>
 
         {/* Bottom Bar */}
-        <div className="pt-6 border-t border-gray-200 text-center">
+        <div className="pt-3 mt-2 border-t border-gray-200 text-center">
           <p className="text-gray-600 text-xs font-medium">
             All rights reserved by <span className="font-bold text-vmanous-navy-dark">VMANOUS</span>
           </p>

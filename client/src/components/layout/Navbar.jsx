@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { NavLink, Link } from 'react-router-dom';
-import { MoreVertical, X } from 'lucide-react';
+import { X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Container from '../ui/Container';
 import Logo from '../ui/Logo';
@@ -10,7 +10,8 @@ const navLinks = [
   { name: 'AI Summit', path: '/ai-summit' },
   { name: 'Data Science', path: '/data-science' },
   { name: 'Case Studies', path: '/case-studies' },
-  { name: 'About Us', path: '/about' },
+  { name: 'About', path: '/about' },
+  { name: 'Gallery', path: '/gallery' },
   { name: 'Blog', path: '/blog' }
 ];
 
@@ -49,22 +50,11 @@ const Navbar = () => {
                   key={link.name}
                   to={link.path}
                   className={({ isActive }) =>
-                    `text-sm font-medium transition-colors hover:text-vmanous-navy-deep relative group outline-none focus-visible:ring-2 focus-visible:ring-vmanous-green focus-visible:ring-offset-4 rounded-sm ${isActive ? 'text-vmanous-navy-dark' : 'text-gray-500'
+                    `text-sm font-medium transition-colors hover:text-vmanous-navy-deep relative outline-none focus-visible:ring-2 focus-visible:ring-vmanous-green focus-visible:ring-offset-4 rounded-sm ${isActive ? 'text-vmanous-green font-semibold' : 'text-gray-500'
                     }`
                   }
                 >
-                  {({ isActive }) => (
-                    <>
-                      {link.name}
-                      {isActive && (
-                        <motion.div
-                          layoutId="navbar-active-indicator"
-                          className="absolute -bottom-1 left-0 right-0 h-0.5 bg-vmanous-green rounded-full"
-                          transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                        />
-                      )}
-                    </>
-                  )}
+                  {link.name}
                 </NavLink>
               ))}
             </nav>
@@ -74,23 +64,12 @@ const Navbar = () => {
               <NavLink
                 to="/enroll"
                 className={({ isActive }) =>
-                  `text-sm font-medium transition-colors hover:text-vmanous-green relative group outline-none focus-visible:ring-2 focus-visible:ring-vmanous-green rounded-sm ${
-                    isActive ? 'text-vmanous-green' : 'text-vmanous-navy-dark'
+                  `text-sm font-medium transition-colors hover:text-vmanous-green relative outline-none focus-visible:ring-2 focus-visible:ring-vmanous-green rounded-sm ${
+                    isActive ? 'text-vmanous-green font-semibold' : 'text-vmanous-navy-dark'
                   }`
                 }
               >
-                {({ isActive }) => (
-                  <>
-                    Enroll Now
-                    {isActive && (
-                      <motion.div
-                        layoutId="navbar-active-indicator"
-                        className="absolute -bottom-1 left-0 right-0 h-0.5 bg-vmanous-green rounded-full"
-                        transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                      />
-                    )}
-                  </>
-                )}
+                Enroll Now
               </NavLink>
             </div>
 
@@ -100,7 +79,10 @@ const Navbar = () => {
               onClick={() => setIsMobileMenuOpen(true)}
               aria-label="Open menu"
             >
-              <MoreVertical className="w-6 h-6" />
+              <svg className="w-6 h-6 text-vmanous-navy-dark" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                <line x1="4" y1="9" x2="20" y2="9" />
+                <line x1="4" y1="15" x2="14" y2="15" />
+              </svg>
             </button>
           </div>
         </Container>
@@ -150,21 +132,18 @@ const Navbar = () => {
                       {link.name}
                     </NavLink>
                   ))}
-                </nav>
-
-                <div className="pt-6 border-t border-gray-100 flex flex-col space-y-4">
                   <NavLink
                     to="/enroll"
                     onClick={() => setIsMobileMenuOpen(false)}
                     className={({ isActive }) =>
-                      `text-lg font-medium transition-colors outline-none focus-visible:ring-2 focus-visible:ring-vmanous-green rounded-sm px-2 py-1 -mx-2 ${
+                      `text-lg font-medium transition-colors outline-none focus-visible:ring-2 focus-visible:ring-vmanous-green py-2 border-b border-gray-100 ${
                         isActive ? 'text-vmanous-green' : 'text-vmanous-navy-dark hover:text-vmanous-green'
                       }`
                     }
                   >
                     Enroll Now
                   </NavLink>
-                </div>
+                </nav>
               </div>
             </motion.div>
           </>

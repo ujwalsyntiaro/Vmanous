@@ -7,28 +7,22 @@ const FounderProfile = () => {
   const [isExpanded, setIsExpanded] = useState(false);
 
   return (
-    <section className="bg-white py-24 md:py-32 px-6 border-t border-gray-100">
+    <section className="bg-white pt-4 pb-12 md:pt-6 md:pb-16 px-6 border-t border-gray-100">
       <div className="max-w-6xl mx-auto">
-        <div className="mb-16 md:mb-24 text-center md:text-left">
-          <h2 className="text-3xl md:text-5xl font-medium text-[#050816]">
-            Leadership
-          </h2>
-        </div>
-
-        <div className="flex flex-col md:flex-row gap-12 lg:gap-20 items-center md:items-start">
+        <div className="flex flex-col md:flex-row gap-8 lg:gap-12 items-start">
           {/* Portrait */}
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
-            className="w-64 md:w-80 shrink-0"
+            className="w-72 md:w-96 shrink-0"
           >
             <div className="rounded-[24px] overflow-hidden bg-[#F7F9FC] shadow-sm">
               <img
                 src={arjunMadhav}
                 alt="Arjun Madhav - Co-Founder of VMANOUS"
-                className="w-full h-auto object-cover"
+                className="w-full h-auto object-cover block"
               />
             </div>
           </motion.div>
@@ -39,16 +33,16 @@ const FounderProfile = () => {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="flex-1 flex flex-col justify-center text-left"
+            className="flex-1 flex flex-col justify-start text-left pt-0"
           >
-            <h3 className="text-4xl lg:text-5xl font-semibold text-[#0f172a] mb-3">
+            <h3 className="text-3xl lg:text-4xl font-semibold text-[#0f172a] mb-2 leading-tight">
               Arjun Madhav
             </h3>
-            <p className="text-[#10b981] font-bold tracking-[0.15em] text-[13px] uppercase mb-8">
+            <p className="text-[#10b981] font-bold tracking-[0.15em] text-[13px] uppercase mb-6">
               CO-FOUNDER, VMANOUS
             </p>
 
-            <div className="space-y-6 text-[17px] text-[#475569] leading-[1.7] mb-4">
+            <div className="space-y-4 text-[17px] text-[#475569] leading-[1.7] mb-3">
               <p>
                 Driven by a deep passion for technology and education, Arjun envisions an ecosystem where theoretical knowledge seamlessly transitions into practical implementation.
               </p>
@@ -62,7 +56,7 @@ const FounderProfile = () => {
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: 'auto' }}
                     exit={{ opacity: 0, height: 0 }}
-                    className="space-y-6 overflow-hidden"
+                    className="space-y-4 overflow-hidden"
                   >
                     <p>
                       With a strong background in software engineering and artificial intelligence, Arjun has worked on various cutting-edge projects, helping bridge the divide between theoretical algorithms and scalable industry solutions.
@@ -77,7 +71,7 @@ const FounderProfile = () => {
 
             <button
               onClick={() => setIsExpanded(!isExpanded)}
-              className="text-[#10b981] font-medium hover:text-[#059669] transition-colors mb-10 w-fit focus:outline-none"
+              className="text-[#10b981] font-medium hover:text-[#059669] transition-colors mb-6 w-fit focus:outline-none"
             >
               {isExpanded ? 'Read Less -' : 'Read More +'}
             </button>
@@ -91,7 +85,7 @@ const FounderProfile = () => {
                 aria-label="LinkedIn Profile"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
+                  <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" />
                 </svg>
               </a>
               <a

@@ -4,10 +4,10 @@ import Container from '../ui/Container';
 
 export const AudienceSection = ({ audiences }) => {
   return (
-    <section className="py-6 md:py-8 bg-white relative">
+    <section className="pt-0 pb-6 md:pb-8 bg-white relative">
       <Container>
-        <div className="text-center max-w-3xl mx-auto mb-10">
-          <h2 className="text-2xl md:text-4xl md: text-xl md:text-xl font-medium text-vmanous-navy-deep mb-6">
+        <div className="text-center max-w-3xl mx-auto mb-6">
+          <h2 className="text-2xl md:text-4xl font-medium text-vmanous-navy-deep mb-4">
             Built for Students Who Want to Build More.
           </h2>
         </div>

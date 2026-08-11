@@ -8,7 +8,7 @@ export const AIProjectLab = ({ projects }) => {
     <section className="py-6 md:py-8 bg-white">
       <Container>
         <div className="text-center max-w-3xl mx-auto mb-6 md:mb-8">
-          <h2 className="text-3xl md:text-5xl font-medium text-vmanous-navy-deep mb-6">
+          <h2 className="text-2xl md:text-4xl font-medium text-vmanous-navy-deep mb-6">
             Build Something Intelligent
           </h2>
           <p className="text-lg text-gray-600 mb-4">
@@ -40,12 +40,12 @@ export const AIProjectLab = ({ projects }) => {
                   </span>
                 </div>
                 
-                <h3 className="text-xl md:text-2xl md: text-xl font-medium text-vmanous-navy-deep mb-6">
+                <h3 className="text-xl md:text-2xl font-medium text-vmanous-navy-deep mb-6">
                   {project.title}
                 </h3>
                 
                 <div className="mb-6 flex-grow">
-                  <h4 className="text-lg md:text-xl md: text-xs font-medium text-gray-400 uppercase tracking-wider mb-2">
+                  <h4 className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-2">
                     Technology
                   </h4>
                   <div className="flex flex-wrap gap-2">
@@ -58,7 +58,7 @@ export const AIProjectLab = ({ projects }) => {
                 </div>
                 
                 <div className="mt-auto">
-                  <h4 className="text-lg md:text-xl md: text-xs font-medium text-gray-400 uppercase tracking-wider mb-2">
+                  <h4 className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-2">
                     Skills
                   </h4>
                   <div className="flex flex-wrap gap-1.5">

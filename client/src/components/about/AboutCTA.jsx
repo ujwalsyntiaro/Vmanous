@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 
 const AboutCTA = () => {
   return (
-    <section className="bg-white py-24 md:py-32 px-6 border-t border-gray-100">
+    <section className="bg-white py-12 md:py-16 px-6 border-t border-gray-100">
       <div className="max-w-4xl mx-auto text-center">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -12,10 +12,10 @@ const AboutCTA = () => {
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
         >
-          <h2 className="text-4xl md:text-6xl font-medium text-[#050816] mb-6 tracking-tight">
+          <h2 className="text-4xl md:text-6xl font-medium text-[#050816] mb-4 tracking-tight">
             Build the Future With AI.
           </h2>
-          <p className="text-xl md:text-2xl text-gray-500 mb-12 font-light">
+          <p className="text-xl md:text-2xl text-gray-500 mb-6 font-light">
             Learn. Build. Research. Experience.
           </p>
           

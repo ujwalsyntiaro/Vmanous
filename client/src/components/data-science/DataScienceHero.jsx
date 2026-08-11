@@ -28,12 +28,18 @@ const DataScienceHero = () => {
               <span className="text-xs font-semibold tracking-wider text-vmanous-light">VMANOUS DATA SCIENCE</span>
             </div>
             
-            <h1 className="text-2xl md:text-3xl lg:text-4xl font-medium text-white leading-tight mb-3">
+            <h1 
+              style={{ fontFamily: "'Josefin Sans', sans-serif", fontWeight: 100 }}
+              className="text-3xl md:text-4xl lg:text-5xl text-white leading-tight mb-3 tracking-wide"
+            >
               Turn <span className="text-transparent bg-clip-text bg-gradient-to-r from-vmanous-ai-blue to-purple-400">Data</span> Into <br className="hidden md:block" />
               Meaningful Intelligence.
             </h1>
             
-            <p className="text-sm md:text-base text-gray-400 mb-5 leading-relaxed max-w-xl">
+            <p 
+              style={{ fontFamily: "'Lato', sans-serif", fontWeight: 300 }}
+              className="text-sm md:text-base text-gray-400 mb-5 leading-relaxed max-w-xl"
+            >
               Explore the tools, technologies and practical experiences that power modern Data Science — from data preparation and visualization to machine learning and AI.
             </p>
             

@@ -17,7 +17,7 @@ export const SummitAudience = () => {
     <section className="pt-4 md:pt-6 pb-4 md:pb-6 bg-[#050816] relative overflow-hidden">
       <Container>
         <div className="text-center max-w-3xl mx-auto mb-6 md:mb-8">
-          <h2 className="text-2xl md:text-4xl md: text-xl md:text-xl font-medium text-white mb-6">
+          <h2 className="text-2xl md:text-4xl font-medium text-white mb-6">
             Built for the Next Generation of AI Talent
           </h2>
         </div>
@@ -46,7 +46,7 @@ export const CertificateShowcase = () => {
       <Container>
         <div className="grid lg:grid-cols-2 gap-16 items-center">
           <div>
-            <h2 className="text-2xl md:text-4xl md: text-xl md:text-xl font-medium text-vmanous-navy-deep mb-6">
+            <h2 className="text-2xl md:text-4xl font-medium text-vmanous-navy-deep mb-6">
               Complete the Journey. Earn Your Certificate.
             </h2>
             <p className="text-lg text-gray-600 mb-8 leading-relaxed">
@@ -84,7 +84,7 @@ export const SummitFAQ = ({ faq }) => {
     <section className="pt-4 md:pt-6 pb-4 md:pb-6 bg-vmanous-light">
       <Container>
         <div className="text-center max-w-3xl mx-auto mb-6 md:mb-8">
-          <h2 className="text-2xl md:text-4xl md: text-xl md:text-xl font-medium text-vmanous-navy-deep mb-6">
+          <h2 className="text-2xl md:text-4xl font-medium text-vmanous-navy-deep mb-6">
             Frequently Asked Questions
           </h2>
         </div>
@@ -128,7 +128,7 @@ export const SummitCTA = () => {
       </div>
       <Container className="relative z-10">
         <div className="max-w-4xl mx-auto text-center border border-white/10 bg-white/5 backdrop-blur-md p-10 md:p-14 rounded-3xl shadow-2xl">
-          <h2 className="text-2xl md:text-4xl md: md:text-xl font-medium text-white mb-6">
+          <h2 className="text-2xl md:text-4xl font-medium text-white mb-6">
             Build. Research. Innovate With AI.
           </h2>
           <p className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto leading-relaxed">

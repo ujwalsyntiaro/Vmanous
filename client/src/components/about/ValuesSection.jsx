@@ -43,10 +43,10 @@ const values = [
 
 const ValuesSection = () => {
   return (
-    <section className="bg-[#F7F9FC] py-24 md:py-32 px-6">
+    <section className="bg-white pt-2 pb-12 md:pt-4 md:pb-16 px-6">
       <div className="max-w-7xl mx-auto">
-        <div className="mb-16 md:mb-20 text-center">
-          <h2 className="text-3xl md:text-5xl font-medium text-[#050816]">
+        <div className="mb-8 md:mb-12 text-center">
+          <h2 className="text-2xl md:text-4xl font-medium text-[#050816]">
             The Principles Behind VMANOUS
           </h2>
         </div>
@@ -59,7 +59,7 @@ const ValuesSection = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-50px" }}
               transition={{ duration: 0.5, delay: index * 0.1 }}
-              className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm"
+              className="bg-[#F8FAFC] p-8 rounded-3xl border border-gray-100 shadow-sm hover:bg-white hover:border-[#16A34A]/40 hover:shadow-xl hover:shadow-green-900/5 transition-all duration-300 group"
             >
               <div className="flex items-start justify-between mb-8">
                 <div className="w-12 h-12 rounded-2xl bg-[#F7F9FC] flex items-center justify-center text-[#050816]">

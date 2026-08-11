@@ -49,7 +49,7 @@ export const SummitJourney = ({ journey }) => {
   return (
     <section className="py-24 bg-white">
       <Container>
-        <h2 className="text-2xl md:text-4xl md: md:text-xl font-medium text-[#050816] mb-16 text-center">Your AI Summit Journey</h2>
+        <h2 className="text-2xl md:text-3xl font-medium text-[#050816] mb-16 text-center">Your AI Summit Journey</h2>
         
         <div className="relative max-w-5xl mx-auto">
           {/* Connecting Line Desktop */}

@@ -9,6 +9,7 @@ import DataScience from './pages/DataScience';
 import CaseStudies from './pages/CaseStudies';
 import ForColleges from './pages/ForColleges';
 import About from './pages/About';
+import Gallery from './pages/Gallery';
 import Blog from './pages/Blog';
 import Enroll from './pages/Enroll';
 import StudentEnrollment from './pages/enroll/StudentEnrollment';
@@ -26,6 +27,7 @@ const App = () => {
           <Route path="/case-studies" element={<CaseStudies />} />
           <Route path="/for-colleges" element={<ForColleges />} />
           <Route path="/about" element={<About />} />
+          <Route path="/gallery" element={<Gallery />} />
           <Route path="/blog" element={<Blog />} />
           <Route path="/enroll" element={<Enroll />} />
           <Route path="/enroll/student" element={<StudentEnrollment />} />

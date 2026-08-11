@@ -8,7 +8,7 @@ export const StudentExperience = ({ experience }) => {
     <section className="pt-4 md:pt-6 pb-4 md:pb-6 bg-white relative">
       <Container>
         <div className="text-center max-w-3xl mx-auto mb-6 md:mb-8">
-          <h2 className="text-3xl md:text-5xl font-medium text-vmanous-navy-deep mb-6">
+          <h2 className="text-2xl md:text-4xl font-medium text-vmanous-navy-deep mb-6">
             What Students Experience
           </h2>
           <p className="text-lg text-gray-600">
@@ -29,7 +29,7 @@ export const StudentExperience = ({ experience }) => {
               <div className="w-10 h-10 rounded-full bg-blue-50 text-vmanous-ai-blue flex items-center justify-center mb-4">
                 <CheckCircle2 size={20} />
               </div>
-              <h3 className="text-xl md:text-2xl md: font-medium text-vmanous-navy-deep mb-2">{item.title}</h3>
+              <h3 className="text-base md:text-lg font-medium text-vmanous-navy-deep mb-2">{item.title}</h3>
               <p className="text-sm text-gray-600 leading-relaxed">{item.desc}</p>
             </motion.div>
           ))}

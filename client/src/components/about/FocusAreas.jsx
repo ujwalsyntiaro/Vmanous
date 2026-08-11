@@ -24,10 +24,10 @@ const focusAreas = [
 
 const FocusAreas = () => {
   return (
-    <section className="bg-white py-24 md:py-32 px-6">
+    <section className="bg-white pt-2 pb-4 md:pt-4 md:pb-6 px-6">
       <div className="max-w-7xl mx-auto">
-        <div className="mb-16 md:mb-20 text-center">
-          <h2 className="text-3xl md:text-5xl font-medium text-[#050816]">
+        <div className="mb-8 md:mb-12 text-center">
+          <h2 className="text-2xl md:text-4xl font-medium text-[#050816]">
             Our Areas of Focus
           </h2>
         </div>

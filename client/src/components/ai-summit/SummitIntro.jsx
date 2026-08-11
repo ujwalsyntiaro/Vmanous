@@ -15,7 +15,7 @@ export const SummitIntro = () => {
       <Container>
         <div className="grid lg:grid-cols-2 gap-16 items-center">
           <div>
-            <h2 className="text-2xl md:text-4xl md: text-xl md:text-xl font-medium text-vmanous-navy-deep mb-6">
+            <h2 className="text-2xl md:text-4xl font-medium text-vmanous-navy-deep mb-6">
               More Than an AI Event
             </h2>
             <p className="text-lg text-gray-600 leading-relaxed">
@@ -36,7 +36,7 @@ export const SummitIntro = () => {
                 <div className="text-sm font-medium text-vmanous-ai-blue mb-4 group-hover:text-purple-500 transition-colors">
                   {block.id}
                 </div>
-                <h3 className="text-xl md:text-2xl md: text-xl font-medium text-vmanous-navy-deep mb-3">{block.title}</h3>
+                <h3 className="text-lg md:text-xl font-medium text-vmanous-navy-deep mb-3">{block.title}</h3>
                 <p className="text-gray-600 text-sm leading-relaxed">{block.desc}</p>
               </motion.div>
             ))}

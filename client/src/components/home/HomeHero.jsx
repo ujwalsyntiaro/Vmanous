@@ -4,7 +4,7 @@ import Container from '../ui/Container';
 import { Link } from 'react-router-dom';
 import { ChevronRight } from 'lucide-react';
 
-import imgCollege from '../../assets/images/home/vmanous-college-workshop.webp';
+import imgCollege from '../../assets/images/home/vmanous-college-workshop.jpg';
 import imgSummit from '../../assets/images/home/vmanous-ai-summit.webp';
 import imgResearch from '../../assets/images/home/vmanous-research-development.webp';
 import imgData from '../../assets/images/home/vmanous-data-science.webp';
@@ -70,8 +70,8 @@ export const HomeHero = () => {
   const current = heroSlides[activeSlide];
 
   return (
-    <section 
-      className="relative min-h-[90vh] md:min-h-screen flex items-end pt-24 pb-20 overflow-hidden bg-[#050816]"
+    <section
+      className="relative min-h-[86vh] md:min-h-[94vh] flex items-end pt-24 pb-20 overflow-hidden bg-[#050816]"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
@@ -105,16 +105,22 @@ export const HomeHero = () => {
               className="flex flex-col"
             >
               <div className="inline-flex items-center gap-3 mb-6">
-                <span className="text-xs font-bold tracking-widest text-vmanous-ai-blue uppercase">
+                <span className="text-xs font-medium tracking-widest text-vmanous-ai-blue uppercase">
                   {current.eyebrow}
                 </span>
               </div>
 
-              <h1 className="text-3xl md:text-4xl lg:text-5xl font-normal text-white leading-tight mb-6">
+              <h1 
+                style={{ fontFamily: "'Josefin Sans', sans-serif", fontWeight: 100 }}
+                className="text-3xl md:text-4xl lg:text-5xl text-white leading-tight mb-6 tracking-wide"
+              >
                 {current.heading}
               </h1>
 
-              <p className="text-lg md:text-xl text-gray-300 mb-10 leading-relaxed max-w-2xl">
+              <p 
+                style={{ fontFamily: "'Lato', sans-serif", fontWeight: 300 }}
+                className="text-lg md:text-xl text-gray-300 mb-10 leading-relaxed max-w-2xl"
+              >
                 {current.description}
               </p>
             </motion.div>
@@ -129,8 +135,8 @@ export const HomeHero = () => {
             key={index}
             onClick={() => setActiveSlide(index)}
             className={`w-3 h-3 rounded-full transition-all duration-300 ${activeSlide === index
-                ? 'bg-vmanous-green w-8'
-                : 'bg-white/30 hover:bg-white/60'
+              ? 'bg-vmanous-green w-8'
+              : 'bg-white/30 hover:bg-white/60'
               }`}
             aria-label={`Go to slide ${index + 1}`}
           />

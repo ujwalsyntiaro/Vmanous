@@ -23,10 +23,16 @@ export const BlogHero = ({ title, subtitle }) => {
           transition={{ duration: 0.6 }}
           className="max-w-4xl mx-auto"
         >
-          <h1 className="text-3xl md:text-5xl lg:text-6xl font-medium text-white tracking-tight mb-6 leading-tight">
+          <h1 
+            style={{ fontFamily: "'Josefin Sans', sans-serif", fontWeight: 100 }}
+            className="text-3xl md:text-5xl lg:text-6xl text-white tracking-wide mb-6 leading-tight"
+          >
             {title}
           </h1>
-          <p className="text-base md:text-xl text-gray-300 max-w-3xl mx-auto leading-relaxed font-light">
+          <p 
+            style={{ fontFamily: "'Lato', sans-serif", fontWeight: 300 }}
+            className="text-base md:text-xl text-gray-300 max-w-3xl mx-auto leading-relaxed"
+          >
             {subtitle}
           </p>
         </motion.div>

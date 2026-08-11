@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 
 const AboutIntroduction = () => {
   return (
-    <section className="bg-white py-24 md:py-32 px-6">
+    <section className="bg-white py-12 md:py-16 px-6">
       <div className="max-w-4xl mx-auto text-center">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -11,7 +11,7 @@ const AboutIntroduction = () => {
           viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 0.6 }}
         >
-          <h2 className="text-3xl md:text-5xl font-medium text-[#050816] mb-10 leading-tight">
+          <h2 className="text-3xl md:text-5xl font-medium text-[#050816] mb-6 leading-tight">
             Empowering Students Through AI, Data & Innovation
           </h2>
           <div className="space-y-6 text-lg md:text-xl text-gray-600 leading-relaxed font-light">

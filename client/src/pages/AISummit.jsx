@@ -6,7 +6,6 @@ import { AISummitHero } from '../components/ai-summit/AISummitHero';
 import { SummitIntro } from '../components/ai-summit/SummitIntro';
 import { AITechnologyUniverse } from '../components/ai-summit/AITechnologyUniverse';
 import { SummitPrograms } from '../components/ai-summit/SummitPrograms';
-import { AILearningExperience } from '../components/ai-summit/AILearningExperience';
 import { AITechnologyShowcase } from '../components/ai-summit/AITechnologyShowcase';
 import { AIProjectLab } from '../components/ai-summit/AIProjectLab';
 import { ResearchInnovation } from '../components/ai-summit/ResearchInnovation';
@@ -28,7 +27,6 @@ const AISummit = () => {
       <SummitIntro />
       <AITechnologyUniverse />
       <SummitPrograms programs={aiSummit.programs} />
-      <AILearningExperience />
       <AITechnologyShowcase technologies={aiSummit.technologies} />
       <AIProjectLab projects={aiSummit.projects} />
 

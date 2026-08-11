@@ -3,9 +3,9 @@ import { motion } from 'framer-motion';
 
 const CollegeSection = () => {
   return (
-    <section className="bg-white py-24 md:py-32 px-6 overflow-hidden">
+    <section className="bg-white pt-0 pb-6 md:pb-8 px-6 overflow-hidden">
       <div className="max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
           
           {/* Content */}
           <motion.div
@@ -14,10 +14,10 @@ const CollegeSection = () => {
             viewport={{ once: true, margin: "-50px" }}
             transition={{ duration: 0.6 }}
           >
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-medium text-[#050816] mb-8 leading-tight">
+            <h2 className="text-2xl md:text-3xl lg:text-4xl font-medium text-[#050816] mb-4 leading-tight">
               Bringing Industry-Relevant AI Learning to Colleges
             </h2>
-            <p className="text-lg text-gray-600 mb-10 leading-relaxed">
+            <p className="text-lg text-gray-600 mb-6 leading-relaxed">
               VMANOUS works with colleges to deliver structured AI and Data Science workshops that give students exposure to emerging technologies, practical tools and real-world applications.
             </p>
             

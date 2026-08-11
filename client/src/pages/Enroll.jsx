@@ -19,21 +19,6 @@ import { ENROLLMENT_FAQS } from '../constants/enrollment';
 // Role Options Config
 const ROLES = [
   {
-    id: 'student',
-    title: 'Student Enrollment',
-    subtitle: 'For individual learners',
-    badge: 'LEARN & BUILD',
-    color: 'blue',
-    icon: GraduationCap,
-    description: 'Master AI & Data Science through hands-on projects, research exposure, and internship pathways.',
-    highlights: [
-      'Access to AI Summit & Data Science Hub',
-      'Hands-on portfolio projects',
-      'Evaluation & Internship opportunities',
-      'VMANOUS Skill Certification'
-    ]
-  },
-  {
     id: 'college',
     title: 'College Partnership',
     subtitle: 'For educational institutions',
@@ -66,7 +51,7 @@ const ROLES = [
 ];
 
 export const Enroll = () => {
-  const [activeRole, setActiveRole] = useState('student');
+  const [activeRole, setActiveRole] = useState('college');
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
@@ -99,7 +84,7 @@ export const Enroll = () => {
   return (
     <div className="bg-gray-50 min-h-screen">
       {/* 01 HERO BANNER */}
-      <section className="relative pt-24 pb-16 md:pt-32 md:pb-24 overflow-hidden bg-[#050816] text-white">
+      <section className="relative pt-16 pb-12 md:pt-20 md:pb-16 overflow-hidden bg-[#050816] text-white">
         <div className="absolute inset-0 z-0 pointer-events-none">
           <img
             src="/images/network.jpg"
@@ -117,50 +102,56 @@ export const Enroll = () => {
             transition={{ duration: 0.6 }}
             className="max-w-3xl mx-auto"
           >
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 mb-6 backdrop-blur-md">
-              <Sparkles size={16} className="text-vmanous-green animate-pulse" />
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/5 border border-white/10 mb-4 backdrop-blur-md">
+              <Sparkles size={14} className="text-vmanous-green animate-pulse" />
               <span className="text-xs font-semibold tracking-widest text-vmanous-green uppercase">
                 ENROLLMENT HUB • VMANOUS
               </span>
             </div>
 
-            <h1 className="text-3xl md:text-5xl lg:text-6xl font-medium text-white tracking-tight mb-6 leading-tight">
+            <h1 
+              style={{ fontFamily: "'Josefin Sans', sans-serif", fontWeight: 100 }}
+              className="text-3xl md:text-5xl lg:text-6xl text-white tracking-wide mb-4 leading-tight"
+            >
               Take the First Step Into the <br className="hidden md:block" />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-vmanous-green via-teal-400 to-vmanous-ai-blue">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-vmanous-green via-teal-400 to-vmanous-ai-blue font-normal">
                 VMANOUS Ecosystem
               </span>
             </h1>
 
-            <p className="text-base md:text-xl text-gray-300 max-w-2xl mx-auto font-light leading-relaxed mb-8">
-              Select your pathway to join our AI & Data Science ecosystem — whether as an ambitious student, forward-thinking college partner, or expert mentor.
+            <p 
+              style={{ fontFamily: "'Lato', sans-serif", fontWeight: 300 }}
+              className="text-base md:text-xl text-gray-300 max-w-2xl mx-auto leading-relaxed mb-4"
+            >
+              Select your pathway to join our AI & Data Science ecosystem — whether as a forward-thinking college partner or expert mentor.
             </p>
           </motion.div>
         </Container>
       </section>
 
       {/* 02 ROLE SELECTION CARDS */}
-      <section className="relative z-20 -mt-10 mb-16">
+      <section className="relative z-20 -mt-8 mb-8">
         <Container>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
             {ROLES.map((role) => {
               const IconComponent = role.icon;
               const isSelected = activeRole === role.id;
               return (
                 <motion.div
                   key={role.id}
-                  whileHover={{ y: -6 }}
+                  whileHover={{ y: -4 }}
                   transition={{ duration: 0.2 }}
                   onClick={() => setActiveRole(role.id)}
-                  className={`cursor-pointer bg-white rounded-3xl p-8 border transition-all duration-300 flex flex-col justify-between ${
+                  className={`cursor-pointer bg-white rounded-3xl p-6 border transition-all duration-300 flex flex-col justify-between ${
                     isSelected
                       ? 'border-vmanous-green shadow-xl ring-2 ring-vmanous-green/20'
                       : 'border-gray-200 shadow-sm hover:shadow-md'
                   }`}
                 >
                   <div>
-                    <div className="flex items-center justify-between mb-6">
-                      <div className={`p-3.5 rounded-2xl ${isSelected ? 'bg-vmanous-green/10 text-vmanous-green' : 'bg-gray-100 text-gray-700'}`}>
-                        <IconComponent size={28} />
+                    <div className="flex items-center justify-between mb-4">
+                      <div className={`p-3 rounded-2xl ${isSelected ? 'bg-vmanous-green/10 text-vmanous-green' : 'bg-gray-100 text-gray-700'}`}>
+                        <IconComponent size={24} />
                       </div>
                       <span className="text-xs font-bold px-3 py-1 rounded-full bg-gray-100 text-gray-600 uppercase tracking-wider">
                         {role.badge}
@@ -170,15 +161,15 @@ export const Enroll = () => {
                     <h3 className="text-xl font-bold text-vmanous-navy-dark mb-1">
                       {role.title}
                     </h3>
-                    <p className="text-xs text-gray-500 font-medium mb-4">{role.subtitle}</p>
-                    <p className="text-sm text-gray-600 leading-relaxed mb-6">
+                    <p className="text-xs text-gray-500 font-medium mb-3">{role.subtitle}</p>
+                    <p className="text-sm text-gray-600 leading-relaxed mb-4">
                       {role.description}
                     </p>
 
-                    <ul className="space-y-2.5 mb-8">
+                    <ul className="space-y-2 mb-6">
                       {role.highlights.map((item, idx) => (
                         <li key={idx} className="flex items-start gap-2 text-xs text-gray-600">
-                          <CheckCircle2 size={16} className="text-vmanous-green flex-shrink-0 mt-0.5" />
+                          <CheckCircle2 size={15} className="text-vmanous-green flex-shrink-0 mt-0.5" />
                           <span>{item}</span>
                         </li>
                       ))}
@@ -191,7 +182,7 @@ export const Enroll = () => {
                       setActiveRole(role.id);
                       document.getElementById('enrollment-form')?.scrollIntoView({ behavior: 'smooth' });
                     }}
-                    className={`w-full py-3.5 px-4 rounded-xl text-sm font-semibold transition-colors flex items-center justify-center gap-2 ${
+                    className={`w-full py-3 px-4 rounded-xl text-sm font-semibold transition-colors flex items-center justify-center gap-2 ${
                       isSelected
                         ? 'bg-vmanous-green text-white shadow-md shadow-green-500/20'
                         : 'bg-gray-100 text-vmanous-navy-dark hover:bg-gray-200'
@@ -208,31 +199,35 @@ export const Enroll = () => {
       </section>
 
       {/* 03 INTERACTIVE APPLICATION FORM */}
-      <section id="enrollment-form" className="py-12 mb-16">
+      <section id="enrollment-form" className="py-8 mb-12">
         <Container>
-          <div className="max-w-4xl mx-auto bg-white rounded-3xl border border-gray-200 shadow-xl overflow-hidden">
-            {/* Form Header */}
-            <div className="bg-[#050816] text-white p-8 md:p-10 border-b border-gray-800">
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="max-w-4xl mx-auto bg-white rounded-3xl border border-gray-200/80 shadow-2xl overflow-hidden relative">
+            {/* Form Header with Rich Deep Theme & Glass Overlay */}
+            <div className="bg-[#0B132B] text-white p-6 md:p-8 border-b border-white/10 relative overflow-hidden">
+              <div className="absolute -top-20 -right-20 w-64 h-64 bg-[#16A34A]/15 rounded-full blur-3xl pointer-events-none" />
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-5 relative z-10">
                 <div>
-                  <h2 className="text-2xl md:text-3xl font-bold mb-2">
+                  <h2 className="text-2xl md:text-3xl font-bold text-white tracking-tight mb-2">
                     Application Form
                   </h2>
-                  <p className="text-sm text-gray-400">
-                    Applying as: <span className="text-vmanous-green font-semibold uppercase">{ROLES.find(r => r.id === activeRole)?.title}</span>
+                  <p className="text-sm text-slate-300 flex items-center gap-2 flex-wrap">
+                    Applying as: 
+                    <span className="inline-flex items-center px-3 py-0.5 rounded-full bg-[#16A34A]/20 border border-[#16A34A]/40 text-[#16A34A] text-xs font-bold uppercase tracking-wider">
+                      {ROLES.find(r => r.id === activeRole)?.title}
+                    </span>
                   </p>
                 </div>
 
-                {/* Form Role Selector Tabs */}
-                <div className="flex items-center gap-2 bg-white/5 p-1.5 rounded-xl border border-white/10">
+                {/* Form Role Selector Segmented Tabs */}
+                <div className="flex items-center gap-1.5 bg-white/10 p-1.5 rounded-2xl border border-white/15 backdrop-blur-md">
                   {ROLES.map((r) => (
                     <button
                       key={r.id}
                       onClick={() => setActiveRole(r.id)}
-                      className={`px-4 py-2 rounded-lg text-xs font-semibold transition-all ${
+                      className={`px-4 py-2 rounded-xl text-xs font-semibold tracking-wide transition-all duration-200 ${
                         activeRole === r.id
-                          ? 'bg-vmanous-green text-white shadow-md'
-                          : 'text-gray-400 hover:text-white'
+                          ? 'bg-[#16A34A] text-white shadow-lg shadow-green-600/30'
+                          : 'text-slate-300 hover:text-white hover:bg-white/5'
                       }`}
                     >
                       {r.id.toUpperCase()}
@@ -243,20 +238,20 @@ export const Enroll = () => {
             </div>
 
             {/* Form Body */}
-            <div className="p-8 md:p-12">
+            <div className="p-6 md:p-10 bg-white">
               {isSubmitted ? (
                 <motion.div
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  className="text-center py-12"
+                  className="text-center py-10"
                 >
-                  <div className="w-16 h-16 bg-green-100 text-vmanous-green rounded-full flex items-center justify-center mx-auto mb-6">
-                    <CheckCircle2 size={40} />
+                  <div className="w-16 h-16 bg-green-100 text-[#16A34A] rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm">
+                    <CheckCircle2 size={36} />
                   </div>
-                  <h3 className="text-2xl font-bold text-vmanous-navy-dark mb-3">
+                  <h3 className="text-2xl font-bold text-[#0F172A] mb-2">
                     Application Submitted Successfully!
                   </h3>
-                  <p className="text-gray-600 max-w-md mx-auto mb-8">
+                  <p className="text-slate-600 max-w-md mx-auto mb-6 text-sm leading-relaxed">
                     Thank you for applying to join the VMANOUS ecosystem. Our team will review your details and reach out within 24 hours.
                   </p>
                   <button
@@ -271,18 +266,18 @@ export const Enroll = () => {
                         message: ''
                       });
                     }}
-                    className="px-8 py-3 bg-vmanous-green text-white font-semibold rounded-xl hover:bg-green-700 transition-colors shadow-md"
+                    className="px-6 py-3 bg-[#16A34A] text-white text-sm font-semibold rounded-xl hover:bg-green-700 transition-all shadow-md"
                   >
                     Submit Another Response
                   </button>
                 </motion.div>
               ) : (
-                <form onSubmit={handleSubmit} className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <form onSubmit={handleSubmit} className="space-y-5">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                     {/* Full Name */}
                     <div>
-                      <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-2">
-                        Full Name *
+                      <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">
+                        Full Name <span className="text-red-500">*</span>
                       </label>
                       <input
                         type="text"
@@ -291,14 +286,14 @@ export const Enroll = () => {
                         placeholder="e.g. Rahul Sharma"
                         value={formData.fullName}
                         onChange={handleChange}
-                        className="w-full px-4 py-3.5 rounded-xl border border-gray-200 focus:border-vmanous-green focus:ring-2 focus:ring-vmanous-green/20 outline-none transition-all text-sm"
+                        className="w-full px-4 py-3.5 rounded-2xl bg-[#F8FAFC] border border-slate-200 text-slate-800 text-sm font-medium focus:bg-white focus:border-[#16A34A] focus:ring-4 focus:ring-[#16A34A]/15 outline-none transition-all duration-200 placeholder:text-slate-400 placeholder:font-normal"
                       />
                     </div>
 
                     {/* Email */}
                     <div>
-                      <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-2">
-                        Email Address *
+                      <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">
+                        Email Address <span className="text-red-500">*</span>
                       </label>
                       <input
                         type="email"
@@ -307,16 +302,16 @@ export const Enroll = () => {
                         placeholder="e.g. rahul@example.com"
                         value={formData.email}
                         onChange={handleChange}
-                        className="w-full px-4 py-3.5 rounded-xl border border-gray-200 focus:border-vmanous-green focus:ring-2 focus:ring-vmanous-green/20 outline-none transition-all text-sm"
+                        className="w-full px-4 py-3.5 rounded-2xl bg-[#F8FAFC] border border-slate-200 text-slate-800 text-sm font-medium focus:bg-white focus:border-[#16A34A] focus:ring-4 focus:ring-[#16A34A]/15 outline-none transition-all duration-200 placeholder:text-slate-400 placeholder:font-normal"
                       />
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                     {/* Phone */}
                     <div>
-                      <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-2">
-                        Phone Number *
+                      <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">
+                        Phone Number <span className="text-red-500">*</span>
                       </label>
                       <input
                         type="tel"
@@ -325,37 +320,37 @@ export const Enroll = () => {
                         placeholder="+91 98765 43210"
                         value={formData.phone}
                         onChange={handleChange}
-                        className="w-full px-4 py-3.5 rounded-xl border border-gray-200 focus:border-vmanous-green focus:ring-2 focus:ring-vmanous-green/20 outline-none transition-all text-sm"
+                        className="w-full px-4 py-3.5 rounded-2xl bg-[#F8FAFC] border border-slate-200 text-slate-800 text-sm font-medium focus:bg-white focus:border-[#16A34A] focus:ring-4 focus:ring-[#16A34A]/15 outline-none transition-all duration-200 placeholder:text-slate-400 placeholder:font-normal"
                       />
                     </div>
 
                     {/* Institution / College / Company */}
                     <div>
-                      <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-2">
-                        {activeRole === 'student' ? 'College / University *' : activeRole === 'college' ? 'College Name & Location *' : 'Organization / Current Company *'}
+                      <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">
+                        {activeRole === 'college' ? 'College Name & Location' : 'Organization / Current Company'} <span className="text-red-500">*</span>
                       </label>
                       <input
                         type="text"
                         name="institution"
                         required
-                        placeholder={activeRole === 'student' ? 'e.g. IIT Bombay' : 'e.g. National Institute of Technology'}
+                        placeholder={activeRole === 'college' ? 'e.g. National Institute of Technology' : 'e.g. Current Company / Designation'}
                         value={formData.institution}
                         onChange={handleChange}
-                        className="w-full px-4 py-3.5 rounded-xl border border-gray-200 focus:border-vmanous-green focus:ring-2 focus:ring-vmanous-green/20 outline-none transition-all text-sm"
+                        className="w-full px-4 py-3.5 rounded-2xl bg-[#F8FAFC] border border-slate-200 text-slate-800 text-sm font-medium focus:bg-white focus:border-[#16A34A] focus:ring-4 focus:ring-[#16A34A]/15 outline-none transition-all duration-200 placeholder:text-slate-400 placeholder:font-normal"
                       />
                     </div>
                   </div>
 
                   {/* Program Focus */}
                   <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-2">
+                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">
                       Program / Track Interest
                     </label>
                     <select
                       name="programInterest"
                       value={formData.programInterest}
                       onChange={handleChange}
-                      className="w-full px-4 py-3.5 rounded-xl border border-gray-200 focus:border-vmanous-green focus:ring-2 focus:ring-vmanous-green/20 outline-none transition-all text-sm bg-white"
+                      className="w-full px-4 py-3.5 rounded-2xl bg-[#F8FAFC] border border-slate-200 text-slate-800 text-sm font-medium focus:bg-white focus:border-[#16A34A] focus:ring-4 focus:ring-[#16A34A]/15 outline-none transition-all duration-200 cursor-pointer"
                     >
                       <option value="AI Summit & Data Science">AI Summit & Data Science Ecosystem</option>
                       <option value="AI Research Lab">AI Research & Project Lab</option>
@@ -366,34 +361,36 @@ export const Enroll = () => {
 
                   {/* Message */}
                   <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-2">
+                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">
                       Additional Details / Statement of Purpose
                     </label>
                     <textarea
                       name="message"
-                      rows={4}
+                      rows={3}
                       placeholder="Tell us about your learning goals or institutional requirements..."
                       value={formData.message}
                       onChange={handleChange}
-                      className="w-full px-4 py-3.5 rounded-xl border border-gray-200 focus:border-vmanous-green focus:ring-2 focus:ring-vmanous-green/20 outline-none transition-all text-sm"
+                      className="w-full px-4 py-3.5 rounded-2xl bg-[#F8FAFC] border border-slate-200 text-slate-800 text-sm font-medium focus:bg-white focus:border-[#16A34A] focus:ring-4 focus:ring-[#16A34A]/15 outline-none transition-all duration-200 placeholder:text-slate-400 placeholder:font-normal resize-none"
                     />
                   </div>
 
-                  {/* Submit Button */}
-                  <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="w-full py-4 bg-vmanous-green hover:bg-green-700 text-white font-bold rounded-xl transition-all shadow-lg shadow-green-500/25 flex items-center justify-center gap-2 text-base"
-                  >
-                    {isSubmitting ? (
-                      <span className="inline-block animate-pulse">Submitting Application...</span>
-                    ) : (
-                      <>
-                        <span>Submit Application</span>
-                        <Send size={18} />
-                      </>
-                    )}
-                  </button>
+                  {/* Submit Button CTA */}
+                  <div className="pt-2">
+                    <button
+                      type="submit"
+                      disabled={isSubmitting}
+                      className="w-full py-4 bg-gradient-to-r from-[#16A34A] to-[#15803D] hover:from-[#15803D] hover:to-[#166534] text-white font-bold rounded-2xl transition-all duration-300 shadow-[0_10px_25px_rgba(22,163,74,0.3)] hover:shadow-[0_15px_30px_rgba(22,163,74,0.4)] flex items-center justify-center gap-2.5 text-base group cursor-pointer"
+                    >
+                      {isSubmitting ? (
+                        <span className="inline-block animate-pulse">Submitting Application...</span>
+                      ) : (
+                        <>
+                          <span>Submit Application</span>
+                          <Send size={18} className="transform group-hover:translate-x-1 group-hover:-translate-y-0.5 transition-transform duration-300" />
+                        </>
+                      )}
+                    </button>
+                  </div>
                 </form>
               )}
             </div>
@@ -402,29 +399,29 @@ export const Enroll = () => {
       </section>
 
       {/* 04 ECOSYSTEM WORKFLOW TIMELINE */}
-      <section className="py-16 bg-white border-y border-gray-200">
+      <section className="py-10 bg-white border-y border-gray-200">
         <Container>
-          <div className="text-center max-w-3xl mx-auto mb-14">
-            <h2 className="text-2xl md:text-4xl font-bold text-vmanous-navy-dark mb-4">
+          <div className="text-center max-w-3xl mx-auto mb-8">
+            <h2 className="text-2xl md:text-3xl font-bold text-vmanous-navy-dark mb-2">
               How Enrollment Works
             </h2>
-            <p className="text-gray-600 text-base md:text-lg">
+            <p className="text-gray-600 text-sm md:text-base">
               A transparent, outcome-oriented workflow designed for maximum practical growth.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {[
               { num: '01', title: 'Submit Application', desc: 'Select your role and submit the enrollment form with your details.' },
               { num: '02', title: 'Orientation & Review', desc: 'Our academic team reviews your profile and completes onboarding.' },
               { num: '03', title: 'Hands-on Learning', desc: 'Engage in AI Summit programs, project labs, and data science workflows.' },
               { num: '04', title: 'Evaluation & Pathways', desc: 'Gain skill certifications, research exposure, and internship pathways.' }
             ].map((step, idx) => (
-              <div key={idx} className="relative p-6 rounded-2xl bg-gray-50 border border-gray-100">
-                <div className="text-3xl font-black text-vmanous-green mb-3">
+              <div key={idx} className="relative p-5 rounded-2xl bg-gray-50 border border-gray-100">
+                <div className="text-2xl font-black text-vmanous-green mb-2">
                   {step.num}
                 </div>
-                <h3 className="text-lg font-bold text-vmanous-navy-dark mb-2">
+                <h3 className="text-base font-bold text-vmanous-navy-dark mb-1">
                   {step.title}
                 </h3>
                 <p className="text-xs text-gray-500 leading-relaxed">
@@ -437,14 +434,14 @@ export const Enroll = () => {
       </section>
 
       {/* 05 FAQ SECTION */}
-      <section className="py-16 md:py-24">
+      <section className="py-10 md:py-14">
         <Container>
           <div className="max-w-3xl mx-auto">
-            <div className="text-center mb-12">
-              <h2 className="text-2xl md:text-4xl font-bold text-vmanous-navy-dark mb-4">
+            <div className="text-center mb-8">
+              <h2 className="text-2xl md:text-3xl font-bold text-vmanous-navy-dark mb-2">
                 Frequently Asked Questions
               </h2>
-              <p className="text-gray-600 text-base">
+              <p className="text-gray-600 text-sm">
                 Everything you need to know about enrolling in VMANOUS programs.
               </p>
             </div>

@@ -36,10 +36,10 @@ const steps = [
 
 const ApproachTimeline = () => {
   return (
-    <section className="bg-[#F7F9FC] py-24 md:py-32 px-6">
+    <section className="bg-white py-4 md:py-6 px-6">
       <div className="max-w-7xl mx-auto">
-        <div className="mb-16 md:mb-24 text-center md:text-left">
-          <span className="text-[#3B82F6] font-semibold tracking-wider text-sm uppercase mb-3 block">
+        <div className="mb-5 md:mb-6 text-center md:text-left">
+          <span className="text-[#16A34A] font-semibold tracking-wider text-sm uppercase mb-1 block">
             How We Work
           </span>
           <h2 className="text-3xl md:text-4xl font-medium text-[#050816]">
@@ -47,7 +47,7 @@ const ApproachTimeline = () => {
           </h2>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6">
           {steps.map((step, index) => (
             <motion.div
               key={index}
@@ -55,15 +55,15 @@ const ApproachTimeline = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-50px" }}
               transition={{ duration: 0.5, delay: index * 0.1 }}
-              className="bg-white p-8 rounded-[24px] border border-gray-100 hover:shadow-lg hover:shadow-gray-200/50 transition-all duration-300 group relative overflow-hidden"
+              className="bg-[#F8FAFC] p-6 rounded-[20px] border border-gray-100 hover:bg-white hover:border-[#16A34A]/40 hover:shadow-xl hover:shadow-green-900/5 transition-all duration-300 group relative overflow-hidden"
             >
-              <div className="text-5xl font-light text-gray-200 mb-6 group-hover:text-[#3B82F6]/20 transition-colors">
+              <div className="text-4xl font-light text-gray-300 mb-3 group-hover:text-[#16A34A] transition-colors duration-300">
                 {step.number}
               </div>
-              <h3 className="text-2xl font-medium text-[#050816] mb-3">
+              <h3 className="text-xl font-medium text-[#050816] mb-1.5">
                 {step.title}
               </h3>
-              <p className="text-gray-600 leading-relaxed">
+              <p className="text-gray-600 leading-relaxed text-sm">
                 {step.description}
               </p>
             </motion.div>
