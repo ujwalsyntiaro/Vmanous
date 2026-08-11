@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { NavLink, Link } from 'react-router-dom';
-import { Menu, X } from 'lucide-react';
+import { MoreVertical, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Container from '../ui/Container';
 import Logo from '../ui/Logo';
@@ -100,7 +100,7 @@ const Navbar = () => {
               onClick={() => setIsMobileMenuOpen(true)}
               aria-label="Open menu"
             >
-              <Menu className="w-6 h-6" />
+              <MoreVertical className="w-6 h-6" />
             </button>
           </div>
         </Container>
@@ -122,7 +122,7 @@ const Navbar = () => {
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="fixed top-0 right-0 bottom-0 w-4/5 max-w-sm bg-white z-[60] shadow-2xl flex flex-col md:hidden"
+              className="fixed top-0 right-0 bottom-0 w-[220px] bg-white z-[60] shadow-2xl flex flex-col md:hidden"
             >
               <div className="p-5 flex items-center justify-between border-b border-gray-100">
                 <Logo />
@@ -135,15 +135,15 @@ const Navbar = () => {
                 </button>
               </div>
 
-              <div className="flex-1 overflow-y-auto py-6 px-5 flex flex-col space-y-6">
-                <nav className="flex flex-col space-y-4">
+              <div className="flex-1 overflow-y-auto pt-2 pb-6 px-5 flex flex-col space-y-6">
+                <nav className="flex flex-col">
                   {navLinks.map((link) => (
                     <NavLink
                       key={link.name}
                       to={link.path}
                       onClick={() => setIsMobileMenuOpen(false)}
                       className={({ isActive }) =>
-                        `text-lg font-medium transition-colors outline-none focus-visible:ring-2 focus-visible:ring-vmanous-green rounded-sm px-2 py-1 -mx-2 ${isActive ? 'text-vmanous-green' : 'text-vmanous-navy-dark'
+                        `text-lg font-medium transition-colors outline-none focus-visible:ring-2 focus-visible:ring-vmanous-green py-2 border-b border-gray-100 ${isActive ? 'text-vmanous-green' : 'text-vmanous-navy-dark hover:text-vmanous-green'
                         }`
                       }
                     >

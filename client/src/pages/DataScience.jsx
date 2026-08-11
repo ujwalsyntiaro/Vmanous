@@ -26,7 +26,6 @@ const DataScience = () => {
       <ProjectShowcase />
       <ResearchSection />
       <CareerPath />
-      <InternshipPathway />
       <DataScienceGallery />
       <DataScienceCTA />
     </div>

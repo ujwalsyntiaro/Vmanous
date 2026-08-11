@@ -25,20 +25,18 @@ const Home = () => {
       {/* 01 HERO */}
       <HomeHero data={homeData.hero} />
 
-      {/* 02 WHAT IS VMANOUS */}
-      <WhatIsVmanous blocks={homeData.whatIsVmanous} />
-
-      {/* 03 VMANOUS ECOSYSTEM */}
+      {/* 02 VMANOUS ECOSYSTEM */}
       <EcosystemSection nodes={homeData.ecosystem} />
+
+      {/* 03 WHAT IS VMANOUS */}
+      <WhatIsVmanous blocks={homeData.whatIsVmanous} />
 
       {/* 04 AI SUMMIT FEATURE */}
       <AISummitFeature />
 
-      {/* 05 DATA SCIENCE HUB */}
-      <DataScienceFeature />
 
-      {/* 07 LEARNING -> EXPERIENCE */}
-      <LearningJourney steps={homeData.learningExperience} />
+
+
 
       {/* 08 PRACTICAL PROJECTS */}
       <ProjectShowcase projects={homeData.projects} />
@@ -52,14 +50,11 @@ const Home = () => {
       {/* 12 WHO IS VMANOUS FOR */}
       <AudienceSection audiences={homeData.audiences} />
 
-      {/* 13 COLLEGE ECOSYSTEM */}
-      <CampusSection />
 
-      {/* 14 AI RESEARCH */}
-      <ResearchSection areas={homeData.researchAreas} />
 
-      {/* 15 VISUAL GALLERY */}
-      <HomeGallery images={homeData.gallery} />
+
+
+
     </div>
   );
 };

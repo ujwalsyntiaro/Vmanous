@@ -1,33 +1,32 @@
 import React from 'react';
-import Container from '../ui/Container';
+import { motion } from 'framer-motion';
 
 const AboutIntroduction = () => {
   return (
-    <section id="explore" className="py-12 md:py-16 bg-white">
-      <Container>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-          <div className="rounded-2xl overflow-hidden bg-gray-100 aspect-video relative">
-            <img 
-              src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=800&q=80" 
-              alt="Professional VMANOUS visual" 
-              className="w-full h-full object-cover"
-            />
-            <div className="absolute inset-0 bg-blue-900/10 mix-blend-multiply"></div>
+    <section className="bg-white py-24 md:py-32 px-6">
+      <div className="max-w-4xl mx-auto text-center">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.6 }}
+        >
+          <h2 className="text-3xl md:text-5xl font-medium text-[#050816] mb-10 leading-tight">
+            Empowering Students Through AI, Data & Innovation
+          </h2>
+          <div className="space-y-6 text-lg md:text-xl text-gray-600 leading-relaxed font-light">
+            <p>
+              VMANOUS works with colleges to conduct practical AI and Data Science workshops designed to introduce students to real-world technology.
+            </p>
+            <p>
+              Students move beyond theoretical learning through hands-on activities, projects, research exposure and industry-oriented experiences.
+            </p>
+            <p>
+              Our ecosystem connects education with practical implementation, research and internship opportunities.
+            </p>
           </div>
-          <div>
-            <h2 className="text-3xl md:text-4xl font-semibold text-vmanous-navy-deep mb-6">What is VMANOUS?</h2>
-            <p className="text-lg text-gray-600 mb-4 leading-relaxed">
-              VMANOUS is designed to bridge the gap between academic learning and practical technology experience.
-            </p>
-            <p className="text-lg text-gray-600 mb-4 leading-relaxed">
-              We provide an ecosystem around AI and Data Science, offering practical workshops, real-world projects, and dedicated research initiatives.
-            </p>
-            <p className="text-lg text-gray-600 leading-relaxed">
-              Our comprehensive evaluation process prepares students for potential internship opportunities, ensuring they have the practical skills needed to thrive in the technology industry.
-            </p>
-          </div>
-        </div>
-      </Container>
+        </motion.div>
+      </div>
     </section>
   );
 };

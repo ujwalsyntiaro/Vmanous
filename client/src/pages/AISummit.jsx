@@ -31,7 +31,7 @@ const AISummit = () => {
       <AILearningExperience />
       <AITechnologyShowcase technologies={aiSummit.technologies} />
       <AIProjectLab projects={aiSummit.projects} />
-      <ResearchInnovation researchAreas={aiSummit.researchAreas} />
+
       <ResearchLab image={aiSummit.images.gallery[5]} />
       <SummitTimeline timeline={aiSummit.timeline} />
       <StudentExperience experience={aiSummit.experience} />

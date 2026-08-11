@@ -4,92 +4,138 @@ import Container from '../ui/Container';
 import { Link } from 'react-router-dom';
 import { ChevronRight } from 'lucide-react';
 
-export const HomeHero = ({ data }) => {
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  
-  const backgroundImages = [
-    data.image,
-    "/images/data-science/hero.jpg",
-    "/images/ai-summit/gallery-1.jpg",
-    "/images/data-science/gallery-1.jpg"
-  ];
+import imgCollege from '../../assets/images/home/vmanous-college-workshop.webp';
+import imgSummit from '../../assets/images/home/vmanous-ai-summit.webp';
+import imgResearch from '../../assets/images/home/vmanous-research-development.webp';
+import imgData from '../../assets/images/home/vmanous-data-science.webp';
+import imgInternship from '../../assets/images/home/vmanous-ai-internship.webp';
+
+const heroSlides = [
+  {
+    image: imgCollege,
+    eyebrow: "AI • DATA SCIENCE • COLLEGE WORKSHOPS",
+    heading: "Bringing Practical AI Learning to Campuses",
+    description: "VMANOUS partners with colleges to conduct practical AI and Data Science workshops, helping students explore emerging technologies through hands-on learning.",
+    primaryCTA: "Explore Workshops",
+    secondaryCTA: "For Colleges"
+  },
+  {
+    image: imgSummit,
+    eyebrow: "VMANOUS AI SUMMIT",
+    heading: "Explore the Future of Artificial Intelligence",
+    description: "Experience Artificial Intelligence, Machine Learning, Generative AI and emerging technologies through an immersive VMANOUS AI Summit.",
+    primaryCTA: "Explore AI Summit",
+    secondaryCTA: "Learn More"
+  },
+  {
+    image: imgResearch,
+    eyebrow: "RESEARCH & DEVELOPMENT",
+    heading: "Turn Ideas Into Real AI Research",
+    description: "VMANOUS encourages students to explore real-world AI problems, experiment with emerging technologies and develop practical research-driven solutions.",
+    primaryCTA: "Explore Research",
+    secondaryCTA: "Learn More"
+  },
+  {
+    image: imgData,
+    eyebrow: "DATA SCIENCE • ANALYTICS",
+    heading: "Build Skills With Real Data",
+    description: "Learn Python, Data Analytics, Machine Learning, visualization and practical Data Science through projects and real-world problem solving.",
+    primaryCTA: "Explore Data Science",
+    secondaryCTA: "View Programs"
+  },
+  {
+    image: imgInternship,
+    eyebrow: "AI & DATA SCIENCE INTERNSHIPS",
+    heading: "From Learning to Industry Experience",
+    description: "Eligible students can progress from workshops and projects to practical AI and Data Science internship opportunities based on performance, evaluation and available opportunities.",
+    primaryCTA: "Explore Opportunities",
+    secondaryCTA: "Learn More"
+  }
+];
+
+export const HomeHero = () => {
+  const [activeSlide, setActiveSlide] = useState(0);
+  const [isHovered, setIsHovered] = useState(false);
 
   useEffect(() => {
+    if (isHovered) return;
+
     const interval = setInterval(() => {
-      setCurrentImageIndex((prev) => (prev + 1) % backgroundImages.length);
+      setActiveSlide((prev) => (prev + 1) % heroSlides.length);
     }, 5000);
+
     return () => clearInterval(interval);
-  }, [backgroundImages.length]);
+  }, [isHovered]);
+
+  const current = heroSlides[activeSlide];
 
   return (
-    <section className="relative min-h-screen flex items-center pt-20 pb-12 overflow-hidden bg-[#050816]">
+    <section 
+      className="relative min-h-[90vh] md:min-h-screen flex items-end pt-24 pb-20 overflow-hidden bg-[#050816]"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      {/* FULL SCREEN BACKGROUND IMAGE */}
       <div className="absolute inset-0 z-0">
-        <AnimatePresence>
-          <motion.img 
-            key={currentImageIndex}
-            src={backgroundImages[currentImageIndex]}
-            alt="VMANOUS AI Ecosystem Background" 
-            className="absolute inset-0 w-full h-full object-cover opacity-100"
+        <AnimatePresence mode="wait">
+          <motion.img
+            key={activeSlide + '-img'}
+            src={current.image}
+            alt={current.heading}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 1.5 }}
+            transition={{ duration: 1.5, ease: "easeInOut" }}
+            className="absolute inset-0 w-full h-full object-cover"
           />
         </AnimatePresence>
-        <div className="absolute inset-0 bg-gradient-to-r from-[#050816]/60 via-[#050816]/30 to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#050816]/40 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-r from-[#050816]/60 via-[#050816]/20 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#050816]/50 to-transparent" />
       </div>
 
-      <Container className="relative z-10 w-full">
-        <div className="max-w-4xl">
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-          >
-            <div className="inline-flex items-center gap-3 mb-6">
-              <span className="text-xs font-medium tracking-widest text-vmanous-ai-blue uppercase">
-                AI • DATA SCIENCE • INNOVATION
-              </span>
-            </div>
-            
-            <h1 className="text-3xl md:text-5xl font-medium text-white leading-tight mb-6">
-              {data.titleStart} <br className="hidden md:block" />
-              {data.titleHighlight} <span className="text-transparent bg-clip-text bg-gradient-to-r from-vmanous-ai-blue to-purple-500">{data.titleEnd}</span>
-            </h1>
-            
-            <p className="text-lg md:text-xl text-gray-300 mb-10 leading-relaxed max-w-2xl">
-              {data.description}
-            </p>
-            
-            <div className="flex flex-col sm:flex-row gap-4 mb-12">
-              <Link 
-                to="/enroll"
-                className="inline-flex justify-center items-center px-8 py-4 bg-vmanous-green text-white font-medium rounded-xl hover:bg-green-700 transition-all shadow-lg shadow-green-500/25 group"
-              >
-                Get Started
-                <ChevronRight className="ml-2 transform group-hover:translate-x-1 transition-transform" size={20} />
-              </Link>
-              
-              <Link 
-                to="/ai-summit"
-                className="inline-flex justify-center items-center px-8 py-4 border border-vmanous-green text-white font-medium rounded-xl hover:bg-vmanous-green transition-all"
-              >
-                Explore AI Summit
-              </Link>
-            </div>
+      <div className="relative z-10 w-full mb-4 px-4 sm:px-6 md:px-10 lg:px-16">
+        <div className="max-w-4xl text-left">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeSlide + '-text'}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.5 }}
+              className="flex flex-col"
+            >
+              <div className="inline-flex items-center gap-3 mb-6">
+                <span className="text-xs font-bold tracking-widest text-vmanous-ai-blue uppercase">
+                  {current.eyebrow}
+                </span>
+              </div>
 
-            <div className="flex flex-wrap gap-8 items-center pt-8 border-t border-white/10">
-              {['Learn', 'Build', 'Research', 'Experience'].map((item, index) => (
-                <div key={index} className="flex items-center gap-2 text-sm font-medium text-gray-400 tracking-widest uppercase">
-                  <div className="w-1.5 h-1.5 rounded-full bg-vmanous-ai-blue" />
-                  {item}
-                </div>
-              ))}
-            </div>
-          </motion.div>
+              <h1 className="text-3xl md:text-4xl lg:text-5xl font-normal text-white leading-tight mb-6">
+                {current.heading}
+              </h1>
+
+              <p className="text-lg md:text-xl text-gray-300 mb-10 leading-relaxed max-w-2xl">
+                {current.description}
+              </p>
+            </motion.div>
+          </AnimatePresence>
         </div>
-      </Container>
+      </div>
+
+      {/* INDICATORS */}
+      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-3 items-center z-20">
+        {heroSlides.map((_, index) => (
+          <button
+            key={index}
+            onClick={() => setActiveSlide(index)}
+            className={`w-3 h-3 rounded-full transition-all duration-300 ${activeSlide === index
+                ? 'bg-vmanous-green w-8'
+                : 'bg-white/30 hover:bg-white/60'
+              }`}
+            aria-label={`Go to slide ${index + 1}`}
+          />
+        ))}
+      </div>
     </section>
   );
 };

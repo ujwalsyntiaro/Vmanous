@@ -1,35 +1,31 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import AboutHero from '../components/about/AboutHero';
 import AboutIntroduction from '../components/about/AboutIntroduction';
-import VisionSection from '../components/about/VisionSection';
-import ProblemSection from '../components/about/ProblemSection';
-import EcosystemSection from '../components/about/EcosystemSection';
-import WhatWeDo from '../components/about/WhatWeDo';
-import FounderSection from '../components/about/FounderSection';
-import LearningApproach from '../components/about/LearningApproach';
-import TechnologyFocus from '../components/about/TechnologyFocus';
-import StudentJourney from '../components/about/StudentJourney';
-import CollegeEcosystem from '../components/about/CollegeEcosystem';
+import ApproachTimeline from '../components/about/ApproachTimeline';
+import FocusAreas from '../components/about/FocusAreas';
+import CollegeSection from '../components/about/CollegeSection';
+import ResearchSection from '../components/about/ResearchSection';
+import InternshipSection from '../components/about/InternshipSection';
+import FounderProfile from '../components/about/FounderProfile';
 import ValuesSection from '../components/about/ValuesSection';
-import FutureVision from '../components/about/FutureVision';
 import AboutCTA from '../components/about/AboutCTA';
 
 const About = () => {
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   return (
-    <main className="w-full overflow-hidden">
+    <main className="w-full min-h-screen bg-white font-sans overflow-hidden pt-20">
       <AboutHero />
       <AboutIntroduction />
-      <VisionSection />
-      <ProblemSection />
-      <EcosystemSection />
-      <WhatWeDo />
-      <FounderSection />
-      <LearningApproach />
-      <TechnologyFocus />
-      <StudentJourney />
-      <CollegeEcosystem />
+      <ApproachTimeline />
+      <FocusAreas />
+      <CollegeSection />
+      <ResearchSection />
+      <InternshipSection />
+      <FounderProfile />
       <ValuesSection />
-      <FutureVision />
       <AboutCTA />
     </main>
   );
