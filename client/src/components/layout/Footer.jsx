@@ -8,9 +8,9 @@ const Footer = () => {
   return (
     <footer className="bg-white text-vmanous-navy-dark pt-12 pb-6 border-t border-gray-200">
       <Container>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 lg:gap-8 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-8 lg:gap-10 mb-12 lg:pl-4">
           {/* Column 1: Brand & Contact Address */}
-          <div className="lg:col-span-1 space-y-4">
+          <div className="lg:col-span-2 space-y-4 lg:pr-8">
             <div>
               <Logo />
               <div className="text-xs font-semibold text-gray-500 mt-1">Open Source</div>
