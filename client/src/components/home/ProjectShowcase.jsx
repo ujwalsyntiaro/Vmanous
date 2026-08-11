@@ -13,9 +13,6 @@ export const ProjectShowcase = ({ projects }) => {
             Don't Just Learn AI.<br className="hidden md:block" />
             <span className="text-vmanous-ai-blue">Build With It.</span>
           </h2>
-          <p className="text-lg text-gray-600">
-            Theory becomes reality when you apply it to practical projects.
-          </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">

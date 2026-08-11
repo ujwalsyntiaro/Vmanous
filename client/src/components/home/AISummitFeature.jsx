@@ -35,13 +35,13 @@ export const AISummitFeature = () => {
                 <span className="w-2.5 h-2.5 rounded-full bg-vmanous-ai-blue" /> AI Workshop
               </li>
               <li className="flex items-center gap-3">
-                <span className="w-2.5 h-2.5 rounded-full bg-purple-500" /> Research & Development
+                <span className="w-2.5 h-2.5 rounded-full bg-vmanous-green" /> Internship Pathway
               </li>
               <li className="flex items-center gap-3">
                 <span className="w-2.5 h-2.5 rounded-full bg-pink-500" /> AI Innovation
               </li>
               <li className="flex items-center gap-3">
-                <span className="w-2.5 h-2.5 rounded-full bg-vmanous-green" /> Internship Pathway
+                <span className="w-2.5 h-2.5 rounded-full bg-purple-500" /> Research & Development
               </li>
             </ul>
 
