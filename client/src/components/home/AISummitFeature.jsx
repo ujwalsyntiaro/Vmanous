@@ -6,16 +6,18 @@ import { ChevronRight } from 'lucide-react';
 
 export const AISummitFeature = () => {
   return (
-    <section className="py-6 md:py-8 bg-white relative overflow-hidden">
+    <section className="py-12 md:py-16 bg-white relative overflow-hidden">
       <Container>
-        <div className="grid lg:grid-cols-2 gap-16 items-center">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-[0.75fr_1.25fr] gap-12 lg:gap-16 items-center">
+          {/* LEFT CONTENT */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
+            className="flex flex-col"
           >
-            <div className="inline-flex px-3.5 py-1.5 bg-blue-50 border border-blue-100 rounded-full text-xs font-semibold text-vmanous-ai-blue tracking-widest uppercase mb-6">
+            <div className="self-start px-3.5 py-1.5 bg-blue-50 border border-blue-100 rounded-full text-xs font-semibold text-vmanous-ai-blue tracking-widest uppercase mb-6">
               Flagship Program
             </div>
 
@@ -47,23 +49,25 @@ export const AISummitFeature = () => {
 
             <Link
               to="/ai-summit"
-              className="inline-flex justify-center items-center px-8 py-4 border border-vmanous-green text-vmanous-navy-dark font-medium rounded-xl hover:bg-vmanous-green hover:text-white transition-all group"
+              className="inline-flex justify-center items-center px-8 py-4 border border-vmanous-green text-vmanous-navy-dark font-medium rounded-xl hover:bg-vmanous-green hover:text-white transition-all group self-start"
             >
               Explore AI Summit
               <ChevronRight className="ml-2 transform group-hover:translate-x-1 transition-transform" size={20} />
             </Link>
           </motion.div>
 
+          {/* RIGHT IMAGE */}
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
-            className="relative h-[400px] md:h-[500px] rounded-3xl overflow-hidden shadow-xl border border-gray-100"
+            className="relative w-full h-auto md:h-[600px] aspect-[16/10] md:aspect-auto rounded-[24px] overflow-hidden shadow-2xl border border-gray-100"
           >
+            {/* Note: Using a high-quality professional Unsplash image featuring Indian students/professionals since image generation is unavailable. */}
             <img
-              src="/images/ai-summit/hero.jpg"
-              alt="AI Summit"
+              src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1600&q=80"
+              alt="Indian AI Summit Conference"
               className="w-full h-full object-cover transform hover:scale-105 transition-transform duration-700"
             />
           </motion.div>
