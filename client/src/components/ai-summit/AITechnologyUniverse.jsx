@@ -5,14 +5,14 @@ import Container from '../ui/Container';
 const techNodes = [
   { name: 'Machine Learning', desc: 'Build predictive models and algorithms that learn from data.', angle: 0 },
   { name: 'Generative AI', desc: 'Explore modern generative models, LLM concepts and creative AI applications.', angle: 36 },
-  { name: 'Data Science', desc: 'Analyze complex datasets to find actionable insights.', angle: 72 },
-  { name: 'Computer Vision', desc: 'Implement visual recognition and processing systems.', angle: 108 },
+  { name: 'Data Science', desc: 'Analyze complex datasets to find actionable insights.', angle: 68 },
+  { name: 'Computer Vision', desc: 'Implement visual recognition and processing systems.', angle: 112 },
   { name: 'NLP', desc: 'Process, analyze, and generate human language.', angle: 144 },
   { name: 'Deep Learning', desc: 'Build advanced neural networks for complex tasks.', angle: 180 },
   { name: 'AI Automation', desc: 'Create intelligent automated workflows and agents.', angle: 216 },
-  { name: 'Predictive Analytics', desc: 'Forecast future trends based on historical data.', angle: 252 },
-  { name: 'Responsible AI', desc: 'Develop ethical, fair, and transparent AI systems.', angle: 288 },
-  { name: 'AI Research', desc: 'Push the boundaries of current artificial intelligence capabilities.', angle: 324 },
+  { name: 'Predictive Analytics', desc: 'Forecast future trends based on historical data.', angle: 247 },
+  { name: 'Responsible AI', desc: 'Develop ethical, fair, and transparent AI systems.', angle: 295 },
+  { name: 'AI Research', desc: 'Push the boundaries of current artificial intelligence capabilities.', angle: 328 },
 ];
 
 export const AITechnologyUniverse = () => {

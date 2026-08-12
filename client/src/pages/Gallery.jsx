@@ -45,7 +45,7 @@ export const Gallery = () => {
   return (
     <div className="bg-white min-h-screen font-sans text-vmanous-navy-dark">
       {/* 01 HERO SECTION */}
-      <section className="relative min-h-[25vh] md:min-h-[30vh] flex items-center w-full pt-12 pb-8 md:pt-16 md:pb-10 overflow-hidden bg-[#050816] text-white">
+      <section className="relative min-h-[220px] sm:min-h-[260px] md:min-h-[30vh] flex items-center w-full pt-16 pb-6 md:pt-16 md:pb-10 overflow-hidden bg-[#050816] text-white">
         <div className="absolute inset-0 z-0 pointer-events-none">
           <img
             src="/images/network.jpg"
@@ -63,16 +63,16 @@ export const Gallery = () => {
             transition={{ duration: 0.6 }}
             className="max-w-3xl mx-auto"
           >
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/5 border border-white/10 mb-4 backdrop-blur-md">
-              <Sparkles size={14} className="text-vmanous-green animate-pulse" />
-              <span className="text-xs font-semibold tracking-widest text-vmanous-green uppercase">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 mb-2 sm:mb-4 backdrop-blur-md">
+              <Sparkles size={13} className="text-vmanous-green animate-pulse" />
+              <span className="text-[10px] sm:text-xs font-semibold tracking-widest text-vmanous-green uppercase">
                 VMANOUS MOMENTS & GALLERY
               </span>
             </div>
 
             <h1 
               style={{ fontFamily: "'Josefin Sans', sans-serif", fontWeight: 100 }}
-              className="text-3xl md:text-5xl lg:text-6xl text-white tracking-wide mb-4 leading-tight"
+              className="text-xl sm:text-3xl md:text-5xl lg:text-6xl text-white tracking-wide mb-2 sm:mb-4 leading-tight"
             >
               Building the Future of <br className="hidden md:block" />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-vmanous-green via-teal-400 to-vmanous-ai-blue">
@@ -82,7 +82,7 @@ export const Gallery = () => {
 
             <p 
               style={{ fontFamily: "'Lato', sans-serif", fontWeight: 300 }}
-              className="text-base md:text-xl text-gray-300 max-w-2xl mx-auto leading-relaxed"
+              className="text-xs sm:text-base md:text-xl text-gray-300 max-w-2xl mx-auto leading-relaxed line-clamp-3 sm:line-clamp-none"
             >
               A visual journey across our practical AI workshops, campus hackathons, student research labs, and academic partnerships.
             </p>

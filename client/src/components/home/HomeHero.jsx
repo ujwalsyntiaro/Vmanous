@@ -71,7 +71,7 @@ export const HomeHero = () => {
 
   return (
     <section
-      className="relative min-h-[75vh] md:min-h-[85vh] flex items-end pt-24 pb-20 overflow-hidden bg-[#050816]"
+      className="relative h-[220px] sm:h-[300px] md:min-h-[85vh] flex items-end pt-12 pb-6 md:pt-24 md:pb-20 overflow-hidden bg-[#050816]"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
@@ -89,11 +89,11 @@ export const HomeHero = () => {
             className="absolute inset-0 w-full h-full object-cover"
           />
         </AnimatePresence>
-        <div className="absolute inset-0 bg-gradient-to-r from-[#050816]/60 via-[#050816]/20 to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#050816]/50 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-r from-[#050816]/75 via-[#050816]/40 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#050816]/70 to-transparent" />
       </div>
 
-      <div className="relative z-10 w-full mb-4 px-4 sm:px-6 md:px-10 lg:px-16">
+      <div className="relative z-10 w-full mb-1 sm:mb-4 px-4 sm:px-6 md:px-10 lg:px-16">
         <div className="max-w-4xl text-left">
           <AnimatePresence mode="wait">
             <motion.div
@@ -104,22 +104,22 @@ export const HomeHero = () => {
               transition={{ duration: 0.5 }}
               className="flex flex-col"
             >
-              <div className="inline-flex items-center gap-3 mb-3">
-                <span className="text-xs font-medium tracking-widest text-white uppercase">
+              <div className="inline-flex items-center gap-3 mb-1 sm:mb-3">
+                <span className="text-[10px] sm:text-xs font-medium tracking-widest text-white uppercase">
                   {current.eyebrow}
                 </span>
               </div>
 
               <h1
                 style={{ fontFamily: "'Josefin Sans', sans-serif", fontWeight: 100 }}
-                className="text-3xl md:text-4xl lg:text-5xl text-white leading-tight mb-4 tracking-wide"
+                className="text-lg sm:text-3xl md:text-4xl lg:text-5xl text-white leading-snug sm:leading-tight mb-1 sm:mb-4 tracking-wide line-clamp-2 sm:line-clamp-none"
               >
                 {current.heading}
               </h1>
 
               <p
                 style={{ fontFamily: "'Lato', sans-serif", fontWeight: 300 }}
-                className="text-lg md:text-xl text-gray-300 mb-2 leading-relaxed max-w-2xl"
+                className="text-xs sm:text-lg md:text-xl text-gray-300 mb-1 sm:mb-2 leading-relaxed max-w-2xl line-clamp-2 sm:line-clamp-none"
               >
                 {current.description}
               </p>
@@ -129,13 +129,13 @@ export const HomeHero = () => {
       </div>
 
       {/* INDICATORS */}
-      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-3 items-center z-20">
+      <div className="absolute bottom-2 sm:bottom-6 left-1/2 -translate-x-1/2 flex gap-2 sm:gap-3 items-center z-20">
         {heroSlides.map((_, index) => (
           <button
             key={index}
             onClick={() => setActiveSlide(index)}
-            className={`w-3 h-3 rounded-full transition-all duration-300 ${activeSlide === index
-              ? 'bg-vmanous-green w-8'
+            className={`w-2 h-2 sm:w-3 sm:h-3 rounded-full transition-all duration-300 ${activeSlide === index
+              ? 'bg-vmanous-green w-5 sm:w-8'
               : 'bg-white/30 hover:bg-white/60'
               }`}
             aria-label={`Go to slide ${index + 1}`}

@@ -8,7 +8,7 @@ import aiSummitImg from '../../assets/images/home/2nd section on home page.png';
 
 export const AISummitFeature = () => {
   return (
-    <section className="pt-2 md:pt-4 pb-12 md:pb-16 bg-white relative overflow-hidden">
+    <section className="pt-2 md:pt-4 pb-0 md:pb-16 bg-white relative overflow-hidden">
       <Container>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-[0.75fr_1.25fr] gap-12 lg:gap-16 items-start">
           {/* LEFT CONTENT */}

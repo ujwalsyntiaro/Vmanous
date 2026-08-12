@@ -59,19 +59,8 @@ const Navbar = () => {
               ))}
             </nav>
 
-            {/* RIGHT: Action Button */}
-            <div className="hidden md:flex items-center justify-end flex-1">
-              <NavLink
-                to="/enroll"
-                className={({ isActive }) =>
-                  `text-sm font-medium transition-colors hover:text-vmanous-green relative outline-none focus-visible:ring-2 focus-visible:ring-vmanous-green rounded-sm ${
-                    isActive ? 'text-vmanous-green font-semibold' : 'text-vmanous-navy-dark'
-                  }`
-                }
-              >
-                Enroll Now
-              </NavLink>
-            </div>
+            {/* RIGHT: Spacing placeholder for balanced nav centering */}
+            <div className="hidden md:flex items-center justify-end flex-1" />
 
             {/* Mobile Menu Button */}
             <button
@@ -132,17 +121,6 @@ const Navbar = () => {
                       {link.name}
                     </NavLink>
                   ))}
-                  <NavLink
-                    to="/enroll"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className={({ isActive }) =>
-                      `text-lg font-medium transition-colors outline-none focus-visible:ring-2 focus-visible:ring-vmanous-green py-2 border-b border-gray-100 ${
-                        isActive ? 'text-vmanous-green' : 'text-vmanous-navy-dark hover:text-vmanous-green'
-                      }`
-                    }
-                  >
-                    Enroll Now
-                  </NavLink>
                 </nav>
               </div>
             </motion.div>

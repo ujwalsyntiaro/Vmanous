@@ -100,7 +100,7 @@ export const Enroll = () => {
   return (
     <div className="bg-gray-50 min-h-screen">
       {/* 01 HERO BANNER */}
-      <section className="relative pt-16 pb-12 md:pt-20 md:pb-16 overflow-hidden bg-[#050816] text-white">
+      <section className="relative h-[200px] sm:h-[260px] md:min-h-[35vh] flex items-center pt-10 pb-4 md:pt-20 md:pb-16 overflow-hidden bg-[#050816] text-white">
         <div className="absolute inset-0 z-0 pointer-events-none">
           <img
             src="/images/network.jpg"

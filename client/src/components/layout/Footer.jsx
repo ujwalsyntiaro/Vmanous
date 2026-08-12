@@ -85,7 +85,7 @@ const Footer = () => {
             <div className="flex items-center gap-4">
               {/* LinkedIn Icon */}
               <a
-                href="https://www.linkedin.com/in/arjunmadhav/"
+                href="https://www.linkedin.com/company/vmanous/"
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="LinkedIn"
