@@ -11,14 +11,14 @@ const ToolCard = ({ tool, index }) => {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.4, delay: index * 0.05 }}
-      className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl hover:shadow-blue-500/5 hover:-translate-y-1 transition-all group"
+      className="bg-white p-4 border border-gray-100 shadow-sm hover:shadow-xl hover:shadow-blue-500/5 hover:-translate-y-1 transition-all group"
     >
-      <div className="w-12 h-12 rounded-xl bg-vmanous-ai-blue/5 text-vmanous-ai-blue flex items-center justify-center mb-4 group-hover:bg-vmanous-ai-blue group-hover:text-white transition-colors">
+      <div className="text-vmanous-ai-blue flex items-center mb-3 group-hover:scale-110 transition-transform duration-300 origin-left">
         <Icon size={24} />
       </div>
-      <h3 className="text-xl md:text-2xl md: text-xl font-medium text-vmanous-navy-deep mb-1">{tool.name}</h3>
-      <p className="text-xs font-medium tracking-wider text-vmanous-ai-blue uppercase mb-3">{tool.category}</p>
-      <p className="text-gray-600 text-sm leading-relaxed">
+      <h3 className="text-lg font-medium text-vmanous-navy-deep mb-1">{tool.name}</h3>
+      <p className="text-[10px] font-medium tracking-wider text-vmanous-ai-blue uppercase mb-2">{tool.category}</p>
+      <p className="text-gray-600 text-xs leading-normal">
         {tool.description}
       </p>
     </motion.div>

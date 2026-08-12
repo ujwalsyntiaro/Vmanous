@@ -22,7 +22,7 @@ const DataScienceCTA = () => {
           <div className="flex flex-col sm:flex-row justify-center gap-4">
             <Link 
               to="/enroll" 
-              className="px-8 py-4 bg-vmanous-ai-blue text-white font-medium rounded-xl hover:bg-blue-600 transition-colors shadow-lg shadow-vmanous-ai-blue/25 text-lg"
+              className="px-8 py-4 bg-white/10 text-white font-medium rounded-xl hover:bg-white/20 transition-colors border border-white/20 text-lg backdrop-blur-sm"
             >
               Get Started
             </Link>

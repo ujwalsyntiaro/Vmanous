@@ -78,7 +78,7 @@ const Blog = () => {
             <div className="flex flex-col sm:flex-row justify-center gap-4">
               <Link
                 to="/enroll"
-                className="px-8 py-3.5 bg-vmanous-green text-white font-semibold rounded-xl hover:bg-green-700 transition-colors shadow-lg shadow-green-500/25 text-sm"
+                className="px-8 py-3.5 bg-white/10 text-white font-semibold rounded-xl hover:bg-white/20 transition-colors border border-white/20 text-sm backdrop-blur-sm"
               >
                 Enroll in VMANOUS
               </Link>

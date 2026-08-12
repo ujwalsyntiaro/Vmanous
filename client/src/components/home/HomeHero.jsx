@@ -14,7 +14,7 @@ const heroSlides = [
   {
     image: imgCollege,
     eyebrow: "AI • DATA SCIENCE • COLLEGE WORKSHOPS",
-    heading: "Bringing Practical AI Learning to Campuses",
+    heading: "Bringing Practical AI Summit to Campuses",
     description: "VMANOUS partners with colleges to conduct practical AI and Data Science workshops, helping students explore emerging technologies through hands-on learning.",
     primaryCTA: "Explore Workshops",
     secondaryCTA: "For Colleges"
@@ -71,7 +71,7 @@ export const HomeHero = () => {
 
   return (
     <section
-      className="relative min-h-[86vh] md:min-h-[94vh] flex items-end pt-24 pb-20 overflow-hidden bg-[#050816]"
+      className="relative min-h-[75vh] md:min-h-[85vh] flex items-end pt-24 pb-20 overflow-hidden bg-[#050816]"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
@@ -104,22 +104,22 @@ export const HomeHero = () => {
               transition={{ duration: 0.5 }}
               className="flex flex-col"
             >
-              <div className="inline-flex items-center gap-3 mb-6">
-                <span className="text-xs font-medium tracking-widest text-vmanous-ai-blue uppercase">
+              <div className="inline-flex items-center gap-3 mb-3">
+                <span className="text-xs font-medium tracking-widest text-white uppercase">
                   {current.eyebrow}
                 </span>
               </div>
 
-              <h1 
+              <h1
                 style={{ fontFamily: "'Josefin Sans', sans-serif", fontWeight: 100 }}
-                className="text-3xl md:text-4xl lg:text-5xl text-white leading-tight mb-6 tracking-wide"
+                className="text-3xl md:text-4xl lg:text-5xl text-white leading-tight mb-4 tracking-wide"
               >
                 {current.heading}
               </h1>
 
-              <p 
+              <p
                 style={{ fontFamily: "'Lato', sans-serif", fontWeight: 300 }}
-                className="text-lg md:text-xl text-gray-300 mb-10 leading-relaxed max-w-2xl"
+                className="text-lg md:text-xl text-gray-300 mb-2 leading-relaxed max-w-2xl"
               >
                 {current.description}
               </p>

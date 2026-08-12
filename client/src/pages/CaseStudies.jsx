@@ -10,7 +10,6 @@ import { CaseStudiesHero } from '../components/case-studies/CaseStudiesHero';
 import { CaseStudiesImpact } from '../components/case-studies/CaseStudiesImpact';
 import { CaseStudiesFilter } from '../components/case-studies/CaseStudiesFilter';
 import { CaseStudyCard } from '../components/case-studies/CaseStudyCard';
-import { CaseStudiesCTA } from '../components/case-studies/CaseStudiesCTA';
 import Container from '../components/ui/Container';
 
 const CaseStudies = () => {
@@ -60,9 +59,6 @@ const CaseStudies = () => {
           )}
         </Container>
       </section>
-
-      {/* Bottom CTA */}
-      <CaseStudiesCTA />
     </div>
   );
 };

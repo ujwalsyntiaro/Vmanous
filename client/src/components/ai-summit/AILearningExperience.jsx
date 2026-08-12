@@ -28,7 +28,7 @@ export const AILearningExperience = () => {
         <div className="relative">
           {/* Desktop Horizontal Line */}
           <div className="hidden md:block absolute top-1/2 left-0 w-full h-1 bg-gradient-to-r from-blue-100 via-purple-100 to-blue-100 -translate-y-1/2" />
-          
+
           {/* Mobile Vertical Line */}
           <div className="md:hidden absolute top-0 bottom-0 left-8 w-1 bg-gradient-to-b from-blue-100 via-purple-100 to-blue-100" />
 
@@ -50,7 +50,7 @@ export const AILearningExperience = () => {
                       {step.num}
                     </div>
                   </div>
-                  
+
                   <div className="md:text-center">
                     <h3 className="text-xl md:text-2xl font-medium text-vmanous-navy-deep whitespace-nowrap md:whitespace-normal mb-1">
                       {step.title}

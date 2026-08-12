@@ -11,7 +11,8 @@ import {
   Send,
   ShieldCheck,
   Award,
-  BookOpen
+  BookOpen,
+  Briefcase
 } from 'lucide-react';
 import Container from '../components/ui/Container';
 import { ENROLLMENT_FAQS } from '../constants/enrollment';
@@ -46,6 +47,21 @@ const ROLES = [
       'Mentor top student projects',
       'Flexible engagement models',
       'Professional ecosystem network'
+    ]
+  },
+  {
+    id: 'organization',
+    title: 'Organization',
+    subtitle: 'For businesses and startups',
+    badge: 'CORPORATE',
+    color: 'blue',
+    icon: Briefcase,
+    description: 'Partner with VMANOUS for corporate training, talent acquisition, and AI project consulting.',
+    highlights: [
+      'Corporate AI & Data Science training',
+      'Hire top-trained student talent',
+      'Collaborative R&D projects',
+      'Exclusive industry networking'
     ]
   }
 ];
@@ -111,15 +127,15 @@ export const Enroll = () => {
 
             <h1 
               style={{ fontFamily: "'Josefin Sans', sans-serif", fontWeight: 100 }}
-              className="text-3xl md:text-5xl lg:text-6xl text-white tracking-wide mb-4 leading-tight"
+              className="text-2xl md:text-4xl lg:text-5xl text-white tracking-wide mb-3 leading-tight"
             >
               Take the First Step Into the <br className="hidden md:block" />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-vmanous-green via-teal-400 to-vmanous-ai-blue font-normal">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-vmanous-green via-teal-400 to-vmanous-ai-blue">
                 VMANOUS Ecosystem
               </span>
             </h1>
 
-            <p 
+            <p
               style={{ fontFamily: "'Lato', sans-serif", fontWeight: 300 }}
               className="text-base md:text-xl text-gray-300 max-w-2xl mx-auto leading-relaxed mb-4"
             >
@@ -132,7 +148,7 @@ export const Enroll = () => {
       {/* 02 ROLE SELECTION CARDS */}
       <section className="relative z-20 -mt-8 mb-8">
         <Container>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto">
             {ROLES.map((role) => {
               const IconComponent = role.icon;
               const isSelected = activeRole === role.id;
@@ -142,11 +158,10 @@ export const Enroll = () => {
                   whileHover={{ y: -4 }}
                   transition={{ duration: 0.2 }}
                   onClick={() => setActiveRole(role.id)}
-                  className={`cursor-pointer bg-white rounded-3xl p-6 border transition-all duration-300 flex flex-col justify-between ${
-                    isSelected
+                  className={`cursor-pointer bg-white rounded-3xl p-6 border transition-all duration-300 flex flex-col justify-between ${isSelected
                       ? 'border-vmanous-green shadow-xl ring-2 ring-vmanous-green/20'
                       : 'border-gray-200 shadow-sm hover:shadow-md'
-                  }`}
+                    }`}
                 >
                   <div>
                     <div className="flex items-center justify-between mb-4">
@@ -182,11 +197,10 @@ export const Enroll = () => {
                       setActiveRole(role.id);
                       document.getElementById('enrollment-form')?.scrollIntoView({ behavior: 'smooth' });
                     }}
-                    className={`w-full py-3 px-4 rounded-xl text-sm font-semibold transition-colors flex items-center justify-center gap-2 ${
-                      isSelected
+                    className={`w-full py-3 px-4 rounded-xl text-sm font-semibold transition-colors flex items-center justify-center gap-2 ${isSelected
                         ? 'bg-vmanous-green text-white shadow-md shadow-green-500/20'
                         : 'bg-gray-100 text-vmanous-navy-dark hover:bg-gray-200'
-                    }`}
+                      }`}
                   >
                     Select & Apply
                     <ArrowRight size={16} />
@@ -201,34 +215,33 @@ export const Enroll = () => {
       {/* 03 INTERACTIVE APPLICATION FORM */}
       <section id="enrollment-form" className="py-8 mb-12">
         <Container>
-          <div className="max-w-4xl mx-auto bg-white rounded-3xl border border-gray-200/80 shadow-2xl overflow-hidden relative">
-            {/* Form Header with Rich Deep Theme & Glass Overlay */}
-            <div className="bg-[#0B132B] text-white p-6 md:p-8 border-b border-white/10 relative overflow-hidden">
-              <div className="absolute -top-20 -right-20 w-64 h-64 bg-[#16A34A]/15 rounded-full blur-3xl pointer-events-none" />
+          <div className="max-w-3xl mx-auto bg-white border border-gray-200/80 shadow-2xl overflow-hidden relative">
+            {/* Form Header */}
+            <div className="bg-white text-[#0F172A] p-6 md:p-8 border-b border-gray-100 relative overflow-hidden">
+              <div className="absolute -top-20 -right-20 w-64 h-64 bg-[#16A34A]/5 rounded-full blur-3xl pointer-events-none" />
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-5 relative z-10">
                 <div>
-                  <h2 className="text-2xl md:text-3xl font-bold text-white tracking-tight mb-2">
+                  <h2 className="text-2xl md:text-3xl font-bold text-[#0F172A] tracking-tight mb-2">
                     Application Form
                   </h2>
-                  <p className="text-sm text-slate-300 flex items-center gap-2 flex-wrap">
-                    Applying as: 
-                    <span className="inline-flex items-center px-3 py-0.5 rounded-full bg-[#16A34A]/20 border border-[#16A34A]/40 text-[#16A34A] text-xs font-bold uppercase tracking-wider">
+                  <p className="text-sm text-gray-500 flex items-center gap-2 flex-wrap">
+                    Applying as:
+                    <span className="inline-flex items-center px-3 py-0.5 rounded-full bg-[#16A34A]/10 border border-[#16A34A]/20 text-[#16A34A] text-xs font-bold uppercase tracking-wider">
                       {ROLES.find(r => r.id === activeRole)?.title}
                     </span>
                   </p>
                 </div>
 
                 {/* Form Role Selector Segmented Tabs */}
-                <div className="flex items-center gap-1.5 bg-white/10 p-1.5 rounded-2xl border border-white/15 backdrop-blur-md">
+                <div className="flex flex-wrap items-center gap-1.5 bg-gray-50 p-1.5 rounded-2xl border border-gray-200">
                   {ROLES.map((r) => (
                     <button
                       key={r.id}
                       onClick={() => setActiveRole(r.id)}
-                      className={`px-4 py-2 rounded-xl text-xs font-semibold tracking-wide transition-all duration-200 ${
-                        activeRole === r.id
-                          ? 'bg-[#16A34A] text-white shadow-lg shadow-green-600/30'
-                          : 'text-slate-300 hover:text-white hover:bg-white/5'
-                      }`}
+                      className={`px-4 py-2 rounded-xl text-xs font-semibold tracking-wide transition-all duration-200 ${activeRole === r.id
+                          ? 'bg-[#16A34A] text-white shadow-md shadow-green-600/20'
+                          : 'text-gray-500 hover:text-gray-800 hover:bg-gray-200/50'
+                        }`}
                     >
                       {r.id.toUpperCase()}
                     </button>
@@ -375,11 +388,11 @@ export const Enroll = () => {
                   </div>
 
                   {/* Submit Button CTA */}
-                  <div className="pt-2">
+                  <div className="pt-2 flex justify-center">
                     <button
                       type="submit"
                       disabled={isSubmitting}
-                      className="w-full py-4 bg-gradient-to-r from-[#16A34A] to-[#15803D] hover:from-[#15803D] hover:to-[#166534] text-white font-bold rounded-2xl transition-all duration-300 shadow-[0_10px_25px_rgba(22,163,74,0.3)] hover:shadow-[0_15px_30px_rgba(22,163,74,0.4)] flex items-center justify-center gap-2.5 text-base group cursor-pointer"
+                      className="w-auto px-10 py-3.5 bg-transparent border-2 border-gray-200 hover:border-[#16A34A] text-slate-700 hover:text-[#16A34A] font-bold rounded-xl transition-all duration-300 flex items-center justify-center gap-2.5 text-sm group cursor-pointer"
                     >
                       {isSubmitting ? (
                         <span className="inline-block animate-pulse">Submitting Application...</span>
@@ -433,59 +446,7 @@ export const Enroll = () => {
         </Container>
       </section>
 
-      {/* 05 FAQ SECTION */}
-      <section className="py-10 md:py-14">
-        <Container>
-          <div className="max-w-3xl mx-auto">
-            <div className="text-center mb-8">
-              <h2 className="text-2xl md:text-3xl font-bold text-vmanous-navy-dark mb-2">
-                Frequently Asked Questions
-              </h2>
-              <p className="text-gray-600 text-sm">
-                Everything you need to know about enrolling in VMANOUS programs.
-              </p>
-            </div>
 
-            <div className="space-y-4">
-              {ENROLLMENT_FAQS.map((faq, idx) => {
-                const isOpen = openFAQIndex === idx;
-                return (
-                  <div
-                    key={idx}
-                    className="border border-gray-200 rounded-2xl bg-white overflow-hidden transition-all shadow-sm"
-                  >
-                    <button
-                      onClick={() => setOpenFAQIndex(isOpen ? null : idx)}
-                      className="w-full flex items-center justify-between p-6 text-left outline-none font-semibold text-vmanous-navy-dark text-base md:text-lg"
-                    >
-                      <span>{faq.question}</span>
-                      <ChevronDown
-                        className={`w-5 h-5 text-gray-400 transition-transform duration-300 ${
-                          isOpen ? 'rotate-180 text-vmanous-green' : ''
-                        }`}
-                      />
-                    </button>
-                    <AnimatePresence>
-                      {isOpen && (
-                        <motion.div
-                          initial={{ height: 0, opacity: 0 }}
-                          animate={{ height: 'auto', opacity: 1 }}
-                          exit={{ height: 0, opacity: 0 }}
-                          transition={{ duration: 0.3 }}
-                        >
-                          <div className="px-6 pb-6 text-sm text-gray-600 leading-relaxed border-t border-gray-100 pt-4">
-                            {faq.answer}
-                          </div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </Container>
-      </section>
     </div>
   );
 };

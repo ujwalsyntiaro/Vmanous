@@ -26,8 +26,8 @@ const FocusAreas = () => {
   return (
     <section className="bg-white pt-2 pb-4 md:pt-4 md:pb-6 px-6">
       <div className="max-w-7xl mx-auto">
-        <div className="mb-8 md:mb-12 text-center">
-          <h2 className="text-2xl md:text-4xl font-medium text-[#050816]">
+        <div className="mb-6 md:mb-8 text-center">
+          <h2 className="text-xl md:text-2xl font-medium text-[#050816]">
             Our Areas of Focus
           </h2>
         </div>
@@ -40,15 +40,15 @@ const FocusAreas = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-50px" }}
               transition={{ duration: 0.5, delay: index * 0.05 }}
-              className="group p-8 rounded-3xl bg-[#F7F9FC] border border-gray-100 hover:bg-white hover:shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:border-blue-100 transition-all duration-300"
+              className="group p-5 bg-[#F7F9FC] border border-gray-100 hover:bg-white hover:shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:border-blue-100 transition-all duration-300"
             >
-              <div className="w-12 h-12 rounded-2xl bg-white border border-gray-100 flex items-center justify-center text-[#2563EB] mb-6 group-hover:scale-110 group-hover:bg-[#2563EB] group-hover:text-white transition-all duration-300 shadow-sm">
+              <div className="text-[#2563EB] mb-4 group-hover:scale-110 transition-all duration-300 inline-flex">
                 <area.icon size={24} strokeWidth={1.5} />
               </div>
-              <h3 className="text-lg font-semibold text-[#050816] mb-3">
+              <h3 className="text-base font-semibold text-[#050816] mb-2">
                 {area.title}
               </h3>
-              <p className="text-gray-500 text-sm leading-relaxed">
+              <p className="text-gray-500 text-xs leading-snug">
                 {area.desc}
               </p>
             </motion.div>

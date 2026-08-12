@@ -4,7 +4,7 @@ import Container from '../ui/Container';
 
 export const CaseStudiesHero = ({ title, subtitle }) => {
   return (
-    <section className="relative pt-24 pb-16 md:pt-32 md:pb-20 overflow-hidden bg-[#050816]">
+    <section className="relative min-h-[25vh] md:min-h-[30vh] flex items-center pt-12 pb-16 md:pt-16 md:pb-24 overflow-hidden bg-[#050816]">
       {/* Background Image & Overlays */}
       <div className="absolute inset-0 z-0 pointer-events-none">
         <img

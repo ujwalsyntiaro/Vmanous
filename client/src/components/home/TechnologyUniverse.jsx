@@ -28,7 +28,7 @@ export const TechnologyUniverse = ({ technologies }) => {
                 onClick={() => setFilter(cat)}
                 className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
                   filter === cat
-                    ? 'bg-vmanous-ai-blue text-white shadow-md'
+                    ? 'bg-white text-vmanous-ai-blue border border-vmanous-ai-blue ring-1 ring-vmanous-ai-blue'
                     : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50 hover:border-gray-300'
                 }`}
               >
