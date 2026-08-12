@@ -39,10 +39,10 @@ const ApproachTimeline = () => {
     <section className="bg-white py-4 md:py-6 px-6">
       <div className="max-w-7xl mx-auto">
         <div className="mb-5 md:mb-6 text-center md:text-left">
-          <span className="text-[#16A34A] font-semibold tracking-wider text-sm uppercase mb-1 block">
+          <span className="text-[#16A34A] font-semibold tracking-wider text-xs uppercase mb-1 block">
             How We Work
           </span>
-          <h2 className="text-3xl md:text-4xl font-medium text-[#050816]">
+          <h2 className="text-xl md:text-2xl font-medium text-[#050816]">
             From Learning to Industry Experience
           </h2>
         </div>
@@ -55,15 +55,15 @@ const ApproachTimeline = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-50px" }}
               transition={{ duration: 0.5, delay: index * 0.1 }}
-              className="bg-[#F8FAFC] p-6 rounded-[20px] border border-gray-100 hover:bg-white hover:border-[#16A34A]/40 hover:shadow-xl hover:shadow-green-900/5 transition-all duration-300 group relative overflow-hidden"
+              className="bg-[#F8FAFC] p-4 border border-gray-100 hover:bg-white hover:border-[#16A34A]/40 hover:shadow-xl hover:shadow-green-900/5 transition-all duration-300 group relative overflow-hidden"
             >
-              <div className="text-4xl font-light text-gray-300 mb-3 group-hover:text-[#16A34A] transition-colors duration-300">
+              <div className="text-3xl font-light text-gray-300 mb-2 group-hover:text-[#16A34A] transition-colors duration-300">
                 {step.number}
               </div>
-              <h3 className="text-xl font-medium text-[#050816] mb-1.5">
+              <h3 className="text-lg font-medium text-[#050816] mb-1">
                 {step.title}
               </h3>
-              <p className="text-gray-600 leading-relaxed text-sm">
+              <p className="text-gray-600 leading-snug text-xs">
                 {step.description}
               </p>
             </motion.div>

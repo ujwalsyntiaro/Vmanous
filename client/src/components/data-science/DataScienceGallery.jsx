@@ -44,7 +44,7 @@ const DataScienceGallery = () => {
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: index * 0.1 }}
               onClick={() => setSelectedItem({ src: `/images/data-science/gallery-${index + 1}.jpg`, ...detail })}
-              className="relative h-72 sm:h-80 md:h-96 lg:h-[400px] rounded-2xl overflow-hidden group shadow-lg border border-gray-100 cursor-pointer"
+              className="relative h-72 sm:h-80 md:h-96 lg:h-[400px] overflow-hidden group shadow-lg border border-gray-100 cursor-pointer"
             >
               <div className="absolute inset-0 bg-gradient-to-t from-[#050816]/90 via-[#050816]/30 to-transparent z-10 transition-opacity duration-300 flex flex-col justify-end p-5 md:p-6" />
               <img 

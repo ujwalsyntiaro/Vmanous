@@ -1,9 +1,9 @@
 import React, { useEffect } from 'react';
 import DataScienceHero from '../components/data-science/DataScienceHero';
-import DataScienceEcosystem from '../components/data-science/DataScienceEcosystem';
+
 import ToolGrid from '../components/data-science/ToolGrid';
 import DataScienceWorkflow from '../components/data-science/DataScienceWorkflow';
-import DataScienceLearningPath from '../components/data-science/DataScienceLearningPath';
+
 import ProjectShowcase from '../components/data-science/ProjectShowcase';
 import ResearchSection from '../components/data-science/ResearchSection';
 import CareerPath from '../components/data-science/CareerPath';
@@ -19,10 +19,10 @@ const DataScience = () => {
   return (
     <div className="bg-white min-h-screen">
       <DataScienceHero />
-      <DataScienceEcosystem />
+
       <ToolGrid />
       <DataScienceWorkflow />
-      <DataScienceLearningPath />
+
       <ProjectShowcase />
       <ResearchSection />
       <CareerPath />

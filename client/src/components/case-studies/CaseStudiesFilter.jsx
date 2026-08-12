@@ -14,7 +14,7 @@ export const CaseStudiesFilter = ({ categories, activeCategory, onSelectCategory
                 onClick={() => onSelectCategory(cat)}
                 className={`px-5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 border ${
                   isActive
-                    ? 'bg-[#0f172a] text-white border-[#0f172a] shadow-md'
+                    ? 'bg-white text-[#0f172a] border-[#0f172a] shadow-sm'
                     : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300 hover:bg-gray-50'
                 }`}
               >

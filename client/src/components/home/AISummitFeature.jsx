@@ -4,6 +4,8 @@ import Container from '../ui/Container';
 import { Link } from 'react-router-dom';
 import { ChevronRight } from 'lucide-react';
 
+import aiSummitImg from '../../assets/images/home/2nd section on home page.png';
+
 export const AISummitFeature = () => {
   return (
     <section className="pt-2 md:pt-4 pb-12 md:pb-16 bg-white relative overflow-hidden">
@@ -49,7 +51,7 @@ export const AISummitFeature = () => {
 
             <Link
               to="/ai-summit"
-              className="inline-flex justify-center items-center px-8 py-4 border border-vmanous-green text-vmanous-navy-dark font-medium rounded-xl hover:bg-vmanous-green hover:text-white transition-all group self-start"
+              className="inline-flex justify-center items-center px-8 py-4 border border-vmanous-green text-vmanous-navy-dark font-medium rounded-xl hover:ring-1 hover:ring-vmanous-green transition-all group self-start"
             >
               Explore AI Summit
               <ChevronRight className="ml-2 transform group-hover:translate-x-1 transition-transform" size={20} />
@@ -62,12 +64,11 @@ export const AISummitFeature = () => {
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
-            className="relative w-full h-auto md:h-[600px] aspect-[16/10] md:aspect-auto rounded-[24px] overflow-hidden shadow-2xl border border-gray-100"
+            className="relative w-full h-auto md:h-[600px] aspect-[16/10] md:aspect-auto rounded-[24px] overflow-hidden shadow-2xl flex items-center justify-center bg-gray-50"
           >
-            {/* Note: Using a high-quality professional Unsplash image featuring Indian students/professionals since image generation is unavailable. */}
             <img
-              src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1600&q=80"
-              alt="Indian AI Summit Conference"
+              src={aiSummitImg}
+              alt="VMANOUS AI Summit"
               className="w-full h-full object-cover transform hover:scale-105 transition-transform duration-700"
             />
           </motion.div>

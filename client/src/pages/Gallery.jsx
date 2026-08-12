@@ -45,7 +45,7 @@ export const Gallery = () => {
   return (
     <div className="bg-white min-h-screen font-sans text-vmanous-navy-dark">
       {/* 01 HERO SECTION */}
-      <section className="relative pt-20 pb-16 md:pt-28 md:pb-20 overflow-hidden bg-[#050816] text-white">
+      <section className="relative min-h-[25vh] md:min-h-[30vh] flex items-center w-full pt-12 pb-8 md:pt-16 md:pb-10 overflow-hidden bg-[#050816] text-white">
         <div className="absolute inset-0 z-0 pointer-events-none">
           <img
             src="/images/network.jpg"
@@ -75,7 +75,7 @@ export const Gallery = () => {
               className="text-3xl md:text-5xl lg:text-6xl text-white tracking-wide mb-4 leading-tight"
             >
               Building the Future of <br className="hidden md:block" />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-vmanous-green via-teal-400 to-vmanous-ai-blue font-normal">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-vmanous-green via-teal-400 to-vmanous-ai-blue">
                 AI & Data Science
               </span>
             </h1>
@@ -311,7 +311,7 @@ export const Gallery = () => {
             </p>
             <Link
               to="/enroll"
-              className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-[#16A34A] hover:bg-green-700 text-white font-bold rounded-2xl transition-all shadow-lg shadow-green-600/30 text-sm"
+              className="inline-flex items-center justify-center gap-2 px-8 py-3.5 bg-white/10 text-white font-semibold rounded-xl hover:bg-white/20 transition-colors border border-white/20 text-sm backdrop-blur-sm"
             >
               <span>Explore Campus Partnership</span>
               <ArrowRight size={16} />

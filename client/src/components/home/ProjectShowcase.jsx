@@ -23,7 +23,7 @@ export const ProjectShowcase = ({ projects }) => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.4, delay: index * 0.1 }}
-              className="bg-white border border-gray-100 rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-shadow flex flex-col h-full group"
+              className="bg-white border border-gray-100 overflow-hidden shadow-sm hover:shadow-xl transition-shadow flex flex-col h-full group"
             >
               <div className="h-40 relative overflow-hidden bg-gray-100">
                 <img src={project.image} alt={project.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
@@ -57,7 +57,7 @@ export const ProjectShowcase = ({ projects }) => {
         <div className="text-center">
           <Link 
             to="/ai-summit" 
-            className="inline-flex justify-center items-center px-8 py-4 border border-vmanous-green text-vmanous-navy-dark font-medium rounded-xl hover:bg-vmanous-green hover:text-white transition-all group"
+            className="inline-flex justify-center items-center px-8 py-4 border border-vmanous-green text-vmanous-navy-dark font-medium rounded-xl hover:ring-1 hover:ring-vmanous-green transition-all group"
           >
             Explore Learning Options
             <ChevronRight className="ml-2 transform group-hover:translate-x-1 transition-transform" size={20} />
