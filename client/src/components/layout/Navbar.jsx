@@ -39,12 +39,12 @@ const Navbar = () => {
         <Container className="!max-w-[1440px] px-4 sm:px-6 lg:px-10">
           <div className="flex items-center justify-between">
             {/* LEFT: Logo */}
-            <div className="flex-1 flex justify-start">
+            <div className="flex-1 flex justify-start items-center">
               <Logo />
             </div>
 
             {/* CENTER: Desktop Navigation */}
-            <nav className="hidden md:flex items-center space-x-8">
+            <nav className="hidden md:flex items-center justify-center space-x-6 lg:space-x-8">
               {navLinks.map((link) => (
                 <NavLink
                   key={link.name}
