@@ -13,14 +13,45 @@ export const SummitIntro = () => {
   return (
     <section id="workshop" className="pt-4 md:pt-6 pb-4 md:pb-6 bg-white">
       <Container>
-        <div className="grid lg:grid-cols-2 gap-6 lg:gap-16 items-center">
+        <div className="grid lg:grid-cols-2 gap-6 lg:gap-16 items-start">
           <div>
-            <h2 className="text-2xl md:text-4xl font-medium text-vmanous-navy-deep mb-3 md:mb-6">
+            <h2 className="text-2xl md:text-4xl font-medium text-vmanous-navy-deep mb-3 md:mb-4">
               More Than an AI Event
             </h2>
-            <p className="text-base sm:text-lg text-gray-600 leading-relaxed">
+            <p className="text-base sm:text-lg text-gray-600 leading-relaxed mb-6">
               VMANOUS AI Summit is designed as a structured journey where students move from understanding AI concepts to building practical solutions, exploring research and developing industry-ready experience.
             </p>
+
+            {/* Key Summit Highlights */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
+              {[
+                "48-Hour Hands-on Hackathon",
+                "1-on-1 Research Mentorship",
+                "Verified Skill Certification",
+                "Industry Internship Pathways"
+              ].map((highlight, idx) => (
+                <div key={idx} className="flex items-center gap-2.5 bg-slate-50 p-3 rounded-xl border border-slate-200/60 shadow-2xs">
+                  <div className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
+                  <span className="text-xs sm:text-sm font-semibold text-vmanous-navy-dark">{highlight}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* Quick Summit Stats */}
+            <div className="grid grid-cols-3 gap-3 p-4 bg-gradient-to-r from-emerald-50/70 to-blue-50/70 rounded-xl border border-emerald-100">
+              <div>
+                <div className="text-lg md:text-xl font-bold text-vmanous-navy-dark">1,500+</div>
+                <div className="text-[11px] text-gray-500 font-medium">Attendees</div>
+              </div>
+              <div>
+                <div className="text-lg md:text-xl font-bold text-vmanous-navy-dark">20+</div>
+                <div className="text-[11px] text-gray-500 font-medium">AI Experts</div>
+              </div>
+              <div>
+                <div className="text-lg md:text-xl font-bold text-emerald-600">50+</div>
+                <div className="text-[11px] text-gray-500 font-medium">Prototypes Built</div>
+              </div>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">

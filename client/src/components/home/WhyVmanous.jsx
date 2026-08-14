@@ -4,7 +4,7 @@ import Container from '../ui/Container';
 
 export const WhyVmanous = ({ benefits }) => {
   return (
-    <section className="pt-2 pb-8 md:py-10 bg-white relative">
+    <section className="pt-2 pb-8 md:pt-4 md:pb-10 bg-white relative">
       <Container>
         <div className="text-center max-w-3xl mx-auto mb-4 md:mb-8">
           <h2 className="text-2xl md:text-4xl font-medium text-vmanous-navy-deep">

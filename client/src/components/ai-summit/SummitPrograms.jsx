@@ -75,7 +75,7 @@ export const SummitPrograms = ({ programs }) => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.4, delay: index * 0.1 }}
-              className="bg-[#F8FAFC] rounded-none p-5 sm:p-6 md:p-7 border border-gray-100 shadow-sm hover:bg-white hover:border-emerald-500/40 hover:shadow-lg transition-all flex flex-col h-full group"
+              className="bg-[#F8FAFC] rounded-lg p-5 sm:p-6 md:p-7 border border-gray-100 shadow-sm hover:bg-white hover:border-emerald-500/40 hover:shadow-lg transition-all flex flex-col h-full group"
             >
               {/* Header Badge */}
               <div className="flex justify-between items-center mb-3">

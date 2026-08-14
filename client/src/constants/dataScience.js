@@ -151,11 +151,11 @@ export const dataScienceLearningPath = [
 
 export const dataScienceProjects = [
   {
-    title: "Student Performance Analysis",
-    difficulty: "Beginner",
+    title: "User Behavior & Engagement Analytics",
+    difficulty: "Foundational",
     tools: ["Python", "Pandas", "Matplotlib"],
-    description: "Analyze educational datasets to identify factors affecting student success.",
-    skills: ["Data cleaning", "Exploratory Data Analysis", "Basic Visualization"]
+    description: "Analyze enterprise user interaction datasets to identify engagement drivers and behavior patterns.",
+    skills: ["Data cleaning", "Exploratory Data Analysis", "Behavioral Insights"]
   },
   {
     title: "Customer Churn Prediction",

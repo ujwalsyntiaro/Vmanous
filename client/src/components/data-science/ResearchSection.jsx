@@ -5,12 +5,12 @@ import { dataScienceResearchAreas } from '../../constants/dataScience';
 import { Network } from 'lucide-react';
 
 const centerNodes = [
-  { name: 'AI', x: '18%', y: '20%' },
-  { name: 'Research', x: '50%', y: '10%' },
-  { name: 'ML', x: '82%', y: '20%' },
-  { name: 'Statistics', x: '18%', y: '80%' },
-  { name: 'Visualization', x: '50%', y: '90%' },
-  { name: 'Big Data', x: '82%', y: '80%' },
+  { name: 'AI', x: '18%', y: '23%' },
+  { name: 'Research', x: '50%', y: '13%' },
+  { name: 'ML', x: '82%', y: '23%' },
+  { name: 'Statistics', x: '18%', y: '77%' },
+  { name: 'Visualization', x: '50%', y: '87%' },
+  { name: 'Big Data', x: '82%', y: '77%' },
 ];
 
 const ResearchSection = () => {
@@ -61,29 +61,37 @@ const ResearchSection = () => {
           </div>
 
           {/* Visual Network */}
-          <div className="relative h-[480px] md:h-[560px] bg-white/5 rounded-3xl border border-white/10 flex items-center justify-center overflow-hidden">
-            {/* Connecting SVG Lines */}
+          <div className="relative h-[430px] sm:h-[460px] md:h-[520px] bg-white/5 rounded-3xl border border-white/10 flex items-center justify-center overflow-hidden">
+            {/* Connecting SVG Lines with Center Mask */}
             <svg className="absolute inset-0 w-full h-full pointer-events-none z-0">
-              {centerNodes.map((node, i) => (
-                <motion.line
-                  key={`line-${node.name}`}
-                  x1={node.x}
-                  y1={node.y}
-                  x2="50%"
-                  y2="50%"
-                  stroke="rgba(255,255,255,0.1)"
-                  strokeWidth="2"
-                  initial={{ pathLength: 0, opacity: 0 }}
-                  whileInView={{ pathLength: 1, opacity: 1 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 1.5, delay: 0.5 + i * 0.1 }}
-                />
-              ))}
+              <defs>
+                <mask id="center-mask">
+                  <rect width="100%" height="100%" fill="white" />
+                  <circle cx="50%" cy="50%" r="75" fill="black" />
+                </mask>
+              </defs>
+              <g mask="url(#center-mask)">
+                {centerNodes.map((node, i) => (
+                  <motion.line
+                    key={`line-${node.name}`}
+                    x1={node.x}
+                    y1={node.y}
+                    x2="50%"
+                    y2="50%"
+                    stroke="rgba(255,255,255,0.15)"
+                    strokeWidth="2"
+                    initial={{ pathLength: 0, opacity: 0 }}
+                    whileInView={{ pathLength: 1, opacity: 1 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 1.5, delay: 0.5 + i * 0.1 }}
+                  />
+                ))}
+              </g>
             </svg>
 
             {/* Center Node */}
-            <div className="relative z-20 w-32 h-32 sm:w-40 sm:h-40 rounded-full bg-gradient-to-br from-vmanous-ai-blue to-purple-600 flex items-center justify-center shadow-[0_0_50px_rgba(59,130,246,0.3)] animate-pulse">
-              <span className="text-white font-medium text-center text-xs sm:text-base leading-tight">DATA<br />SCIENCE</span>
+            <div className="relative z-20 w-32 h-32 sm:w-40 sm:h-40 rounded-full bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600 flex items-center justify-center shadow-[0_0_50px_rgba(59,130,246,0.4)] animate-pulse">
+              <span className="text-white font-bold text-center text-xs sm:text-base leading-tight drop-shadow-md">DATA<br />SCIENCE</span>
             </div>
 
             {/* Connected Nodes */}

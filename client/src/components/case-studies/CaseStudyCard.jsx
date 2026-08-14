@@ -8,16 +8,16 @@ export const CaseStudyCard = ({ study }) => {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.5 }}
-      className="bg-white rounded-none sm:rounded-3xl border border-gray-200 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden mb-5 sm:mb-8"
+      className="bg-white rounded-md sm:rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden mb-5 sm:mb-8"
     >
       {/* Top Main Section */}
       <div className="grid grid-cols-1 lg:grid-cols-12">
         {/* Left Column: Image with pill tag */}
-        <div className="lg:col-span-5 relative h-52 sm:h-auto min-h-0 sm:min-h-[280px] lg:min-h-[380px] overflow-hidden">
+        <div className="lg:col-span-5 relative h-52 sm:h-auto min-h-0 sm:min-h-[280px] lg:min-h-[380px] rounded-md sm:rounded-lg overflow-hidden">
           <img
             src={study.image}
             alt={study.title}
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover rounded-md sm:rounded-lg"
           />
           {/* Overlay gradient */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent lg:hidden" />

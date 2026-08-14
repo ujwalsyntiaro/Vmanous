@@ -23,10 +23,10 @@ export const AISummitFeature = () => {
               Flagship Program
             </div>
 
-            <h2 className="text-3xl md:text-4xl font-medium text-vmanous-navy-dark mb-3">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-medium text-vmanous-navy-dark mb-2 sm:mb-3">
               VMANOUS AI Summit
             </h2>
-            <h3 className="text-2xl md:text-3xl text-transparent bg-clip-text bg-gradient-to-r from-vmanous-ai-blue to-purple-600 font-medium mb-6">
+            <h3 className="text-xl sm:text-2xl md:text-3xl text-transparent bg-clip-text bg-gradient-to-r from-vmanous-ai-blue to-purple-600 font-medium mb-4 sm:mb-6">
               Where Students Build With AI.
             </h3>
 

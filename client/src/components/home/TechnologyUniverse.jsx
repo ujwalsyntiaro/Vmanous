@@ -11,7 +11,7 @@ export const TechnologyUniverse = ({ technologies }) => {
   const tools = technologies;
 
   return (
-    <section className="pt-0 pb-4 md:pb-10 bg-white relative">
+    <section className="pt-0 pb-4 md:pb-4 bg-white relative">
       <Container>
         <div className="text-center max-w-3xl mx-auto mb-6">
           <h2 className="text-3xl md:text-4xl font-medium text-vmanous-navy-deep mb-6">

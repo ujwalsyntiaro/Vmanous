@@ -4,7 +4,7 @@ export const SummitRegistration = ({ registration }) => {
   return (
     <section id="registration" className="pt-4 md:pt-6 pb-4 md:pb-6 bg-white relative">
       <div className="w-full px-0 sm:px-6 lg:px-8 max-w-full sm:max-w-4xl mx-auto">
-        <div className="bg-gradient-to-br from-[#080B1A] to-[#12162A] rounded-none p-6 sm:p-8 md:p-12 shadow-2xl relative overflow-hidden border border-gray-800">
+        <div className="bg-gradient-to-br from-[#080B1A] to-[#12162A] rounded-lg sm:rounded-xl p-6 sm:p-8 md:p-12 shadow-2xl relative overflow-hidden border border-gray-800">
           
           {/* Background elements */}
           <div className="absolute top-0 right-0 w-64 h-64 bg-vmanous-ai-blue/10 rounded-full blur-[80px]" />
@@ -32,7 +32,7 @@ export const SummitRegistration = ({ registration }) => {
               </ul>
             </div>
             
-            <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-none p-6 sm:p-8 text-center min-w-[280px] sm:min-w-[320px] w-full md:w-auto">
+            <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-lg sm:rounded-xl p-6 sm:p-8 text-center min-w-[280px] sm:min-w-[320px] w-full md:w-auto">
               <div className="text-xs sm:text-sm font-medium text-gray-400 uppercase tracking-widest mb-2">Registration Fee</div>
               <div className="text-2xl sm:text-3xl font-bold text-white mb-6">
                 {registration.fee === 'TBD' ? 'Coming Soon' : registration.fee}

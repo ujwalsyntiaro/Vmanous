@@ -242,7 +242,7 @@ export const Gallery = () => {
       </section>
 
       {/* 03 GALLERY GRID */}
-      <section className="py-6 md:py-12 bg-white">
+      <section className="pt-3 md:pt-4 pb-6 md:pb-12 bg-white">
         <Container>
           <motion.div 
             layout
@@ -258,14 +258,14 @@ export const Gallery = () => {
                   transition={{ duration: 0.3 }}
                   key={item.id}
                   onClick={() => setSelectedImageIndex(index)}
-                  className="group cursor-pointer rounded-none sm:rounded-3xl bg-slate-50 border border-slate-200/80 overflow-hidden shadow-sm hover:shadow-xl hover:border-vmanous-green/40 transition-all duration-300 flex flex-col justify-between"
+                  className="group cursor-pointer rounded-md sm:rounded-lg bg-slate-50 border border-slate-200/80 overflow-hidden shadow-sm hover:shadow-xl hover:border-vmanous-green/40 transition-all duration-300 flex flex-col justify-between"
                 >
                   {/* Image Box */}
-                  <div className="relative h-44 sm:h-auto sm:aspect-[4/3] overflow-hidden bg-slate-900">
+                  <div className="relative h-44 sm:h-auto sm:aspect-[4/3] rounded-b-md sm:rounded-b-lg overflow-hidden bg-slate-900">
                     <img
                       src={item.image}
                       alt={item.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-90 group-hover:opacity-100"
+                      className="w-full h-full object-cover rounded-b-md sm:rounded-b-lg group-hover:scale-105 transition-transform duration-500 opacity-90 group-hover:opacity-100"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent opacity-60 group-hover:opacity-40 transition-opacity" />
 

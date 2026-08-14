@@ -41,8 +41,8 @@ export const ResearchLab = ({ image }) => {
     <section id="research-lab" className="py-8 md:py-14 bg-white relative">
       <Container>
         <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-start">
-          <div className="relative h-[320px] sm:h-[400px] md:h-[480px] rounded-none overflow-hidden shadow-2xl">
-            <img src={image} alt="Research Laboratory" className="w-full h-full object-cover" />
+          <div className="relative h-[320px] sm:h-[400px] md:h-[480px] rounded-lg md:rounded-xl overflow-hidden shadow-2xl">
+            <img src={image} alt="Research Laboratory" className="w-full h-full object-cover rounded-lg md:rounded-xl" />
             <div className="absolute inset-0 bg-gradient-to-t from-[#050816] via-transparent to-transparent opacity-80" />
             <div className="absolute bottom-6 left-6 right-6">
               <div className="bg-white/10 backdrop-blur-md border border-white/20 p-4 rounded-xl text-white font-medium">
@@ -64,7 +64,7 @@ export const ResearchLab = ({ image }) => {
                 <div 
                   key={index} 
                   onClick={() => setSelectedPillar(item)}
-                  className="w-full flex items-center justify-between gap-3 bg-slate-50/90 p-3.5 sm:p-4 rounded-none border border-slate-200/80 hover:border-emerald-500 transition-all duration-300 group cursor-pointer"
+                  className="w-full flex items-center justify-between gap-3 bg-slate-50/90 p-3.5 sm:p-4 rounded-lg border border-slate-200/80 hover:border-emerald-500 transition-all duration-300 group cursor-pointer"
                 >
                   <div className="flex items-center gap-3 min-w-0">
                     <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-emerald-50/80 border border-emerald-100 text-gray-500 group-hover:text-emerald-600 group-hover:border-emerald-200 flex items-center justify-center shrink-0 transition-all duration-300">
@@ -88,7 +88,7 @@ export const ResearchLab = ({ image }) => {
             </div>
 
             {/* Research Metrics & Highlights Bar */}
-            <div className="p-4 sm:p-5 rounded-none bg-slate-50/90 text-vmanous-navy-deep border border-slate-200/80 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="p-4 sm:p-5 rounded-lg bg-slate-50/90 text-vmanous-navy-deep border border-slate-200/80 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-4">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 flex items-center justify-center shrink-0">
                   <Sparkles size={20} className="animate-pulse" />

@@ -6,17 +6,17 @@ import { ChevronRight } from 'lucide-react';
 
 const ProjectShowcase = () => {
   return (
-    <section className="py-8 md:py-16 bg-white">
+    <section className="pt-8 md:pt-8 pb-8 md:pb-16 bg-white">
       <Container>
         <div className="text-center max-w-3xl mx-auto mb-6 md:mb-12">
           <h2 className="text-2xl md:text-4xl font-medium text-vmanous-navy-deep mb-2">
-            Learn by Building
+            Real-World Project Engineering
           </h2>
           <p className="text-base sm:text-lg text-gray-600 mb-2">
-            Apply theoretical knowledge to real-world scenarios through comprehensive practical projects.
+            Architect and deploy scalable data science solutions for real-world enterprise applications.
           </p>
-          <p className="text-xs sm:text-sm text-vmanous-ai-blue font-medium tracking-wider">
-            SAMPLE PROJECTS
+          <p className="text-xs sm:text-sm text-vmanous-ai-blue font-semibold tracking-wider uppercase">
+            FEATURED PRODUCTION PROJECTS
           </p>
         </div>
 
@@ -28,7 +28,7 @@ const ProjectShowcase = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: index * 0.1 }}
-              className="bg-white p-6 rounded-none border border-gray-200/80 shadow-xs hover:shadow-lg hover:border-emerald-500/40 transition-all group relative overflow-hidden"
+              className="bg-white p-6 rounded-lg border border-gray-200/80 shadow-xs hover:shadow-lg hover:border-emerald-500/40 transition-all group relative overflow-hidden"
             >
               <div className="relative z-10">
                 <div className="flex justify-between items-start mb-5">
@@ -59,7 +59,7 @@ const ProjectShowcase = () => {
                 
                 <div>
                   <h4 className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-2">
-                    Skills Acquired
+                    Core Capabilities
                   </h4>
                   <div className="flex flex-wrap gap-2">
                     {project.skills.map(skill => (

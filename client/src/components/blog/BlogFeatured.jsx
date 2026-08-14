@@ -6,6 +6,13 @@ import Container from '../ui/Container';
 export const BlogFeatured = ({ article, onReadArticle }) => {
   if (!article) return null;
 
+  const highlights = [
+    "Dynamic RLS & USERNAME()",
+    "DAX Role Hierarchies",
+    "Role-Based Access Control",
+    "Enterprise Security Audit"
+  ];
+
   return (
     <section className="pt-6 sm:pt-8 mb-12">
       <Container>
@@ -20,22 +27,22 @@ export const BlogFeatured = ({ article, onReadArticle }) => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
-          className="bg-white rounded-none border border-gray-200 shadow-sm hover:shadow-md transition-all overflow-hidden"
+          className="bg-white rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-all overflow-hidden"
         >
-          <div className="grid grid-cols-1 lg:grid-cols-12">
+          <div className="grid grid-cols-1 lg:grid-cols-12 items-stretch">
             {/* Left Image Column */}
-            <div className="lg:col-span-6 relative h-[180px] sm:h-[230px] lg:h-full lg:min-h-[360px] overflow-hidden">
+            <div className="lg:col-span-6 relative h-[220px] sm:h-[260px] lg:h-full lg:min-h-[380px] rounded-md sm:rounded-lg overflow-hidden">
               <img
                 src={article.image}
                 alt={article.title}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover rounded-md sm:rounded-lg"
               />
             </div>
 
-            {/* Right Content Column */}
-            <div className="lg:col-span-6 p-8 lg:p-12 flex flex-col justify-between">
+            {/* Right Content Column - Top-aligned with image top edge */}
+            <div className="lg:col-span-6 pt-5 pb-8 px-6 sm:px-8 lg:pt-6 lg:pb-10 lg:px-12 flex flex-col justify-between">
               <div>
-                {/* Category Pill Tag */}
+                {/* Category Pill Tag - Starts at top edge */}
                 <div className="mb-4">
                   <span className="px-3.5 py-1 rounded-md bg-gray-100 border border-gray-200 text-gray-700 text-xs font-semibold">
                     {article.category}
@@ -51,13 +58,23 @@ export const BlogFeatured = ({ article, onReadArticle }) => {
                 </h2>
 
                 {/* Excerpt */}
-                <p className="text-sm md:text-base text-gray-600 leading-relaxed mb-8">
+                <p className="text-sm md:text-base text-gray-600 leading-relaxed mb-6">
                   {article.excerpt}
                 </p>
+
+                {/* Key Highlights Data in Middle Space */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 mb-6">
+                  {highlights.map((highlight, idx) => (
+                    <div key={idx} className="flex items-center gap-2 bg-slate-50 p-2.5 rounded-md border border-slate-200/60">
+                      <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+                      <span className="text-xs font-semibold text-slate-700">{highlight}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
 
               {/* Author & CTA Row */}
-              <div className="flex items-center justify-between flex-wrap gap-4 pt-2">
+              <div className="flex items-center justify-between flex-wrap gap-4 pt-2 mt-auto">
                 <div className="flex items-center gap-3">
                   <div className="w-9 h-9 rounded-full border border-emerald-500 text-emerald-600 bg-transparent flex items-center justify-center text-xs font-bold">
                     {article.authorInitials}

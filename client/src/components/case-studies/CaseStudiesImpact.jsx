@@ -3,7 +3,7 @@ import Container from '../ui/Container';
 
 export const CaseStudiesImpact = ({ metrics }) => {
   return (
-    <section className="relative z-20 -mt-8 sm:-mt-10 mb-4 sm:mb-10">
+    <section className="relative z-20 -mt-8 sm:-mt-10 mb-2 sm:mb-4">
       <Container>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
           {metrics.map((item, idx) => (

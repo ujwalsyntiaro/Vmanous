@@ -3,7 +3,7 @@ import Container from '../ui/Container';
 
 export const CaseStudiesFilter = ({ categories, activeCategory, onSelectCategory }) => {
   return (
-    <section className="mb-4 sm:mb-8">
+    <section className="mb-2 sm:mb-4">
       <Container>
         <div className="flex flex-wrap items-center gap-1.5 sm:gap-3">
           {categories.map((cat) => {

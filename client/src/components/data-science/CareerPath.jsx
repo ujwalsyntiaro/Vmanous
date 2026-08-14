@@ -5,7 +5,7 @@ import { dataScienceCareerPaths } from '../../constants/dataScience';
 
 const CareerPath = () => {
   return (
-    <section className="py-6 md:py-16 bg-white relative">
+    <section className="pt-6 md:pt-8 pb-2 md:pb-2 bg-white relative">
       <Container>
         <div className="text-center max-w-3xl mx-auto mb-6 md:mb-12">
           <h2 className="text-2xl md:text-4xl font-medium text-vmanous-navy-deep mb-2 sm:mb-4">
@@ -24,7 +24,7 @@ const CareerPath = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.4, delay: index * 0.1 }}
-              className="bg-vmanous-light p-8 rounded-2xl border border-gray-100 hover:border-blue-200 transition-colors group"
+              className="bg-vmanous-light p-6 md:p-8 rounded-xl border border-gray-100 hover:border-blue-200 transition-colors group"
             >
               <h3 className="text-xl md:text-2xl md: text-xl font-medium text-vmanous-navy-deep mb-4 group-hover:text-vmanous-ai-blue transition-colors">
                 {career.role}

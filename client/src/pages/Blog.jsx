@@ -72,14 +72,14 @@ const Blog = () => {
       </section>
 
       {/* Bottom CTA / Newsletter Section */}
-      <section className="py-8 sm:py-14 md:py-16 bg-[#050816] text-white relative overflow-hidden">
+      <section className="pt-4 sm:pt-7 md:pt-8 pb-8 sm:pb-14 md:pb-16 bg-[#050816] text-white relative overflow-hidden">
         <div className="absolute inset-0 z-0 pointer-events-none">
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[350px] bg-vmanous-green/10 rounded-full blur-[140px]" />
         </div>
 
         <Container className="relative z-10 text-center">
           <div className="max-w-2xl mx-auto">
-            <h2 className="text-2xl sm:text-4xl font-bold mb-4">
+            <h2 className="text-2xl sm:text-4xl font-bold text-white mb-4">
               Stay Ahead in AI & Analytics
             </h2>
             <p className="text-gray-400 text-sm sm:text-base mb-8 leading-relaxed">

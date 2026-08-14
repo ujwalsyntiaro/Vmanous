@@ -24,7 +24,7 @@ export const AIProjectLab = ({ projects }) => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.4, delay: index * 0.1 }}
-              className="bg-white p-8 rounded-none border border-gray-200 shadow-sm hover:shadow-xl hover:shadow-blue-500/5 transition-all group relative overflow-hidden flex flex-col h-full"
+              className="bg-white p-8 rounded-lg border border-gray-200 shadow-sm hover:shadow-xl hover:shadow-blue-500/5 transition-all group relative overflow-hidden flex flex-col h-full"
             >
               
               <div className="relative z-10 flex flex-col h-full">

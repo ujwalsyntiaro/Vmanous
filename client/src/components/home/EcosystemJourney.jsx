@@ -37,7 +37,7 @@ const EcosystemJourney = () => {
                 transition={{ delay: index * 0.1 }}
                 className="flex lg:flex-col items-center lg:text-center w-full lg:w-auto relative group"
               >
-                <div className="flex-shrink-0 w-24 h-24 rounded-2xl bg-vmanous-light border-2 border-white shadow-lg flex items-center justify-center mb-0 lg:mb-6 mr-6 lg:mr-0 z-10 group-hover:-translate-y-2 transition-transform duration-300">
+                <div className="flex-shrink-0 w-24 h-24 rounded-lg bg-vmanous-light border-2 border-white shadow-lg flex items-center justify-center mb-0 lg:mb-6 mr-6 lg:mr-0 z-10 group-hover:-translate-y-2 transition-transform duration-300">
                   <span className="text-2xl font-medium bg-clip-text text-transparent bg-gradient-to-br from-vmanous-ai-blue to-vmanous-ai-purple">
                     {step.id}
                   </span>

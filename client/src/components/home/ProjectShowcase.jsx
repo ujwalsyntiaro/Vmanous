@@ -23,10 +23,10 @@ export const ProjectShowcase = ({ projects }) => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.4, delay: index * 0.1 }}
-              className="bg-white border border-gray-100 overflow-hidden shadow-sm hover:shadow-xl transition-shadow flex flex-col h-full group"
+              className="bg-white border border-gray-100 rounded-lg overflow-hidden shadow-sm hover:shadow-xl transition-all flex flex-col h-full group"
             >
-              <div className="h-64 sm:h-72 lg:h-72 relative overflow-hidden bg-gray-100">
-                <img src={project.image} alt={project.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+              <div className="h-64 sm:h-72 lg:h-72 relative overflow-hidden bg-gray-100 rounded-b-lg">
+                <img src={project.image} alt={project.title} className="w-full h-full object-cover rounded-b-lg group-hover:scale-105 transition-transform duration-500" />
                 <div className="absolute top-3 left-3 px-2 py-1 bg-white/90 backdrop-blur-sm rounded text-[10px] font-medium text-gray-600 uppercase tracking-wider">
                   Example Project
                 </div>

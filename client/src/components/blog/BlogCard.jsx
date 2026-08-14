@@ -8,18 +8,18 @@ export const BlogCard = ({ article, onReadArticle }) => {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.4 }}
-      className="bg-white rounded-none border border-gray-200 shadow-sm hover:shadow-md transition-all overflow-hidden flex flex-col justify-between"
+      className="bg-white rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-all overflow-hidden flex flex-col justify-between"
     >
       <div>
         {/* Image Container with top-left category badge */}
         <div 
           onClick={onReadArticle}
-          className="relative h-48 sm:h-52 overflow-hidden cursor-pointer group"
+          className="relative h-48 sm:h-52 rounded-b-lg overflow-hidden cursor-pointer group"
         >
           <img
             src={article.image}
             alt={article.title}
-            className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
+            className="w-full h-full object-cover rounded-b-lg transform group-hover:scale-105 transition-transform duration-500"
           />
           <div className="absolute top-3 left-3">
             <span className="px-3 py-1 rounded-full bg-emerald-500 text-white text-[11px] font-bold tracking-wide uppercase shadow-sm">

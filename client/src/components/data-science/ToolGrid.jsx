@@ -29,7 +29,7 @@ const ToolCard = ({ tool, index }) => {
 
 const ToolGrid = () => {
   return (
-    <section className="py-6 md:py-16 bg-white relative overflow-hidden">
+    <section className="pt-6 md:pt-8 pb-6 md:pb-16 bg-white relative overflow-hidden">
       {/* Background accents */}
       <div className="absolute top-0 right-0 w-96 h-96 bg-blue-50 rounded-full blur-[100px] -z-10" />
       <div className="absolute bottom-0 left-0 w-96 h-96 bg-purple-50 rounded-full blur-[100px] -z-10" />

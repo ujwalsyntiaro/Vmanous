@@ -36,7 +36,7 @@ export const SummitTimeline = ({ timeline }) => {
                     {/* Card Half */}
                     <div className="w-[45%]">
                       <div className={`flex items-center gap-3 bg-white p-2.5 md:p-3 rounded-xl border border-gray-100 shadow-sm hover:shadow-md hover:border-[#16A34A]/40 transition-all duration-300 group ${isEven ? 'ml-auto' : 'mr-auto'} max-w-[300px]`}>
-                        <div className="w-10 h-10 shrink-0 rounded-lg bg-[#F8FAFC] border border-blue-100 flex items-center justify-center font-bold text-xs text-vmanous-ai-blue shadow-xs">
+                        <div className="shrink-0 flex items-center justify-center font-bold text-xs text-vmanous-ai-blue">
                           {item.day || <span className="text-purple-600 text-[9px] text-center leading-tight">Phase</span>}
                         </div>
                         

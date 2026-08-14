@@ -13,7 +13,7 @@ import imgInternship from '../../assets/images/home/vmanous-ai-internship.webp';
 const heroSlides = [
   {
     image: imgCollege,
-    eyebrow: "AI • DATA SCIENCE • COLLEGE WORKSHOPS",
+    eyebrow: "",
     heading: "Bringing Practical AI Summit to Campuses",
     description: "VMANOUS partners with colleges to conduct practical AI and Data Science workshops, helping students explore emerging technologies through hands-on learning.",
     primaryCTA: "Explore Workshops",
@@ -21,7 +21,7 @@ const heroSlides = [
   },
   {
     image: imgSummit,
-    eyebrow: "VMANOUS AI SUMMIT",
+    eyebrow: "",
     heading: "Explore the Future of Artificial Intelligence",
     description: "Experience Artificial Intelligence, Machine Learning, Generative AI and emerging technologies through an immersive VMANOUS AI Summit.",
     primaryCTA: "Explore AI Summit",
@@ -29,7 +29,7 @@ const heroSlides = [
   },
   {
     image: imgResearch,
-    eyebrow: "RESEARCH & DEVELOPMENT",
+    eyebrow: "",
     heading: "Turn Ideas Into Real AI Research",
     description: "VMANOUS encourages students to explore real-world AI problems, experiment with emerging technologies and develop practical research-driven solutions.",
     primaryCTA: "Explore Research",
@@ -37,7 +37,7 @@ const heroSlides = [
   },
   {
     image: imgData,
-    eyebrow: "DATA SCIENCE • ANALYTICS",
+    eyebrow: "",
     heading: "Build Skills With Real Data",
     description: "Learn Python, Data Analytics, Machine Learning, visualization and practical Data Science through projects and real-world problem solving.",
     primaryCTA: "Explore Data Science",
@@ -45,7 +45,7 @@ const heroSlides = [
   },
   {
     image: imgInternship,
-    eyebrow: "AI & DATA SCIENCE INTERNSHIPS",
+    eyebrow: "",
     heading: "From Learning to Industry Experience",
     description: "Eligible students can progress from workshops and projects to practical AI and Data Science internship opportunities based on performance, evaluation and available opportunities.",
     primaryCTA: "Explore Opportunities",
@@ -104,11 +104,13 @@ export const HomeHero = () => {
               transition={{ duration: 0.5 }}
               className="flex flex-col"
             >
-              <div className="hidden sm:inline-flex items-center gap-3 mb-1 sm:mb-3">
-                <span className="text-[10px] sm:text-xs font-medium tracking-widest text-white uppercase">
-                  {current.eyebrow}
-                </span>
-              </div>
+              {current.eyebrow && (
+                <div className="hidden sm:inline-flex items-center gap-3 mb-1 sm:mb-3">
+                  <span className="text-[10px] sm:text-xs font-medium tracking-widest text-white uppercase">
+                    {current.eyebrow}
+                  </span>
+                </div>
+              )}
 
               <h1
                 style={{ fontFamily: "'Josefin Sans', sans-serif", fontWeight: 100 }}
