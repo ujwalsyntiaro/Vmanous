@@ -5,13 +5,13 @@ import { ChevronRight } from 'lucide-react';
 
 export const AIProjectLab = ({ projects }) => {
   return (
-    <section className="py-6 md:py-8 bg-white">
+    <section id="project-lab" className="py-3 md:py-5 bg-white">
       <Container>
-        <div className="text-center max-w-3xl mx-auto mb-6 md:mb-8">
-          <h2 className="text-2xl md:text-4xl font-medium text-vmanous-navy-deep mb-6">
+        <div className="text-center max-w-3xl mx-auto mb-4 md:mb-6">
+          <h2 className="text-2xl md:text-4xl font-medium text-vmanous-navy-deep mb-2">
             Build Something Intelligent
           </h2>
-          <p className="text-lg text-gray-600 mb-4">
+          <p className="text-base sm:text-lg text-gray-600">
             Apply theoretical knowledge to practical scenarios by building real AI applications.
           </p>
         </div>
@@ -24,11 +24,8 @@ export const AIProjectLab = ({ projects }) => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.4, delay: index * 0.1 }}
-              className="bg-white p-8 rounded-3xl border border-gray-200 shadow-sm hover:shadow-xl hover:shadow-blue-500/5 transition-all group relative overflow-hidden flex flex-col h-full"
+              className="bg-white p-8 rounded-none border border-gray-200 shadow-sm hover:shadow-xl hover:shadow-blue-500/5 transition-all group relative overflow-hidden flex flex-col h-full"
             >
-              <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:opacity-10 transition-opacity transform group-hover:scale-110 duration-500">
-                <ChevronRight size={80} />
-              </div>
               
               <div className="relative z-10 flex flex-col h-full">
                 <div className="flex justify-between items-start mb-4 gap-2">

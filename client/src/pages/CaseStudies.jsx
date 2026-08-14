@@ -36,7 +36,7 @@ const CaseStudies = () => {
       <CaseStudiesImpact metrics={impactMetrics} />
 
       {/* Category Filter Pills & Case Studies List */}
-      <section className="pb-16">
+      <section className="pb-8 sm:pb-16">
         <CaseStudiesFilter
           categories={caseStudyCategories}
           activeCategory={activeCategory}
@@ -44,7 +44,7 @@ const CaseStudies = () => {
         />
 
         <Container>
-          <div className="space-y-8">
+          <div className="space-y-4 sm:space-y-8">
             {filteredCaseStudies.map((study) => (
               <CaseStudyCard key={study.id} study={study} />
             ))}

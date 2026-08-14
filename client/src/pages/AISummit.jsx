@@ -35,9 +35,6 @@ const AISummit = () => {
       <StudentExperience experience={aiSummit.experience} />
       <SummitAudience />
 
-      <CertificateShowcase />
-
-
       <SummitRegistration registration={aiSummit.registration} />
     </div>
   );

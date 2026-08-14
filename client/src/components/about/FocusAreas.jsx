@@ -32,7 +32,7 @@ const FocusAreas = () => {
           </h2>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 xs:gap-4 sm:gap-6">
           {focusAreas.map((area, index) => (
             <motion.div
               key={index}
@@ -40,15 +40,17 @@ const FocusAreas = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-50px" }}
               transition={{ duration: 0.5, delay: index * 0.05 }}
-              className="group p-5 bg-[#F7F9FC] border border-gray-100 hover:bg-white hover:shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:border-blue-100 transition-all duration-300"
+              className="group p-3.5 xs:p-4 sm:p-5 bg-[#F7F9FC] border border-gray-100 hover:bg-white hover:shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:border-blue-100 transition-all duration-300 flex flex-col justify-between"
             >
-              <div className="text-[#2563EB] mb-4 group-hover:scale-110 transition-all duration-300 inline-flex">
-                <area.icon size={24} strokeWidth={1.5} />
+              <div>
+                <div className="text-[#2563EB] mb-2 sm:mb-4 group-hover:scale-110 transition-all duration-300 inline-flex">
+                  <area.icon size={22} strokeWidth={1.5} className="sm:w-6 sm:h-6" />
+                </div>
+                <h3 className="text-sm xs:text-base font-medium text-[#050816] mb-1 sm:mb-2 leading-snug">
+                  {area.title}
+                </h3>
               </div>
-              <h3 className="text-base font-semibold text-[#050816] mb-2">
-                {area.title}
-              </h3>
-              <p className="text-gray-500 text-xs leading-snug">
+              <p className="text-gray-500 text-[11px] xs:text-xs leading-snug">
                 {area.desc}
               </p>
             </motion.div>

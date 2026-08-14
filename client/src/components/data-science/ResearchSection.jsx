@@ -5,17 +5,17 @@ import { dataScienceResearchAreas } from '../../constants/dataScience';
 import { Network } from 'lucide-react';
 
 const centerNodes = [
-  { name: 'AI', x: '10%', y: '20%' },
-  { name: 'ML', x: '80%', y: '15%' },
-  { name: 'Statistics', x: '15%', y: '80%' },
-  { name: 'Big Data', x: '85%', y: '85%' },
+  { name: 'AI', x: '18%', y: '20%' },
   { name: 'Research', x: '50%', y: '10%' },
+  { name: 'ML', x: '82%', y: '20%' },
+  { name: 'Statistics', x: '18%', y: '80%' },
   { name: 'Visualization', x: '50%', y: '90%' },
+  { name: 'Big Data', x: '82%', y: '80%' },
 ];
 
 const ResearchSection = () => {
   return (
-    <section className="py-24 bg-[#050816] relative overflow-hidden">
+    <section className="py-8 md:py-16 bg-[#050816] relative overflow-hidden">
       {/* Network lines visual */}
       <div className="absolute inset-0 opacity-20 pointer-events-none">
         <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
@@ -29,18 +29,18 @@ const ResearchSection = () => {
       </div>
 
       <Container className="relative z-10">
-        <div className="grid lg:grid-cols-2 gap-16 items-center">
+        <div className="grid lg:grid-cols-2 gap-8 lg:gap-16 items-center">
 
           <div>
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 mb-8 backdrop-blur-md">
-              <Network size={16} className="text-purple-400" />
-              <span className="text-sm font-semibold tracking-wider text-vmanous-light">ADVANCED EXPLORATION</span>
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/5 border border-white/10 mb-4 md:mb-8 backdrop-blur-md">
+              <Network size={15} className="text-purple-400" />
+              <span className="text-xs font-semibold tracking-wider text-vmanous-light">ADVANCED EXPLORATION</span>
             </div>
 
-            <h2 className="text-2xl md:text-4xl md: text-xl md:text-xl font-medium text-white mb-6 leading-tight">
+            <h2 className="text-2xl md:text-4xl font-medium text-white mb-2 md:mb-6 leading-tight">
               Where Data Science Meets Research
             </h2>
-            <p className="text-lg text-gray-400 mb-10">
+            <p className="text-base sm:text-lg text-gray-400 mb-6 md:mb-10">
               Push the boundaries of what's possible by exploring cutting-edge areas of artificial intelligence, machine learning, and advanced analytics.
             </p>
 
@@ -61,7 +61,7 @@ const ResearchSection = () => {
           </div>
 
           {/* Visual Network */}
-          <div className="relative h-[400px] md:h-[500px] bg-white/5 rounded-3xl border border-white/10 flex items-center justify-center overflow-hidden">
+          <div className="relative h-[480px] md:h-[560px] bg-white/5 rounded-3xl border border-white/10 flex items-center justify-center overflow-hidden">
             {/* Connecting SVG Lines */}
             <svg className="absolute inset-0 w-full h-full pointer-events-none z-0">
               {centerNodes.map((node, i) => (
@@ -82,8 +82,8 @@ const ResearchSection = () => {
             </svg>
 
             {/* Center Node */}
-            <div className="relative z-20 w-40 h-40 rounded-full bg-gradient-to-br from-vmanous-ai-blue to-purple-600 flex items-center justify-center shadow-[0_0_50px_rgba(59,130,246,0.3)] animate-pulse">
-              <span className="text-white font-medium text-center leading-tight">DATA<br />SCIENCE</span>
+            <div className="relative z-20 w-32 h-32 sm:w-40 sm:h-40 rounded-full bg-gradient-to-br from-vmanous-ai-blue to-purple-600 flex items-center justify-center shadow-[0_0_50px_rgba(59,130,246,0.3)] animate-pulse">
+              <span className="text-white font-medium text-center text-xs sm:text-base leading-tight">DATA<br />SCIENCE</span>
             </div>
 
             {/* Connected Nodes */}
@@ -94,10 +94,10 @@ const ResearchSection = () => {
                 whileInView={{ opacity: 1 }}
                 viewport={{ once: true }}
                 transition={{ duration: 1, delay: 0.5 + i * 0.1 }}
-                className="absolute z-10 w-24 h-24 rounded-full bg-[#080B1A] border border-white/20 flex items-center justify-center shadow-lg"
+                className="absolute z-10 w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-[#080B1A] border border-white/20 flex items-center justify-center shadow-lg"
                 style={{ top: node.y, left: node.x, transform: 'translate(-50%, -50%)' }}
               >
-                <span className="text-gray-300 text-xs font-medium">{node.name}</span>
+                <span className="text-gray-300 text-[11px] sm:text-xs font-medium text-center">{node.name}</span>
               </motion.div>
             ))}
 

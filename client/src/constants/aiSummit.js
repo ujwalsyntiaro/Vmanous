@@ -27,25 +27,61 @@ export const aiSummit = {
       description: "Build strong foundations in Artificial Intelligence, Machine Learning and Deep Learning.",
       topics: ["Python", "Machine Learning", "Deep Learning", "AI Fundamentals", "Generative AI"],
       cta: "Explore Program",
-      link: "/ai-summit"
+      link: "#workshop",
+      detail: {
+        subtitle: "5-Day Immersive AI Foundation Track",
+        fullOverview: "Master core AI concepts from scratch with hands-on coding. Learn Python libraries for data science, build regression/classification ML models, construct deep neural networks, and explore modern generative AI concepts.",
+        modules: [
+          "Python & Data Wrangling for AI",
+          "Supervised & Unsupervised Machine Learning",
+          "Deep Neural Networks with PyTorch/TensorFlow",
+          "Introduction to Generative AI & Prompt Architecture",
+          "Mini-Capstone Project & Model Deployment"
+        ],
+        outcomes: "Practical code repository, foundational AI certificate, and eligibility for advanced research tracks."
+      }
     },
     {
       id: "program-02",
       title: "AI Research & Development",
       duration: "10 Days",
-      description: "Explore real-world AI problems using structured research.",
+      description: "Explore real-world AI problems using structured research methodologies and experimentation.",
       topics: ["Research", "Experimentation", "Problem Solving", "AI Applications"],
       cta: "Explore Research",
-      link: "#"
+      link: "#research-lab",
+      detail: {
+        subtitle: "10-Day Structured AI Research & Methodologies",
+        fullOverview: "Dive into scientific AI research workflows. Formulate hypotheses, analyze state-of-the-art academic papers, design benchmarking experiments, and optimize model loss/gradient behavior under expert guidance.",
+        modules: [
+          "Hypothesis Formulation & Literature Benchmarking",
+          "Exploratory Data Signals & Feature Engineering",
+          "Custom Deep Learning Loss & Gradient Optimization",
+          "A/B Model Testing & Latency Benchmarking",
+          "Paper Drafting & Research Report Presentation"
+        ],
+        outcomes: "Research paper draft, 1:1 mentorship feedback, and publication-ready experiment logs."
+      }
     },
     {
       id: "program-03",
       title: "AI Innovation Lab",
       duration: "Ongoing",
-      description: "Build, prototype, test and improve practical AI projects.",
+      description: "Build, prototype, test and improve practical AI projects with live datasets.",
       topics: ["AI Assistant", "Recommendation System", "Predictive Model", "Computer Vision Application"],
       cta: "Explore Lab",
-      link: "#"
+      link: "#project-lab",
+      detail: {
+        subtitle: "Hands-On Practical Product & Prototype Building",
+        fullOverview: "Transform experimental concepts into functional, production-ready AI applications. Work in sandbox environments with GPU acceleration to build recommendation engines, generative assistants, and computer vision tools.",
+        modules: [
+          "AI Student Performance & Churn Predictors",
+          "Real-Time Recommendation Systems",
+          "Computer Vision Classifiers & Object Detection",
+          "Generative AI Chat Assistants & API Integration",
+          "Model Quantization & Production API Deployment"
+        ],
+        outcomes: "Portfolio of 5+ production-grade AI projects, GitHub showcase, and peer demo feedback."
+      }
     },
     {
       id: "program-04",
@@ -54,7 +90,19 @@ export const aiSummit = {
       description: "Eligible participants may be considered for internship opportunities based on performance, evaluation and available opportunities.",
       topics: ["Real-world experience", "Mentorship", "Projects", "Industry exposure"],
       cta: "Explore Pathway",
-      link: "#"
+      link: "#internship-pathway",
+      detail: {
+        subtitle: "Career Experience & Direct Industry Mentorship",
+        fullOverview: "Top-performing candidates from the workshop and lab evaluations gain access to candidate consideration for real-world internship projects. Work alongside experienced engineers on active production pipelines.",
+        modules: [
+          "1:1 Weekly Engineering Mentorship",
+          "Active Industry Project Pipeline Contributions",
+          "Agile AI Sprint Workflows & Code Reviews",
+          "Formal Performance Evaluation & Skills Assessment",
+          "Certificate of Internship & Career Referral"
+        ],
+        outcomes: "Real-world work experience, official internship certificate, and career guidance."
+      }
     }
   ],
 

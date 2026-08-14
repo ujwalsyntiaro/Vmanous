@@ -64,13 +64,13 @@ const Navbar = () => {
 
             {/* Mobile Menu Button */}
             <button
-              className="md:hidden p-2 text-vmanous-navy-dark rounded-md hover:bg-gray-100 transition-colors outline-none focus-visible:ring-2 focus-visible:ring-vmanous-green ml-auto"
+              className="md:hidden p-2 text-vmanous-navy-dark hover:text-vmanous-green transition-colors duration-200 outline-none focus-visible:ring-2 focus-visible:ring-vmanous-green ml-auto bg-transparent group"
               onClick={() => setIsMobileMenuOpen(true)}
               aria-label="Open menu"
             >
-              <svg className="w-6 h-6 text-vmanous-navy-dark" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+              <svg className="w-6 h-6 transform group-hover:scale-110 transition-transform duration-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                 <line x1="4" y1="9" x2="20" y2="9" />
-                <line x1="10" y1="15" x2="20" y2="15" />
+                <line x1="4" y1="15" x2="14" y2="15" />
               </svg>
             </button>
           </div>
@@ -98,11 +98,11 @@ const Navbar = () => {
               <div className="p-5 flex items-center justify-between border-b border-gray-100">
                 <Logo />
                 <button
-                  className="p-2 text-gray-500 rounded-md hover:bg-gray-100 transition-colors outline-none focus-visible:ring-2 focus-visible:ring-vmanous-green"
+                  className="p-2 text-vmanous-navy-dark hover:text-vmanous-green transition-colors duration-200 outline-none focus-visible:ring-2 focus-visible:ring-vmanous-green bg-transparent group"
                   onClick={() => setIsMobileMenuOpen(false)}
                   aria-label="Close menu"
                 >
-                  <X className="w-6 h-6" />
+                  <X className="w-6 h-6 transform group-hover:scale-110 transition-transform duration-200" />
                 </button>
               </div>
 

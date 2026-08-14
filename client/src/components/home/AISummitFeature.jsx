@@ -8,7 +8,7 @@ import aiSummitImg from '../../assets/images/home/2nd section on home page.png';
 
 export const AISummitFeature = () => {
   return (
-    <section className="pt-2 md:pt-4 pb-0 md:pb-16 bg-white relative overflow-hidden">
+    <section className="pt-2 md:pt-4 pb-0 md:pb-4 bg-white relative overflow-hidden">
       <Container>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-[0.75fr_1.25fr] gap-12 lg:gap-16 items-start">
           {/* LEFT CONTENT */}
@@ -64,7 +64,7 @@ export const AISummitFeature = () => {
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
-            className="relative w-full h-auto md:h-[600px] aspect-[16/10] md:aspect-auto rounded-[24px] overflow-hidden shadow-2xl flex items-center justify-center bg-gray-50"
+            className="relative w-full h-auto rounded-[24px] overflow-hidden shadow-xl flex items-center justify-center bg-gray-50"
           >
             <img
               src={aiSummitImg}

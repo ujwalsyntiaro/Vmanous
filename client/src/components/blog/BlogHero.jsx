@@ -23,13 +23,13 @@ export const BlogHero = ({ title, subtitle }) => {
           transition={{ duration: 0.6 }}
           className="max-w-4xl mx-auto"
         >
-          <h1 
+          <h1
             style={{ fontFamily: "'Josefin Sans', sans-serif", fontWeight: 100 }}
             className="text-xl sm:text-3xl md:text-5xl lg:text-6xl text-white tracking-wide mb-2 sm:mb-4 leading-tight"
           >
             {title}
           </h1>
-          <p 
+          <p
             style={{ fontFamily: "'Lato', sans-serif", fontWeight: 300 }}
             className="text-xs sm:text-base md:text-xl text-gray-300 max-w-3xl mx-auto leading-relaxed line-clamp-3 sm:line-clamp-none"
           >

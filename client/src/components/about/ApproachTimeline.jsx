@@ -47,7 +47,7 @@ const ApproachTimeline = () => {
           </h2>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 xs:gap-4 md:gap-6">
           {steps.map((step, index) => (
             <motion.div
               key={index}
@@ -55,15 +55,17 @@ const ApproachTimeline = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-50px" }}
               transition={{ duration: 0.5, delay: index * 0.1 }}
-              className="bg-[#F8FAFC] p-4 border border-gray-100 hover:bg-white hover:border-[#16A34A]/40 hover:shadow-xl hover:shadow-green-900/5 transition-all duration-300 group relative overflow-hidden"
+              className="bg-[#F8FAFC] p-3 xs:p-4 sm:p-5 md:p-6 border border-gray-100 hover:bg-white hover:border-[#16A34A]/40 hover:shadow-xl hover:shadow-green-900/5 transition-all duration-300 group relative overflow-hidden flex flex-col justify-between"
             >
-              <div className="text-3xl font-light text-gray-300 mb-2 group-hover:text-[#16A34A] transition-colors duration-300">
-                {step.number}
+              <div>
+                <div className="text-2xl xs:text-3xl font-light text-gray-300 mb-1 group-hover:text-[#16A34A] transition-colors duration-300">
+                  {step.number}
+                </div>
+                <h3 className="text-base xs:text-lg font-medium text-[#050816] mb-1">
+                  {step.title}
+                </h3>
               </div>
-              <h3 className="text-lg font-medium text-[#050816] mb-1">
-                {step.title}
-              </h3>
-              <p className="text-gray-600 leading-snug text-xs">
+              <p className="text-gray-600 leading-snug text-[11px] xs:text-xs">
                 {step.description}
               </p>
             </motion.div>

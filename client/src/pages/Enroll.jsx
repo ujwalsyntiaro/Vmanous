@@ -66,8 +66,16 @@ const ROLES = [
   }
 ];
 
+const PROGRAM_OPTIONS = [
+  { value: 'AI Summit & Data Science', label: 'AI Summit & Data Science Ecosystem' },
+  { value: 'AI Research Lab', label: 'AI Research & Project Lab' },
+  { value: 'College Campus Workshop', label: 'College Campus Partnership Program' },
+  { value: 'Mentorship & Training', label: 'Expert Mentorship & Training' }
+];
+
 export const Enroll = () => {
   const [activeRole, setActiveRole] = useState('college');
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
@@ -127,20 +135,13 @@ export const Enroll = () => {
 
             <h1 
               style={{ fontFamily: "'Josefin Sans', sans-serif", fontWeight: 100 }}
-              className="text-2xl md:text-4xl lg:text-5xl text-white tracking-wide mb-3 leading-tight"
+              className="text-2xl md:text-4xl lg:text-5xl text-white tracking-wide mb-2 leading-tight"
             >
               Take the First Step Into the <br className="hidden md:block" />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-vmanous-green via-teal-400 to-vmanous-ai-blue">
                 VMANOUS Ecosystem
               </span>
             </h1>
-
-            <p
-              style={{ fontFamily: "'Lato', sans-serif", fontWeight: 300 }}
-              className="text-base md:text-xl text-gray-300 max-w-2xl mx-auto leading-relaxed mb-4"
-            >
-              Select your pathway to join our AI & Data Science ecosystem — whether as a forward-thinking college partner or expert mentor.
-            </p>
           </motion.div>
         </Container>
       </section>
@@ -158,7 +159,7 @@ export const Enroll = () => {
                   whileHover={{ y: -4 }}
                   transition={{ duration: 0.2 }}
                   onClick={() => setActiveRole(role.id)}
-                  className={`cursor-pointer bg-white rounded-3xl p-6 border transition-all duration-300 flex flex-col justify-between ${isSelected
+                  className={`cursor-pointer bg-white rounded-lg p-6 border transition-all duration-300 flex flex-col justify-between ${isSelected
                       ? 'border-vmanous-green shadow-xl ring-2 ring-vmanous-green/20'
                       : 'border-gray-200 shadow-sm hover:shadow-md'
                     }`}
@@ -197,9 +198,9 @@ export const Enroll = () => {
                       setActiveRole(role.id);
                       document.getElementById('enrollment-form')?.scrollIntoView({ behavior: 'smooth' });
                     }}
-                    className={`w-full py-3 px-4 rounded-xl text-sm font-semibold transition-colors flex items-center justify-center gap-2 ${isSelected
-                        ? 'bg-vmanous-green text-white shadow-md shadow-green-500/20'
-                        : 'bg-gray-100 text-vmanous-navy-dark hover:bg-gray-200'
+                    className={`w-full py-3 px-4 rounded-lg text-sm font-semibold transition-all flex items-center justify-center gap-2 border bg-transparent cursor-pointer ${isSelected
+                        ? 'border-emerald-500 text-emerald-600 hover:font-bold hover:border-2 hover:border-emerald-600'
+                        : 'border-gray-300 text-gray-700 hover:border-emerald-500 hover:text-emerald-600'
                       }`}
                   >
                     Select & Apply
@@ -233,14 +234,14 @@ export const Enroll = () => {
                 </div>
 
                 {/* Form Role Selector Segmented Tabs */}
-                <div className="flex flex-wrap items-center gap-1.5 bg-gray-50 p-1.5 rounded-2xl border border-gray-200">
+                <div className="grid grid-cols-3 items-center gap-1 bg-gray-50 p-1 sm:p-1.5 rounded-lg border border-gray-200 w-full sm:w-auto">
                   {ROLES.map((r) => (
                     <button
                       key={r.id}
                       onClick={() => setActiveRole(r.id)}
-                      className={`px-4 py-2 rounded-xl text-xs font-semibold tracking-wide transition-all duration-200 ${activeRole === r.id
-                          ? 'bg-[#16A34A] text-white shadow-md shadow-green-600/20'
-                          : 'text-gray-500 hover:text-gray-800 hover:bg-gray-200/50'
+                      className={`px-1.5 sm:px-4 py-1.5 sm:py-2 rounded-md text-[10px] sm:text-xs font-semibold tracking-wider transition-all duration-200 text-center whitespace-nowrap ${activeRole === r.id
+                          ? 'border-2 border-[#16A34A] text-[#16A34A] bg-emerald-50/80 font-bold shadow-xs'
+                          : 'text-gray-500 hover:text-gray-800 hover:bg-gray-200/50 border border-transparent'
                         }`}
                     >
                       {r.id.toUpperCase()}
@@ -296,10 +297,10 @@ export const Enroll = () => {
                         type="text"
                         name="fullName"
                         required
-                        placeholder="e.g. Rahul Sharma"
+                        placeholder="Rahul Sharma"
                         value={formData.fullName}
                         onChange={handleChange}
-                        className="w-full px-4 py-3.5 rounded-2xl bg-[#F8FAFC] border border-slate-200 text-slate-800 text-sm font-medium focus:bg-white focus:border-[#16A34A] focus:ring-4 focus:ring-[#16A34A]/15 outline-none transition-all duration-200 placeholder:text-slate-400 placeholder:font-normal"
+                        className="w-full px-4 py-3.5 rounded-lg bg-[#F8FAFC] border border-slate-200 text-slate-800 text-sm font-medium focus:bg-white focus:border-[#16A34A] focus:ring-4 focus:ring-[#16A34A]/15 outline-none transition-all duration-200 placeholder:text-slate-400 placeholder:font-normal"
                       />
                     </div>
 
@@ -312,10 +313,10 @@ export const Enroll = () => {
                         type="email"
                         name="email"
                         required
-                        placeholder="e.g. rahul@example.com"
+                        placeholder="rahul@example.com"
                         value={formData.email}
                         onChange={handleChange}
-                        className="w-full px-4 py-3.5 rounded-2xl bg-[#F8FAFC] border border-slate-200 text-slate-800 text-sm font-medium focus:bg-white focus:border-[#16A34A] focus:ring-4 focus:ring-[#16A34A]/15 outline-none transition-all duration-200 placeholder:text-slate-400 placeholder:font-normal"
+                        className="w-full px-4 py-3.5 rounded-lg bg-[#F8FAFC] border border-slate-200 text-slate-800 text-sm font-medium focus:bg-white focus:border-[#16A34A] focus:ring-4 focus:ring-[#16A34A]/15 outline-none transition-all duration-200 placeholder:text-slate-400 placeholder:font-normal"
                       />
                     </div>
                   </div>
@@ -333,7 +334,7 @@ export const Enroll = () => {
                         placeholder="+91 98765 43210"
                         value={formData.phone}
                         onChange={handleChange}
-                        className="w-full px-4 py-3.5 rounded-2xl bg-[#F8FAFC] border border-slate-200 text-slate-800 text-sm font-medium focus:bg-white focus:border-[#16A34A] focus:ring-4 focus:ring-[#16A34A]/15 outline-none transition-all duration-200 placeholder:text-slate-400 placeholder:font-normal"
+                        className="w-full px-4 py-3.5 rounded-lg bg-[#F8FAFC] border border-slate-200 text-slate-800 text-sm font-medium focus:bg-white focus:border-[#16A34A] focus:ring-4 focus:ring-[#16A34A]/15 outline-none transition-all duration-200 placeholder:text-slate-400 placeholder:font-normal"
                       />
                     </div>
 
@@ -346,30 +347,56 @@ export const Enroll = () => {
                         type="text"
                         name="institution"
                         required
-                        placeholder={activeRole === 'college' ? 'e.g. National Institute of Technology' : 'e.g. Current Company / Designation'}
+                        placeholder={activeRole === 'college' ? 'National Institute of Technology' : 'Current Company / Designation'}
                         value={formData.institution}
                         onChange={handleChange}
-                        className="w-full px-4 py-3.5 rounded-2xl bg-[#F8FAFC] border border-slate-200 text-slate-800 text-sm font-medium focus:bg-white focus:border-[#16A34A] focus:ring-4 focus:ring-[#16A34A]/15 outline-none transition-all duration-200 placeholder:text-slate-400 placeholder:font-normal"
+                        className="w-full px-4 py-3.5 rounded-lg bg-[#F8FAFC] border border-slate-200 text-slate-800 text-sm font-medium focus:bg-white focus:border-[#16A34A] focus:ring-4 focus:ring-[#16A34A]/15 outline-none transition-all duration-200 placeholder:text-slate-400 placeholder:font-normal"
                       />
                     </div>
                   </div>
 
                   {/* Program Focus */}
-                  <div>
+                  <div className="relative">
                     <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">
                       Program / Track Interest
                     </label>
-                    <select
-                      name="programInterest"
-                      value={formData.programInterest}
-                      onChange={handleChange}
-                      className="w-full px-4 py-3.5 rounded-2xl bg-[#F8FAFC] border border-slate-200 text-slate-800 text-sm font-medium focus:bg-white focus:border-[#16A34A] focus:ring-4 focus:ring-[#16A34A]/15 outline-none transition-all duration-200 cursor-pointer"
+                    
+                    <button
+                      type="button"
+                      onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                      className="w-full px-4 py-3.5 rounded-lg bg-[#F8FAFC] border border-slate-200 text-slate-800 text-sm font-medium focus:bg-white focus:border-[#16A34A] focus:ring-4 focus:ring-[#16A34A]/15 outline-none transition-all duration-200 cursor-pointer flex items-center justify-between"
                     >
-                      <option value="AI Summit & Data Science">AI Summit & Data Science Ecosystem</option>
-                      <option value="AI Research Lab">AI Research & Project Lab</option>
-                      <option value="College Campus Workshop">College Campus Partnership Program</option>
-                      <option value="Mentorship & Training">Expert Mentorship & Training</option>
-                    </select>
+                      <span className={formData.programInterest ? 'text-[#16A34A] font-medium' : 'text-slate-800'}>
+                        {PROGRAM_OPTIONS.find(o => o.value === formData.programInterest)?.label || formData.programInterest}
+                      </span>
+                      <ChevronDown size={18} className={`text-slate-500 transition-transform duration-200 ${isDropdownOpen ? 'rotate-180 text-[#16A34A]' : ''}`} />
+                    </button>
+
+                    {isDropdownOpen && (
+                      <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-slate-200 shadow-xl rounded-lg overflow-hidden py-1 z-30">
+                        {PROGRAM_OPTIONS.map((opt) => {
+                          const isSelected = formData.programInterest === opt.value;
+                          return (
+                            <button
+                              type="button"
+                              key={opt.value}
+                              onClick={() => {
+                                setFormData(prev => ({ ...prev, programInterest: opt.value }));
+                                setIsDropdownOpen(false);
+                              }}
+                              className={`w-full text-left px-4 py-3 text-sm font-medium transition-colors cursor-pointer flex items-center justify-between ${
+                                isSelected
+                                  ? 'bg-emerald-50/80 text-[#16A34A] font-bold'
+                                  : 'text-slate-700 hover:bg-emerald-50/50 hover:text-[#16A34A]'
+                              }`}
+                            >
+                              <span>{opt.label}</span>
+                              {isSelected && <CheckCircle2 size={16} className="text-[#16A34A]" />}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
                   </div>
 
                   {/* Message */}
@@ -383,7 +410,7 @@ export const Enroll = () => {
                       placeholder="Tell us about your learning goals or institutional requirements..."
                       value={formData.message}
                       onChange={handleChange}
-                      className="w-full px-4 py-3.5 rounded-2xl bg-[#F8FAFC] border border-slate-200 text-slate-800 text-sm font-medium focus:bg-white focus:border-[#16A34A] focus:ring-4 focus:ring-[#16A34A]/15 outline-none transition-all duration-200 placeholder:text-slate-400 placeholder:font-normal resize-none"
+                      className="w-full px-4 py-3.5 rounded-lg bg-[#F8FAFC] border border-slate-200 text-slate-800 text-sm font-medium focus:bg-white focus:border-[#16A34A] focus:ring-4 focus:ring-[#16A34A]/15 outline-none transition-all duration-200 placeholder:text-slate-400 placeholder:font-normal resize-none"
                     />
                   </div>
 

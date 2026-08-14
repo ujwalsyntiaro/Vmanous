@@ -21,7 +21,7 @@ export const SummitAudience = () => {
             Built for the Next Generation of AI Talent
           </h2>
         </div>
-        <div className="flex flex-wrap justify-center gap-4 max-w-4xl mx-auto">
+        <div className="flex flex-wrap justify-center gap-1.5 sm:gap-4 max-w-4xl mx-auto px-1">
           {audiences.map((aud, i) => (
             <motion.div
               key={aud}
@@ -29,7 +29,7 @@ export const SummitAudience = () => {
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
               transition={{ duration: 0.3, delay: i * 0.05 }}
-              className="px-6 py-3 bg-white/5 border border-white/10 rounded-full text-gray-300 backdrop-blur-sm hover:bg-white/10 hover:text-white transition-colors"
+              className="px-2.5 sm:px-6 py-1.5 sm:py-3 bg-white/5 border border-white/10 rounded-full text-gray-300 backdrop-blur-sm hover:bg-white/10 hover:text-white transition-colors text-[10px] sm:text-base whitespace-nowrap"
             >
               {aud}
             </motion.div>
@@ -42,25 +42,25 @@ export const SummitAudience = () => {
 
 export const CertificateShowcase = () => {
   return (
-    <section className="pt-4 md:pt-6 pb-4 md:pb-6 bg-white relative">
+    <section className="py-4 md:py-6 bg-white relative">
       <Container>
-        <div className="grid lg:grid-cols-2 gap-16 items-center">
+        <div className="grid lg:grid-cols-2 gap-6 lg:gap-16 items-center">
           <div>
-            <h2 className="text-2xl md:text-4xl font-medium text-vmanous-navy-deep mb-6">
+            <h2 className="text-2xl md:text-4xl font-medium text-vmanous-navy-deep mb-3 md:mb-6">
               Complete the Journey. Earn Your Certificate.
             </h2>
-            <p className="text-lg text-gray-600 mb-8 leading-relaxed">
+            <p className="text-base sm:text-lg text-gray-600 mb-4 md:mb-8 leading-relaxed">
               Participants who successfully complete the applicable program requirements and assessment criteria may receive a VMANOUS certificate.
             </p>
           </div>
           <div className="relative">
             <div className="absolute inset-0 bg-gradient-to-tr from-blue-100 to-purple-100 rounded-2xl transform rotate-3 scale-105 -z-10" />
-            <div className="bg-white border-8 border-gray-50 rounded-2xl p-8 md:p-12 shadow-2xl relative overflow-hidden">
-              <div className="text-center mb-8">
+            <div className="bg-white border-4 sm:border-8 border-gray-50 rounded-2xl p-6 md:p-12 shadow-2xl relative overflow-hidden">
+              <div className="text-center mb-6 md:mb-8">
                 <div className="text-vmanous-ai-blue font-medium text-xl tracking-widest mb-1">VMANOUS</div>
                 <div className="text-gray-400 text-xs tracking-widest uppercase">Certificate of Completion</div>
               </div>
-              <div className="text-center mb-10">
+              <div className="text-center mb-8 md:mb-10">
                 <div className="text-sm text-gray-500 mb-2">This is to certify that</div>
                 <div className="text-xl font-serif text-vmanous-navy-deep mb-2">[ Participant Name ]</div>
                 <div className="text-sm text-gray-500 max-w-sm mx-auto">has successfully completed the VMANOUS AI Summit 2026.</div>
@@ -81,10 +81,10 @@ export const CertificateShowcase = () => {
 export const SummitFAQ = ({ faq }) => {
   const [openIndex, setOpenIndex] = useState(null);
   return (
-    <section className="pt-4 md:pt-6 pb-4 md:pb-6 bg-vmanous-light">
+    <section className="py-4 md:py-6 bg-vmanous-light">
       <Container>
-        <div className="text-center max-w-3xl mx-auto mb-6 md:mb-8">
-          <h2 className="text-2xl md:text-4xl font-medium text-vmanous-navy-deep mb-6">
+        <div className="text-center max-w-3xl mx-auto mb-4 md:mb-8">
+          <h2 className="text-2xl md:text-4xl font-medium text-vmanous-navy-deep mb-3">
             Frequently Asked Questions
           </h2>
         </div>

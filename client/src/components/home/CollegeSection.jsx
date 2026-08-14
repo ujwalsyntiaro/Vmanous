@@ -54,7 +54,7 @@ const CollegeSection = () => {
             transition={{ duration: 0.6 }}
             className="w-full lg:w-1/2 relative z-10"
           >
-            <div className="rounded-3xl overflow-hidden shadow-2xl border border-white/10 relative group">
+            <div className="rounded-none overflow-hidden shadow-2xl border border-white/10 relative group">
               <div className="absolute inset-0 bg-vmanous-ai-blue/20 mix-blend-overlay group-hover:bg-transparent transition-colors duration-500 z-10"></div>
               <img 
                 src="/images/college.jpg" 

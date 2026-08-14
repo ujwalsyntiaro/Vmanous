@@ -11,7 +11,7 @@ export const TechnologyUniverse = ({ technologies }) => {
   const tools = technologies;
 
   return (
-    <section className="pt-0 pb-8 md:pb-10 bg-white relative">
+    <section className="pt-0 pb-4 md:pb-10 bg-white relative">
       <Container>
         <div className="text-center max-w-3xl mx-auto mb-6">
           <h2 className="text-3xl md:text-4xl font-medium text-vmanous-navy-deep mb-6">
@@ -20,22 +20,6 @@ export const TechnologyUniverse = ({ technologies }) => {
           <p className="text-lg text-gray-600 mb-8">
             Get hands-on experience with the tools that power the modern data and AI landscape.
           </p>
-          
-          <div className="flex flex-wrap justify-center gap-2 mb-12">
-            {categories.map(cat => (
-              <button
-                key={cat}
-                onClick={() => setFilter(cat)}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
-                  filter === cat
-                    ? 'bg-white text-vmanous-ai-blue border border-vmanous-ai-blue ring-1 ring-vmanous-ai-blue'
-                    : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50 hover:border-gray-300'
-                }`}
-              >
-                {cat}
-              </button>
-            ))}
-          </div>
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 max-w-6xl mx-auto">

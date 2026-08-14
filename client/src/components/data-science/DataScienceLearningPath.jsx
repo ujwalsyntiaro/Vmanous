@@ -19,7 +19,7 @@ const DataScienceLearningPath = () => {
         <div className="relative">
           {/* Desktop Horizontal Line */}
           <div className="hidden md:block absolute top-1/2 left-0 w-full h-1 bg-gradient-to-r from-blue-100 via-purple-100 to-blue-100 -translate-y-1/2" />
-          
+
           {/* Mobile Vertical Line */}
           <div className="md:hidden absolute top-0 bottom-0 left-8 w-1 bg-gradient-to-b from-blue-100 via-purple-100 to-blue-100" />
 
@@ -37,7 +37,7 @@ const DataScienceLearningPath = () => {
                 <div className="absolute left-0 md:static w-16 h-16 rounded-full bg-white border-4 border-white shadow-lg shadow-blue-500/10 flex items-center justify-center font-medium text-xl text-vmanous-ai-blue z-10 mb-4 ring-2 ring-blue-100">
                   {stage.stage}
                 </div>
-                
+
                 <div className="md:text-center">
                   <h3 className="text-xl md:text-2xl md: font-medium text-vmanous-navy-deep whitespace-nowrap md:whitespace-normal mb-1">
                     {stage.title}

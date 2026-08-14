@@ -9,7 +9,6 @@ import ResearchSection from '../components/data-science/ResearchSection';
 import CareerPath from '../components/data-science/CareerPath';
 import InternshipPathway from '../components/data-science/InternshipPathway';
 import DataScienceGallery from '../components/data-science/DataScienceGallery';
-import DataScienceCTA from '../components/data-science/DataScienceCTA';
 
 const DataScience = () => {
   useEffect(() => {
@@ -27,7 +26,6 @@ const DataScience = () => {
       <ResearchSection />
       <CareerPath />
       <DataScienceGallery />
-      <DataScienceCTA />
     </div>
   );
 };

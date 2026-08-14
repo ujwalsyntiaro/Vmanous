@@ -104,7 +104,7 @@ export const HomeHero = () => {
               transition={{ duration: 0.5 }}
               className="flex flex-col"
             >
-              <div className="inline-flex items-center gap-3 mb-1 sm:mb-3">
+              <div className="hidden sm:inline-flex items-center gap-3 mb-1 sm:mb-3">
                 <span className="text-[10px] sm:text-xs font-medium tracking-widest text-white uppercase">
                   {current.eyebrow}
                 </span>
@@ -119,7 +119,7 @@ export const HomeHero = () => {
 
               <p
                 style={{ fontFamily: "'Lato', sans-serif", fontWeight: 300 }}
-                className="text-xs sm:text-lg md:text-xl text-gray-300 mb-1 sm:mb-2 leading-relaxed max-w-2xl line-clamp-2 sm:line-clamp-none"
+                className="hidden sm:block text-xs sm:text-lg md:text-xl text-gray-300 mb-1 sm:mb-2 leading-relaxed max-w-2xl"
               >
                 {current.description}
               </p>

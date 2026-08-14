@@ -8,16 +8,16 @@ const icons = [Database, Filter, Search, PieChart, BrainCircuit, Lightbulb];
 
 const DataScienceWorkflow = () => {
   return (
-    <section className="py-16 bg-[#080B1A] relative overflow-hidden">
+    <section className="py-8 md:py-16 bg-[#080B1A] relative overflow-hidden">
       {/* Visual background */}
       <div className="absolute inset-0 opacity-20" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, rgba(255,255,255,0.15) 1px, transparent 0)', backgroundSize: '32px 32px' }} />
       
       <Container className="relative z-10">
-        <div className="text-center max-w-3xl mx-auto mb-20">
-          <h2 className="text-2xl md:text-4xl md: text-xl md: font-medium text-white mb-6">
+        <div className="text-center max-w-3xl mx-auto mb-6 md:mb-16">
+          <h2 className="text-2xl md:text-4xl font-medium text-white mb-2 sm:mb-4">
             How Data Becomes Intelligence
           </h2>
-          <p className="text-lg text-gray-400">
+          <p className="text-base sm:text-lg text-gray-400">
             Follow the complete workflow from raw information to predictive models.
           </p>
         </div>

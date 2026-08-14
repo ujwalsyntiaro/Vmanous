@@ -5,13 +5,13 @@ import { dataScienceCareerPaths } from '../../constants/dataScience';
 
 const CareerPath = () => {
   return (
-    <section className="py-12 md:py-16 bg-white relative">
+    <section className="py-6 md:py-16 bg-white relative">
       <Container>
-        <div className="text-center max-w-3xl mx-auto mb-16">
-          <h2 className="text-2xl md:text-4xl md: text-xl md: font-medium text-vmanous-navy-deep mb-6">
+        <div className="text-center max-w-3xl mx-auto mb-6 md:mb-12">
+          <h2 className="text-2xl md:text-4xl font-medium text-vmanous-navy-deep mb-2 sm:mb-4">
             Where Data Science Can Take You
           </h2>
-          <p className="text-lg text-gray-600">
+          <p className="text-base sm:text-lg text-gray-600">
             Explore the diverse professional roles available in the modern data ecosystem.
           </p>
         </div>

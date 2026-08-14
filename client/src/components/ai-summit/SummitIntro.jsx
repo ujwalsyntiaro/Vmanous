@@ -11,19 +11,19 @@ const introBlocks = [
 
 export const SummitIntro = () => {
   return (
-    <section className="pt-4 md:pt-6 pb-4 md:pb-6 bg-vmanous-light">
+    <section id="workshop" className="pt-4 md:pt-6 pb-4 md:pb-6 bg-white">
       <Container>
-        <div className="grid lg:grid-cols-2 gap-16 items-center">
+        <div className="grid lg:grid-cols-2 gap-6 lg:gap-16 items-center">
           <div>
-            <h2 className="text-2xl md:text-4xl font-medium text-vmanous-navy-deep mb-6">
+            <h2 className="text-2xl md:text-4xl font-medium text-vmanous-navy-deep mb-3 md:mb-6">
               More Than an AI Event
             </h2>
-            <p className="text-lg text-gray-600 leading-relaxed">
+            <p className="text-base sm:text-lg text-gray-600 leading-relaxed">
               VMANOUS AI Summit is designed as a structured journey where students move from understanding AI concepts to building practical solutions, exploring research and developing industry-ready experience.
             </p>
           </div>
-          
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
             {introBlocks.map((block, index) => (
               <motion.div
                 key={block.id}
@@ -31,12 +31,12 @@ export const SummitIntro = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.4, delay: index * 0.1 }}
-                className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 hover:shadow-xl hover:shadow-blue-500/5 transition-all group"
+                className="bg-white p-5 sm:p-6 md:p-8 rounded-2xl shadow-sm border border-gray-100 hover:shadow-xl hover:shadow-blue-500/5 transition-all group"
               >
-                <div className="text-sm font-medium text-vmanous-ai-blue mb-4 group-hover:text-purple-500 transition-colors">
+                <div className="text-sm font-medium text-vmanous-ai-blue mb-2 group-hover:text-purple-500 transition-colors">
                   {block.id}
                 </div>
-                <h3 className="text-lg md:text-xl font-medium text-vmanous-navy-deep mb-3">{block.title}</h3>
+                <h3 className="text-base sm:text-lg md:text-xl font-medium text-vmanous-navy-deep mb-1 sm:mb-2">{block.title}</h3>
                 <p className="text-gray-600 text-sm leading-relaxed">{block.desc}</p>
               </motion.div>
             ))}
