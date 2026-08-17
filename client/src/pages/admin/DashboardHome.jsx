@@ -2,6 +2,7 @@ import React from 'react';
 import { Users, Building2, BookOpen, Calendar, Briefcase, FileText } from 'lucide-react';
 import StatCard from '../../components/admin/StatCard';
 import EventCard from '../../components/admin/EventCard';
+import { getSummits } from '../../services/summitService';
 
 const DashboardHome = () => {
   return (
@@ -89,33 +90,18 @@ const DashboardHome = () => {
           </div>
           
           <div className="flex flex-col gap-4">
-            <EventCard 
-              title="AI Summit 2026"
-              type="Flagship Event"
-              date="August 25, 2026"
-              time="10:00 AM - 4:00 PM"
-              location="National Institute of Technology"
-              status="Upcoming"
-              registrations={350}
-            />
-            <EventCard 
-              title="Deep Learning Workshop"
-              type="Workshop"
-              date="September 15, 2026"
-              time="02:00 PM - 5:00 PM"
-              location="Online / Virtual"
-              status="Active"
-              registrations={120}
-            />
-            <EventCard 
-              title="Data Science Internship Orientation"
-              type="Orientation"
-              date="October 01, 2026"
-              time="11:00 AM - 1:00 PM"
-              location="VMANOUS HQ"
-              status="Upcoming"
-              registrations={85}
-            />
+            {getSummits().slice(0, 3).map((summit) => (
+              <EventCard 
+                key={summit.id}
+                title={summit.title}
+                type={summit.type}
+                date={summit.date}
+                time={summit.duration}
+                location={summit.college}
+                status="Upcoming"
+                registrations={0}
+              />
+            ))}
           </div>
         </div>
         
