@@ -1,24 +1,25 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Outlet } from 'react-router-dom';
+import AdminSidebar from '../components/admin/AdminSidebar';
+import AdminHeader from '../components/admin/AdminHeader';
 
 const AdminLayout = () => {
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
+
   return (
-    <div className="min-h-screen bg-gray-900 text-white flex">
-      {/* Sidebar placeholder */}
-      <aside className="w-64 border-r border-gray-800 hidden md:block">
-        <div className="p-6">Admin Sidebar (Placeholder)</div>
-      </aside>
-      
-      <main className="flex-1 flex flex-col">
-        {/* Header placeholder */}
-        <header className="h-16 border-b border-gray-800 flex items-center px-6 bg-gray-900">
-          Admin Header (Placeholder)
-        </header>
+    <div className="min-h-screen bg-vmanous-light flex font-sans text-vmanous-navy-dark">
+      {/* Sidebar */}
+      <AdminSidebar isMobileOpen={isMobileOpen} setIsMobileOpen={setIsMobileOpen} />
+
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col lg:pl-64 min-w-0 transition-all duration-300">
+        <AdminHeader setIsMobileOpen={setIsMobileOpen} />
         
-        <div className="p-6 flex-1 overflow-auto bg-gray-800">
+        <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-x-hidden">
+          {/* This will render the specific admin page components based on the route */}
           <Outlet />
-        </div>
-      </main>
+        </main>
+      </div>
     </div>
   );
 };
