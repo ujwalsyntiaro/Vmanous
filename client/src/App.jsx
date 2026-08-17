@@ -18,9 +18,11 @@ import CollegePartnership from './pages/enroll/CollegePartnership';
 import TrainerRegistration from './pages/enroll/TrainerRegistration';
 import Payment from './pages/Payment';
 import Pass from './pages/Pass';
+import Application from './pages/Application';
 
 // Admin Pages
 import DashboardHome from './pages/admin/DashboardHome';
+import ManagePrograms from './pages/admin/ManagePrograms';
 import PlaceholderPage from './components/admin/PlaceholderPage';
 
 const App = () => {
@@ -41,6 +43,7 @@ const App = () => {
           <Route path="/enroll/student" element={<StudentEnrollment />} />
           <Route path="/enroll/college" element={<CollegePartnership />} />
           <Route path="/enroll/trainer" element={<TrainerRegistration />} />
+          <Route path="/application" element={<Application />} />
           <Route path="/payment" element={<Payment />} />
           <Route path="/pass" element={<Pass />} />
         </Route>
@@ -61,7 +64,7 @@ const App = () => {
           <Route path="organizations" element={<PlaceholderPage title="Organizations Management" />} />
           
           {/* Programs */}
-          <Route path="ai-summits" element={<PlaceholderPage title="AI Summits Management" />} />
+          <Route path="ai-summits" element={<ManagePrograms />} />
           <Route path="workshops" element={<PlaceholderPage title="Workshops Management" />} />
           <Route path="data-science" element={<PlaceholderPage title="Data Science Programs" />} />
           <Route path="internships" element={<PlaceholderPage title="Internships Management" />} />
