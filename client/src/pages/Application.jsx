@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { CheckCircle2, Send, ChevronDown, ArrowRight, Camera, X, RefreshCw } from 'lucide-react';
+import { CheckCircle2, Send, ChevronDown, ArrowRight, Camera, X, RefreshCw, User } from 'lucide-react';
 
 const PROGRAM_OPTIONS = [
   { value: 'AI Summit', label: 'AI Summit' },
@@ -11,27 +11,63 @@ const PROGRAM_OPTIONS = [
   { value: 'Mentorship & Training', label: 'Expert Mentorship & Training' }
 ];
 
+const getSemesterOptions = (degree) => {
+  if (!degree) {
+    return [
+      '1st Semester', '2nd Semester', '3rd Semester', '4th Semester',
+      '5th Semester', '6th Semester', '7th Semester', '8th Semester', 'Passout / Alumni'
+    ];
+  }
+  const d = degree.toLowerCase();
+  if (d.includes('mca') || d.includes('m.tech') || d.includes('m.sc')) {
+    return ['1st Semester', '2nd Semester', '3rd Semester', '4th Semester', 'Passout / Alumni'];
+  }
+  if (d.includes('bca') || d.includes('b.sc') || d.includes('diploma')) {
+    return ['1st Semester', '2nd Semester', '3rd Semester', '4th Semester', '5th Semester', '6th Semester', 'Passout / Alumni'];
+  }
+  if (d.includes('b.tech') || d.includes('b.e.')) {
+    return [
+      '1st Semester', '2nd Semester', '3rd Semester', '4th Semester',
+      '5th Semester', '6th Semester', '7th Semester', '8th Semester', 'Passout / Alumni'
+    ];
+  }
+  return [
+    '1st Semester', '2nd Semester', '3rd Semester', '4th Semester',
+    '5th Semester', '6th Semester', '7th Semester', '8th Semester', 'Passout / Alumni'
+  ];
+};
+
 export const Application = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const summitDetails = location.state?.summitDetails;
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const existingData = location.state?.formData;
   const [formData, setFormData] = useState({
-    firstName: '',
-    middleName: '',
-    lastName: '',
-    email: '',
-    phone: '',
-    alternatePhone: '',
-    branch: '',
-    year: '',
-    institution: summitDetails?.college || '',
-    programInterest: location.state?.programInterest || 'AI Summit 2026',
-    message: '',
-    selfie: null
+    firstName: existingData?.firstName || '',
+    middleName: existingData?.middleName || '',
+    lastName: existingData?.lastName || '',
+    email: existingData?.email || '',
+    dob: existingData?.dob || '',
+    bloodGroup: existingData?.bloodGroup || '',
+    phone: existingData?.phone || '',
+    alternatePhone: existingData?.alternatePhone || '',
+    tenthPercentage: existingData?.tenthPercentage || '',
+    twelfthPercentage: existingData?.twelfthPercentage || '',
+    diplomaPercentage: existingData?.diplomaPercentage || '',
+    branch: existingData?.branch || '',
+    year: existingData?.year || '',
+    institution: existingData?.institution || summitDetails?.college || 'National Institute of Technology',
+    collegeAddress: existingData?.collegeAddress || summitDetails?.location || 'Campus Main Road, NIT Campus',
+    degree: existingData?.degree || '',
+    semester: existingData?.semester || '',
+    programInterest: existingData?.programInterest || location.state?.programInterest || 'AI Summit 2026',
+    message: existingData?.message || '',
+    selfie: existingData?.selfie || null
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [errors, setErrors] = useState({});
 
   // Camera State
   const videoRef = useRef(null);
@@ -85,7 +121,73 @@ export const Application = () => {
   }, []);
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    let val = value;
+
+    // Phone / Alternate Phone - allow digits only and max 10 characters
+    if (name === 'phone' || name === 'alternatePhone') {
+      val = value.replace(/\D/g, '').slice(0, 10);
+
+      // Real-time validation for Phone
+      if (name === 'phone') {
+        if (val.length > 0 && val.length < 10) {
+          setErrors(prev => ({ ...prev, phone: 'Phone number must be exactly 10 digits' }));
+        } else {
+          setErrors(prev => ({ ...prev, phone: null }));
+        }
+      }
+
+      // Real-time validation for Alternate Phone
+      if (name === 'alternatePhone') {
+        if (val.length > 0 && val.length < 10) {
+          setErrors(prev => ({ ...prev, alternatePhone: 'Alternate phone number must be 10 digits' }));
+        } else {
+          setErrors(prev => ({ ...prev, alternatePhone: null }));
+        }
+      }
+    }
+
+    setFormData(prev => ({ ...prev, [name]: val }));
+
+    // Real-time validation for 10th and 12th percentage
+    if (name === 'tenthPercentage' || name === 'twelfthPercentage') {
+      const numVal = parseFloat(value);
+      if (value !== '' && (isNaN(numVal) || numVal < 0 || numVal > 100)) {
+        setErrors(prev => ({
+          ...prev,
+          [name]: 'Percentage must be between 0% and 100%'
+        }));
+      } else {
+        setErrors(prev => ({
+          ...prev,
+          [name]: null
+        }));
+      }
+    }
+
+    // Real-time validation for Diploma percentage (allows N/A or numeric percentage)
+    if (name === 'diplomaPercentage') {
+      const trimmedUpper = value.trim().toUpperCase();
+      if (value !== '' && trimmedUpper !== 'N/A' && trimmedUpper !== 'NA') {
+        const numVal = parseFloat(value);
+        if (isNaN(numVal) || numVal < 0 || numVal > 100) {
+          setErrors(prev => ({
+            ...prev,
+            diplomaPercentage: 'Enter percentage (0-100) or N/A'
+          }));
+        } else {
+          setErrors(prev => ({
+            ...prev,
+            diplomaPercentage: null
+          }));
+        }
+      } else {
+        setErrors(prev => ({
+          ...prev,
+          diplomaPercentage: null
+        }));
+      }
+    }
   };
 
   const handleFileChange = (e) => {
@@ -96,55 +198,97 @@ export const Application = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+
+    const newErrors = {};
+
+    // Validate Phone Number (10 digits)
+    if (!formData.phone || formData.phone.trim().length !== 10) {
+      newErrors.phone = 'Please enter a valid 10-digit phone number';
+    }
+
+    // Validate Alternate Phone (if provided, must be 10 digits)
+    if (formData.alternatePhone && formData.alternatePhone.trim().length > 0 && formData.alternatePhone.trim().length !== 10) {
+      newErrors.alternatePhone = 'Alternate phone number must be 10 digits';
+    }
+
+    // Validate Blood Group
+    if (!formData.bloodGroup || formData.bloodGroup.trim() === '') {
+      newErrors.bloodGroup = 'Blood Group is required';
+    }
+
+    // Validate 10th Marks (%)
+    const tenthNum = parseFloat(formData.tenthPercentage);
+    if (!formData.tenthPercentage || formData.tenthPercentage.trim() === '') {
+      newErrors.tenthPercentage = '10th Percentage is required';
+    } else if (isNaN(tenthNum) || tenthNum < 0 || tenthNum > 100) {
+      newErrors.tenthPercentage = 'Please enter a valid percentage between 0% and 100%';
+    }
+
+    // Validate 12th Marks (%)
+    const twelfthNum = parseFloat(formData.twelfthPercentage);
+    if (!formData.twelfthPercentage || formData.twelfthPercentage.trim() === '') {
+      newErrors.twelfthPercentage = '12th / Diploma Percentage is required';
+    } else if (isNaN(twelfthNum) || twelfthNum < 0 || twelfthNum > 100) {
+      newErrors.twelfthPercentage = 'Please enter a valid percentage between 0% and 100%';
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+
     setIsSubmitting(true);
     setTimeout(() => {
       setIsSubmitting(false);
-      navigate('/payment', { state: { formData } });
+      const updatedData = { ...formData, appliedDate: formData.appliedDate || new Date().toISOString() };
+      navigate('/payment', { state: { formData: updatedData } });
     }, 1200);
   };
 
+  const activeCollege = summitDetails?.college || formData.institution || 'National Institute of Technology';
+
   return (
     <div className="bg-gray-50 min-h-screen">
-      
+
       {/* 01 FULL WIDTH HERO SECTION */}
-      <section className="relative bg-[#070B14] text-white pt-16 pb-28 overflow-hidden">
-        {/* Background elements to mimic the dark data science image */}
-        <div className="absolute inset-0 opacity-20 pointer-events-none">
-          <div className="absolute inset-0 bg-gradient-to-r from-[#070B14] via-[#070B14]/90 to-transparent z-10" />
+      <section className="relative bg-[#070B14] text-white pt-10 pb-20 overflow-hidden">
+        {/* Background elements with reduced overlay for a clearer background image */}
+        <div className="absolute inset-0 opacity-45 pointer-events-none">
+          <div className="absolute inset-0 bg-gradient-to-r from-[#070B14] via-[#070B14]/60 to-transparent z-10" />
           <div className="absolute right-0 top-0 bottom-0 w-3/4 bg-[url('https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=2070&auto=format&fit=crop')] bg-cover bg-center" />
         </div>
-        
+
         <div className="container mx-auto px-4 relative z-20">
-          <div className="max-w-3xl">
+          <div className="max-w-4xl">
             {summitDetails ? (
               <>
-                <span className="text-white font-bold tracking-wider uppercase text-sm mb-4 block">
+                <span className="text-white font-bold tracking-wider uppercase text-xs mb-2 block">
                   {summitDetails.title} &bull; {summitDetails.duration}
                 </span>
-                <h1 
+                <h1
                   style={{ fontFamily: "'Josefin Sans', sans-serif", fontWeight: 100 }}
-                  className="text-4xl md:text-5xl lg:text-5xl leading-tight mb-3 text-slate-200 tracking-wide"
+                  className="text-3xl md:text-4xl lg:text-4xl leading-tight mb-2 text-slate-200 tracking-wide"
                 >
-                  {summitDetails.college || "Start Your Journey"}
+                  {activeCollege}
                 </h1>
-                <p 
+                <p
                   style={{ fontFamily: "'Josefin Sans', sans-serif", fontWeight: 300 }}
-                  className="text-slate-400 text-xl mb-0 leading-relaxed tracking-wide"
+                  className="text-slate-400 text-lg mb-0 leading-relaxed tracking-wide"
                 >
                   {summitDetails.subtitle}
                 </p>
               </>
             ) : (
               <>
-                <h1 
+                <h1
                   style={{ fontFamily: "'Josefin Sans', sans-serif", fontWeight: 100 }}
-                  className="text-4xl md:text-5xl lg:text-6xl leading-tight mb-3 text-slate-200 tracking-wide"
+                  className="text-3xl md:text-4xl lg:text-5xl leading-tight mb-2 text-slate-200 tracking-wide"
                 >
-                  College Name
+                  {activeCollege}
                 </h1>
-                <p 
+                <p
                   style={{ fontFamily: "'Josefin Sans', sans-serif", fontWeight: 300 }}
-                  className="text-slate-400 text-xl mb-0 leading-relaxed tracking-wide"
+                  className="text-slate-400 text-lg mb-0 leading-relaxed tracking-wide"
                 >
                   Join the VMANOUS ecosystem and accelerate your career with our flagship programs, designed by industry experts.
                 </p>
@@ -155,339 +299,524 @@ export const Application = () => {
       </section>
 
       {/* 02 FORM SECTION */}
-      <section className="pb-20 relative -mt-16 z-30">
-        <div className="container mx-auto px-4 max-w-3xl">
+      <section className="pb-10 relative -mt-12 z-30">
+        <div className="container mx-auto px-4 max-w-4xl">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-white shadow-xl rounded-xl overflow-hidden"
+            className="bg-white shadow-xl rounded-md overflow-hidden"
           >
-          {/* Form Header */}
-          <div className="bg-white text-slate-800 p-8 md:px-10 md:pt-10 md:pb-4 border-b border-gray-100 relative overflow-hidden">
-            <div className="relative z-10">
-              <h2 className="text-xl md:text-2xl font-normal tracking-tight mb-3">
-                Application Form
-              </h2>
-              <p className="text-slate-500 flex items-center gap-3 flex-wrap text-sm md:text-base">
-                Applying for:
-                <span className="inline-flex items-center px-4 py-1 rounded-full bg-blue-50 border border-blue-100 text-[#2D73B4] font-bold uppercase tracking-wider">
-                  {formData.programInterest} {summitDetails?.date ? ` • ${summitDetails.date}` : ''}
-                </span>
-              </p>
-            </div>
-          </div>
-
-          {/* Form Body */}
-          <div className="p-8 md:p-10">
-            {isSubmitted ? (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="text-center py-10"
-              >
-                <div className="w-20 h-20 bg-green-100 text-[#16A34A] rounded-full flex items-center justify-center mx-auto mb-6 shadow-sm">
-                  <CheckCircle2 size={48} />
-                </div>
-                <h3 className="text-3xl font-bold text-[#0F172A] mb-4">
-                  Application Submitted!
-                </h3>
-                <p className="text-slate-600 max-w-md mx-auto mb-8 text-lg leading-relaxed">
-                  Thank you for applying to join the VMANOUS ecosystem. Our team will review your details and reach out shortly.
+            {/* Form Header */}
+            <div className="bg-white text-slate-800 p-5 md:px-8 md:pt-6 md:pb-3 border-b border-gray-100 relative overflow-hidden">
+              <div className="relative z-10">
+                <h2 className="text-lg md:text-xl font-semibold tracking-tight mb-1">
+                  Application Form
+                </h2>
+                <p className="text-slate-500 flex items-center gap-2 flex-wrap text-xs md:text-sm">
+                  Applying for:
+                  <span className="inline-flex items-center px-3 py-0.5 rounded-full bg-emerald-50 border border-emerald-100 text-emerald-600 font-bold text-xs uppercase tracking-wider">
+                    {formData.programInterest} &bull; {activeCollege} {summitDetails?.date ? ` • ${summitDetails.date}` : ''}
+                  </span>
                 </p>
-                <button
-                  onClick={() => {
-                    setIsSubmitted(false);
-                    setFormData({ ...formData, message: '' });
-                  }}
-                  className="px-8 py-4 bg-[#2D73B4] text-white text-base font-semibold rounded-xl hover:bg-blue-700 transition-all shadow-md"
+              </div>
+            </div>
+
+            {/* Form Body */}
+            <div className="p-5 md:p-8">
+              {isSubmitted ? (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="text-center py-6"
                 >
-                  Submit Another Response
-                </button>
-              </motion.div>
-            ) : (
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  {/* First Name */}
-                  <div>
-                    <label className="block text-sm font-bold text-slate-700 mb-2">
-                      First Name <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      name="firstName"
-                      required
-                      placeholder="Rahul"
-                      value={formData.firstName}
-                      onChange={handleChange}
-                      className="w-full px-5 py-4 rounded-xl bg-[#F8FAFC] border border-slate-200 text-slate-800 text-sm font-medium focus:bg-white focus:border-[#2D73B4] focus:ring-4 focus:ring-[#2D73B4]/15 outline-none transition-all duration-200 placeholder:text-slate-400"
-                    />
+                  <div className="w-16 h-16 bg-green-100 text-[#16A34A] rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm">
+                    <CheckCircle2 size={40} />
                   </div>
+                  <h3 className="text-2xl font-bold text-[#0F172A] mb-2">
+                    Application Submitted!
+                  </h3>
+                  <p className="text-slate-600 max-w-md mx-auto mb-6 text-base leading-relaxed">
+                    Thank you for applying to join the VMANOUS ecosystem. Our team will review your details and reach out shortly.
+                  </p>
+                  <button
+                    onClick={() => {
+                      setIsSubmitted(false);
+                      setFormData({ ...formData, message: '' });
+                    }}
+                    className="px-6 py-3 bg-[#2D73B4] text-white text-sm font-semibold rounded-lg hover:bg-blue-700 transition-all shadow-md"
+                  >
+                    Submit Another Response
+                  </button>
+                </motion.div>
+              ) : (
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                    {/* Left Column (Name & Contact Details) */}
+                    <div className="lg:col-span-2 space-y-4">
+                      {/* First Name & Middle Name */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {/* First Name */}
+                        <div>
+                          <label className="block text-xs font-bold text-slate-700 mb-1">
+                            First Name <span className="text-red-500">*</span>
+                          </label>
+                          <input
+                            type="text"
+                            name="firstName"
+                            required
+                            placeholder="Rahul"
+                            value={formData.firstName}
+                            onChange={handleChange}
+                            className="w-full px-4 py-2.5 rounded-lg bg-[#F8FAFC] border border-slate-200 text-slate-800 text-sm font-medium focus:bg-white focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/15 outline-none transition-all duration-200 placeholder:text-slate-400"
+                          />
+                        </div>
 
-                  {/* Middle Name */}
-                  <div>
-                    <label className="block text-sm font-bold text-slate-700 mb-2">
-                      Middle Name
-                    </label>
-                    <input
-                      type="text"
-                      name="middleName"
-                      placeholder="Kumar"
-                      value={formData.middleName}
-                      onChange={handleChange}
-                      className="w-full px-5 py-4 rounded-xl bg-[#F8FAFC] border border-slate-200 text-slate-800 text-sm font-medium focus:bg-white focus:border-[#2D73B4] focus:ring-4 focus:ring-[#2D73B4]/15 outline-none transition-all duration-200 placeholder:text-slate-400"
-                    />
-                  </div>
+                        {/* Middle Name */}
+                        <div>
+                          <label className="block text-xs font-bold text-slate-700 mb-1">
+                            Middle Name
+                          </label>
+                          <input
+                            type="text"
+                            name="middleName"
+                            placeholder="Kumar"
+                            value={formData.middleName}
+                            onChange={handleChange}
+                            className="w-full px-4 py-2.5 rounded-lg bg-[#F8FAFC] border border-slate-200 text-slate-800 text-sm font-medium focus:bg-white focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/15 outline-none transition-all duration-200 placeholder:text-slate-400"
+                          />
+                        </div>
+                      </div>
 
-                  {/* Last Name */}
-                  <div>
-                    <label className="block text-sm font-bold text-slate-700 mb-2">
-                      Last Name <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      name="lastName"
-                      required
-                      placeholder="Sharma"
-                      value={formData.lastName}
-                      onChange={handleChange}
-                      className="w-full px-5 py-4 rounded-xl bg-[#F8FAFC] border border-slate-200 text-slate-800 text-sm font-medium focus:bg-white focus:border-[#2D73B4] focus:ring-4 focus:ring-[#2D73B4]/15 outline-none transition-all duration-200 placeholder:text-slate-400"
-                    />
-                  </div>
-                </div>
+                      {/* Last Name */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {/* Last Name (Under First Name) */}
+                        <div>
+                          <label className="block text-xs font-bold text-slate-700 mb-1">
+                            Last Name <span className="text-red-500">*</span>
+                          </label>
+                          <input
+                            type="text"
+                            name="lastName"
+                            required
+                            placeholder="Sharma"
+                            value={formData.lastName}
+                            onChange={handleChange}
+                            className="w-full px-4 py-2.5 rounded-lg bg-[#F8FAFC] border border-slate-200 text-slate-800 text-sm font-medium focus:bg-white focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/15 outline-none transition-all duration-200 placeholder:text-slate-400"
+                          />
+                        </div>
+                        {/* Empty space next to Last Name */}
+                        <div></div>
+                      </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                  {/* Left Column (Email, Phone) */}
-                  <div className="lg:col-span-2 space-y-6">
-                    {/* Email */}
-                    <div>
-                      <label className="block text-sm font-bold text-slate-700 mb-2">
-                        Email Address <span className="text-red-500">*</span>
+                      {/* Phone Number & Alternate Phone Number */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {/* Phone Number */}
+                        <div>
+                          <label className="block text-xs font-bold text-slate-700 mb-1">
+                            Phone Number <span className="text-red-500">*</span>
+                          </label>
+                          <input
+                            type="tel"
+                            name="phone"
+                            required
+                            maxLength={10}
+                            placeholder="9876543210"
+                            value={formData.phone}
+                            onChange={handleChange}
+                            className={`w-full px-4 py-2.5 rounded-lg bg-[#F8FAFC] border text-slate-800 text-sm font-medium focus:bg-white focus:ring-2 outline-none transition-all duration-200 placeholder:text-slate-400 ${errors.phone
+                              ? 'border-red-500 focus:border-red-500 focus:ring-red-500/15'
+                              : 'border-slate-200 focus:border-emerald-600 focus:ring-emerald-600/15'
+                              }`}
+                          />
+                          {errors.phone && (
+                            <p className="mt-1 text-[11px] text-red-500 font-semibold flex items-center gap-1">
+                              <span>•</span> {errors.phone}
+                            </p>
+                          )}
+                        </div>
+
+                        {/* Alternate Phone Number */}
+                        <div>
+                          <label className="block text-xs font-bold text-slate-700 mb-1">
+                            Alternate Phone Number
+                          </label>
+                          <input
+                            type="tel"
+                            name="alternatePhone"
+                            maxLength={10}
+                            placeholder="9876543210"
+                            value={formData.alternatePhone}
+                            onChange={handleChange}
+                            className={`w-full px-4 py-2.5 rounded-lg bg-[#F8FAFC] border text-slate-800 text-sm font-medium focus:bg-white focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/15 outline-none transition-all duration-200 placeholder:text-slate-400 ${errors.alternatePhone
+                              ? 'border-red-500 focus:border-red-500 focus:ring-red-500/15'
+                              : 'border-slate-200 focus:border-emerald-600 focus:ring-emerald-600/15'
+                              }`}
+                          />
+                          {errors.alternatePhone && (
+                            <p className="mt-1 text-[11px] text-red-500 font-semibold flex items-center gap-1">
+                              <span>•</span> {errors.alternatePhone}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Email Address & Date of Birth */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {/* Email Address */}
+                        <div>
+                          <label className="block text-xs font-bold text-slate-700 mb-1">
+                            Email Address <span className="text-red-500">*</span>
+                          </label>
+                          <input
+                            type="email"
+                            name="email"
+                            required
+                            placeholder="rahul@example.com"
+                            value={formData.email}
+                            onChange={handleChange}
+                            className="w-full px-4 py-2.5 rounded-lg bg-[#F8FAFC] border border-slate-200 text-slate-800 text-sm font-medium focus:bg-white focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/15 outline-none transition-all duration-200 placeholder:text-slate-400"
+                          />
+                        </div>
+
+                        {/* Date of Birth & Blood Group */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          {/* Date of Birth */}
+                          <div>
+                            <label className="block text-xs font-bold text-slate-700 mb-1">
+                              Date of Birth <span className="text-red-500">*</span>
+                            </label>
+                            <input
+                              type="date"
+                              name="dob"
+                              required
+                              value={formData.dob}
+                              onChange={handleChange}
+                              className="w-full px-3 py-2.5 rounded-lg bg-[#F8FAFC] border border-slate-200 text-slate-800 text-xs font-medium focus:bg-white focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/15 outline-none transition-all duration-200 placeholder:text-slate-400 cursor-pointer [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:appearance-none"
+                            />
+                          </div>
+
+                          {/* Blood Group */}
+                          <div>
+                            <label className="block text-xs font-bold text-slate-700 mb-1">
+                              Blood Group <span className="text-red-500">*</span>
+                            </label>
+                            <div className="relative">
+                              <select
+                                name="bloodGroup"
+                                required
+                                value={formData.bloodGroup}
+                                onChange={(e) => {
+                                  handleChange(e);
+                                  if (e.target.value) setErrors(prev => ({ ...prev, bloodGroup: null }));
+                                }}
+                                className={`w-full pl-3 pr-8 py-2.5 rounded-lg bg-[#F8FAFC] border text-slate-800 text-xs font-medium focus:bg-white focus:ring-2 outline-none transition-all duration-200 appearance-none cursor-pointer ${
+                                  errors.bloodGroup
+                                    ? 'border-red-500 focus:border-red-500 focus:ring-red-500/15'
+                                    : 'border-slate-200 focus:border-emerald-600 focus:ring-emerald-600/15'
+                                }`}
+                              >
+                                <option value="">Select</option>
+                                <option value="A+">A+</option>
+                                <option value="A-">A-</option>
+                                <option value="B+">B+</option>
+                                <option value="B-">B-</option>
+                                <option value="O+">O+</option>
+                                <option value="O-">O-</option>
+                                <option value="AB+">AB+</option>
+                                <option value="AB-">AB-</option>
+                              </select>
+                              <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
+                            </div>
+                            {errors.bloodGroup && (
+                              <p className="mt-1 text-[11px] text-red-500 font-semibold flex items-center gap-1">
+                                <span>•</span> {errors.bloodGroup}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Selfie Upload - Circular Design Without Square Background */}
+                    <div className="lg:col-span-1 flex flex-col items-center justify-center">
+                      <label className="block text-xs font-bold text-slate-700 mb-2 text-center w-full">
+                        Selfie Photo <span className="text-red-500">*</span>
                       </label>
-                      <input
-                        type="email"
-                        name="email"
-                        required
-                        placeholder="rahul@example.com"
-                        value={formData.email}
-                        onChange={handleChange}
-                        className="w-full px-5 py-4 rounded-xl bg-[#F8FAFC] border border-slate-200 text-slate-800 text-sm font-medium focus:bg-white focus:border-[#2D73B4] focus:ring-4 focus:ring-[#2D73B4]/15 outline-none transition-all duration-200 placeholder:text-slate-400"
-                      />
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      {/* Phone */}
-                      <div>
-                        <label className="block text-sm font-bold text-slate-700 mb-2">
-                          Phone Number <span className="text-red-500">*</span>
-                        </label>
-                        <input
-                          type="tel"
-                          name="phone"
-                          required
-                          placeholder="+91 98765 43210"
-                          value={formData.phone}
-                          onChange={handleChange}
-                          className="w-full px-5 py-4 rounded-xl bg-[#F8FAFC] border border-slate-200 text-slate-800 text-sm font-medium focus:bg-white focus:border-[#2D73B4] focus:ring-4 focus:ring-[#2D73B4]/15 outline-none transition-all duration-200 placeholder:text-slate-400"
-                        />
-                      </div>
-
-                      {/* Alternate Phone */}
-                      <div>
-                        <label className="block text-sm font-bold text-slate-700 mb-2">
-                          Alternate Phone Number
-                        </label>
-                        <input
-                          type="tel"
-                          name="alternatePhone"
-                          placeholder="+91 98765 43210"
-                          value={formData.alternatePhone}
-                          onChange={handleChange}
-                          className="w-full px-5 py-4 rounded-xl bg-[#F8FAFC] border border-slate-200 text-slate-800 text-sm font-medium focus:bg-white focus:border-[#2D73B4] focus:ring-4 focus:ring-[#2D73B4]/15 outline-none transition-all duration-200 placeholder:text-slate-400"
-                        />
+                      <div className="w-full flex-1 flex flex-col items-center justify-center py-2">
+                        {formData.selfie ? (
+                          <div className="flex flex-col items-center gap-3">
+                            <div className="relative group">
+                              <img src={formData.selfie} alt="Selfie preview" className="w-40 h-40 object-cover rounded-full shadow-lg border-4 border-emerald-500" />
+                              <div className="absolute inset-0 rounded-full bg-emerald-900/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+                            </div>
+                            <button type="button" onClick={retakePhoto} className="flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-bold hover:bg-emerald-100 transition-colors cursor-pointer shadow-sm">
+                              <RefreshCw size={13} /> Retake Photo
+                            </button>
+                          </div>
+                        ) : isCameraOpen ? (
+                          <div className="flex flex-col items-center justify-center gap-3">
+                            <div className="w-40 h-40 rounded-full shadow-xl overflow-hidden relative bg-black border-4 border-emerald-500">
+                              <video ref={videoRef} autoPlay playsInline className="w-full h-full object-cover rounded-full scale-x-[-1]" />
+                              <canvas ref={canvasRef} className="hidden" />
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <button type="button" onClick={capturePhoto} className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-full px-4 py-2 text-xs font-bold shadow-md hover:scale-105 transition-transform cursor-pointer flex items-center gap-1.5" aria-label="Take photo">
+                                <Camera size={15} /> Capture
+                              </button>
+                              <button type="button" onClick={stopCamera} className="bg-slate-200 text-slate-700 hover:bg-slate-300 rounded-full p-2 transition-colors cursor-pointer" aria-label="Cancel">
+                                <X size={15} />
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="flex flex-col items-center justify-center gap-3">
+                            <div
+                              onClick={startCamera}
+                              className="w-36 h-36 rounded-full border-2 border-dashed border-emerald-400 p-1.5 flex items-center justify-center relative group cursor-pointer hover:border-emerald-600 transition-all duration-300 shadow-sm"
+                            >
+                              <div className="w-full h-full rounded-full bg-emerald-100/90 text-emerald-700 flex flex-col items-center justify-center group-hover:bg-emerald-200/80 transition-colors">
+                                <User size={52} className="text-emerald-700 mb-0.5 group-hover:scale-105 transition-transform" />
+                                <span className="text-[10px] font-bold text-emerald-800 uppercase tracking-wider">Selfie</span>
+                              </div>
+                            </div>
+                            {cameraError && <p className="text-[11px] text-red-500 font-medium text-center max-w-[180px]">{cameraError}</p>}
+                            <button type="button" onClick={startCamera} className="px-5 py-2 border-2 border-emerald-600 text-emerald-700 bg-white text-xs font-bold rounded-lg shadow-sm hover:bg-emerald-50 transition-colors cursor-pointer flex items-center gap-1.5">
+                              <Camera size={14} /> Capture Image
+                            </button>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
 
-                  {/* Selfie Upload */}
-                  <div className="lg:col-span-1 h-full">
-                    <label className="block text-sm font-bold text-slate-700 mb-2">
-                      Selfie Photo <span className="text-red-500">*</span>
-                    </label>
-                    <div className="w-full rounded-xl bg-[#F8FAFC] border border-slate-200 p-4 relative overflow-hidden h-[calc(100%-28px)] min-h-[160px] flex items-center justify-center">
-                      {formData.selfie ? (
-                        <div className="flex flex-col items-center gap-3">
-                          <img src={formData.selfie} alt="Selfie preview" className="w-20 h-20 object-cover rounded-full border-4 border-white shadow-md" />
-                          <button type="button" onClick={retakePhoto} className="flex items-center gap-2 text-sm font-bold text-[#2D73B4] hover:text-blue-700 transition-colors">
-                            <RefreshCw size={14} /> Retake Photo
-                          </button>
-                        </div>
-                      ) : isCameraOpen ? (
-                        <div className="flex flex-col items-center justify-center w-full h-full relative">
-                          <video ref={videoRef} autoPlay playsInline className="w-full h-full object-cover rounded-lg bg-black" />
-                          <canvas ref={canvasRef} className="hidden" />
-                          <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-3">
-                            <button type="button" onClick={capturePhoto} className="bg-white text-[#2D73B4] rounded-full p-2.5 shadow-lg hover:scale-105 transition-transform" aria-label="Take photo">
-                              <Camera size={20} />
-                            </button>
-                            <button type="button" onClick={stopCamera} className="bg-red-500 text-white rounded-full p-2.5 shadow-lg hover:scale-105 transition-transform" aria-label="Cancel">
-                              <X size={20} />
-                            </button>
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="flex flex-col items-center justify-center gap-3">
-                          <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center text-[#2D73B4]">
-                            <Camera size={24} />
-                          </div>
-                          {cameraError && <p className="text-xs text-red-500 font-medium text-center">{cameraError}</p>}
-                          <button type="button" onClick={startCamera} className="px-5 py-2 bg-white border border-slate-200 text-[#2D73B4] text-sm font-bold rounded-lg shadow-sm hover:bg-slate-50 transition-colors">
-                            Open Camera
-                          </button>
-                        </div>
+                  {/* Academic Scores Section: 10th %, 12th %, and Diploma % */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {/* 10th % */}
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">
+                        10th Grade Marks (%) <span className="text-red-500">*</span>
+                      </label>
+                      <div className="relative">
+                        <input
+                          type="number"
+                          name="tenthPercentage"
+                          required
+                          min="0"
+                          max="100"
+                          step="0.01"
+                          placeholder="e.g. 88.5"
+                          value={formData.tenthPercentage}
+                          onChange={handleChange}
+                          className={`w-full px-4 py-2.5 pr-8 rounded-lg bg-[#F8FAFC] border text-slate-800 text-sm font-medium focus:bg-white focus:ring-2 outline-none transition-all duration-200 placeholder:text-slate-400 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${errors.tenthPercentage
+                            ? 'border-red-500 focus:border-red-500 focus:ring-red-500/15'
+                            : 'border-slate-200 focus:border-[#2D73B4] focus:ring-[#2D73B4]/15'
+                            }`}
+                        />
+                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400 pointer-events-none">%</span>
+                      </div>
+                      {errors.tenthPercentage && (
+                        <p className="mt-1 text-[11px] text-red-500 font-semibold flex items-center gap-1">
+                          <span>•</span> {errors.tenthPercentage}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* 12th % */}
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">
+                        12th Marks (%) <span className="text-red-500">*</span>
+                      </label>
+                      <div className="relative">
+                        <input
+                          type="number"
+                          name="twelfthPercentage"
+                          required
+                          min="0"
+                          max="100"
+                          step="0.01"
+                          placeholder="e.g. 91.2"
+                          value={formData.twelfthPercentage}
+                          onChange={handleChange}
+                          className={`w-full px-4 py-2.5 pr-8 rounded-lg bg-[#F8FAFC] border text-slate-800 text-sm font-medium focus:bg-white focus:ring-2 outline-none transition-all duration-200 placeholder:text-slate-400 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${errors.twelfthPercentage
+                            ? 'border-red-500 focus:border-red-500 focus:ring-red-500/15'
+                            : 'border-slate-200 focus:border-[#2D73B4] focus:ring-[#2D73B4]/15'
+                            }`}
+                        />
+                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400 pointer-events-none">%</span>
+                      </div>
+                      {errors.twelfthPercentage && (
+                        <p className="mt-1 text-[11px] text-red-500 font-semibold flex items-center gap-1">
+                          <span>•</span> {errors.twelfthPercentage}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Diploma % */}
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">
+                        Diploma Marks (%)
+                      </label>
+                      <div className="relative">
+                        <input
+                          type="text"
+                          name="diplomaPercentage"
+                          placeholder="e.g. 85.0 or N/A"
+                          value={formData.diplomaPercentage}
+                          onChange={handleChange}
+                          className={`w-full px-4 py-2.5 ${
+                            formData.diplomaPercentage && formData.diplomaPercentage.toString().toUpperCase() !== 'N/A' ? 'pr-8' : 'pr-4'
+                          } rounded-lg bg-[#F8FAFC] border text-slate-800 text-sm font-medium focus:bg-white focus:ring-2 outline-none transition-all duration-200 placeholder:text-slate-400 ${errors.diplomaPercentage
+                            ? 'border-red-500 focus:border-red-500 focus:ring-red-500/15'
+                            : 'border-slate-200 focus:border-[#2D73B4] focus:ring-[#2D73B4]/15'
+                            }`}
+                        />
+                        {formData.diplomaPercentage && formData.diplomaPercentage.toString().toUpperCase() !== 'N/A' && !isNaN(parseFloat(formData.diplomaPercentage)) && (
+                          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400 pointer-events-none">%</span>
+                        )}
+                      </div>
+                      {errors.diplomaPercentage && (
+                        <p className="mt-1 text-[11px] text-red-500 font-semibold flex items-center gap-1">
+                          <span>•</span> {errors.diplomaPercentage}
+                        </p>
                       )}
                     </div>
                   </div>
-                </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* Institution / College */}
-                  <div>
-                    <label className="block text-sm font-bold text-slate-700 mb-2">
-                      College Name & Location <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      name="institution"
-                      required
-                      placeholder="National Institute of Technology"
-                      value={formData.institution}
-                      onChange={handleChange}
-                      className="w-full px-5 py-4 rounded-xl bg-[#F8FAFC] border border-slate-200 text-slate-800 text-sm font-medium focus:bg-white focus:border-[#2D73B4] focus:ring-4 focus:ring-[#2D73B4]/15 outline-none transition-all duration-200 placeholder:text-slate-400"
-                    />
-                  </div>
-
-                  {/* Specialization */}
-                  <div>
-                    <label className="block text-sm font-bold text-slate-700 mb-2">
-                      Specialization
-                    </label>
-                    <div className="relative">
-                      <select
-                        name="branch"
-                        value={formData.branch}
-                        onChange={handleChange}
-                        className="w-full px-5 py-4 rounded-xl bg-[#F8FAFC] border border-slate-200 text-slate-800 text-sm font-medium focus:bg-white focus:border-[#2D73B4] focus:ring-4 focus:ring-[#2D73B4]/15 outline-none transition-all duration-200 appearance-none cursor-pointer"
-                      >
-                        <option value="" disabled>Select Specialization</option>
-                        <option value="Computer Science Engineering (CSE)">Computer Science Engineering (CSE)</option>
-                        <option value="Information Technology (IT)">Information Technology (IT)</option>
-                        <option value="Electronics and Communication (ECE)">Electronics and Communication (ECE)</option>
-                        <option value="Electrical and Electronics (EEE)">Electrical and Electronics (EEE)</option>
-                        <option value="Mechanical Engineering (ME)">Mechanical Engineering (ME)</option>
-                        <option value="Civil Engineering (CE)">Civil Engineering (CE)</option>
-                        <option value="Artificial Intelligence & Data Science">Artificial Intelligence & Data Science</option>
-                        <option value="MCA">MCA</option>
-                        <option value="BCA">BCA</option>
-                        <option value="BSc">BSc</option>
-                        <option value="Other">Other</option>
-                      </select>
-                      <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-500">
-                        <ChevronDown size={20} />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* Year of Study */}
-                  {formData.branch && (
+                  {/* College Name & College Address */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Institution / College Name */}
                     <div>
-                      <label className="block text-sm font-bold text-slate-700 mb-2">
-                        Year of Study
+                      <label className="block text-xs font-bold text-slate-700 mb-1">
+                        College Name <span className="text-red-500">*</span>
                       </label>
-                      <select
-                        name="year"
-                        value={formData.year}
-                        onChange={handleChange}
-                        className="w-full px-5 py-4 rounded-xl bg-[#F8FAFC] border border-slate-200 text-slate-800 text-sm font-medium focus:bg-white focus:border-[#2D73B4] focus:ring-4 focus:ring-[#2D73B4]/15 outline-none transition-all duration-200 appearance-none"
-                      >
-                        <option value="" disabled>Select Year</option>
-                        <option value="1st Year">1st Year</option>
-                        <option value="2nd Year">2nd Year</option>
-                        <option value="3rd Year">3rd Year</option>
-                        <option value="4th Year">4th Year</option>
-                        <option value="Completed / Alumni">Completed / Alumni</option>
-                      </select>
+                      <input
+                        type="text"
+                        name="institution"
+                        readOnly
+                        value={formData.institution}
+                        className="w-full px-3 py-2.5 rounded-lg bg-slate-100/80 border border-slate-200 text-slate-700 text-xs font-semibold outline-none cursor-not-allowed select-none"
+                      />
                     </div>
-                  )}
 
-                  {/* Program Focus */}
-                  <div className={`relative ${!formData.branch ? 'md:col-span-2' : ''}`}>
-                    <label className="block text-sm font-bold text-slate-700 mb-2">
-                      Program / Track Interest
-                    </label>
-
-                    <button
-                      type="button"
-                      onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                      className="w-full px-5 py-4 rounded-xl bg-[#F8FAFC] border border-slate-200 text-slate-800 text-sm font-medium focus:bg-white focus:border-[#2D73B4] focus:ring-4 focus:ring-[#2D73B4]/15 outline-none transition-all duration-200 cursor-pointer flex items-center justify-between"
-                    >
-                      <span className={formData.programInterest ? 'text-[#2D73B4] font-medium' : 'text-slate-800'}>
-                        {PROGRAM_OPTIONS.find(o => o.value === formData.programInterest)?.label || formData.programInterest}
-                      </span>
-                      <ChevronDown size={18} className={`text-slate-500 transition-transform duration-200 ${isDropdownOpen ? 'rotate-180 text-[#2D73B4]' : ''}`} />
-                    </button>
-
-                    {isDropdownOpen && (
-                      <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-200 shadow-xl rounded-xl overflow-hidden py-2 z-30">
-                        {PROGRAM_OPTIONS.map((opt) => {
-                          const isSelected = formData.programInterest === opt.value;
-                          return (
-                            <button
-                              type="button"
-                              key={opt.value}
-                              onClick={() => {
-                                setFormData(prev => ({ ...prev, programInterest: opt.value }));
-                                setIsDropdownOpen(false);
-                              }}
-                              className={`w-full text-left px-5 py-3 text-sm font-medium transition-colors cursor-pointer flex items-center justify-between ${isSelected
-                                ? 'bg-blue-50/80 text-[#2D73B4] font-bold'
-                                : 'text-slate-700 hover:bg-slate-50 hover:text-[#2D73B4]'
-                                }`}
-                            >
-                              <span>{opt.label}</span>
-                              {isSelected && <CheckCircle2 size={16} className="text-[#2D73B4]" />}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    )}
+                    {/* College Address (Fixed Read-Only) */}
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">
+                        College Address <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        name="collegeAddress"
+                        readOnly
+                        value={formData.collegeAddress}
+                        className="w-full px-3 py-2.5 rounded-lg bg-slate-100/80 border border-slate-200 text-slate-700 text-xs font-semibold outline-none cursor-not-allowed select-none"
+                      />
+                    </div>
                   </div>
-                </div>
+
+                  {/* Degree, Specialization & Semester (In Single 3-Column Row at Bottom) */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {/* Degree (IT Focused) */}
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">
+                        Degree
+                      </label>
+                      <div className="relative">
+                        <select
+                          name="degree"
+                          value={formData.degree}
+                          onChange={handleChange}
+                          className="w-full pl-3 pr-8 py-2.5 rounded-lg bg-[#F8FAFC] border border-slate-200 text-slate-800 text-xs font-medium focus:bg-white focus:border-[#2D73B4] focus:ring-2 focus:ring-[#2D73B4]/15 outline-none transition-all duration-200 appearance-none cursor-pointer"
+                        >
+                          <option value="">Select Degree</option>
+                          <option value="B.Tech (CSE / IT / AI / Data Science)">B.Tech (CSE / IT / AI / Data Science)</option>
+                          <option value="B.E. (Computer Science / IT)">B.E. (Computer Science / IT)</option>
+                          <option value="BCA (Bachelor of Computer Applications)">BCA (Bachelor of Computer Applications)</option>
+                          <option value="B.Sc (Computer Science / IT)">B.Sc (Computer Science / IT)</option>
+                          <option value="M.Tech (CSE / IT / AI)">M.Tech (CSE / IT / AI)</option>
+                          <option value="MCA (Master of Computer Applications)">MCA (Master of Computer Applications)</option>
+                          <option value="M.Sc (Computer Science / IT)">M.Sc (Computer Science / IT)</option>
+                          <option value="Diploma (CS / IT)">Diploma (CS / IT)</option>
+                          <option value="Other IT Degree">Other IT Degree</option>
+                        </select>
+                        <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
+                      </div>
+                    </div>
+
+                    {/* Specialization (IT Focused) */}
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">
+                        Specialization
+                      </label>
+                      <div className="relative">
+                        <select
+                          name="branch"
+                          value={formData.branch}
+                          onChange={handleChange}
+                          className="w-full pl-3 pr-8 py-2.5 rounded-lg bg-[#F8FAFC] border border-slate-200 text-slate-800 text-xs font-medium focus:bg-white focus:border-[#2D73B4] focus:ring-2 focus:ring-[#2D73B4]/15 outline-none transition-all duration-200 appearance-none cursor-pointer"
+                        >
+                          <option value="">Select Specialization</option>
+                          <option value="Computer Science">Computer Science</option>
+                          <option value="Information Technology (IT)">Information Technology (IT)</option>
+                          <option value="Artificial Intelligence & Machine Learning (AI & ML)">Artificial Intelligence & Machine Learning (AI & ML)</option>
+                          <option value="Data Science & Analytics">Data Science & Analytics</option>
+                          <option value="Cyber Security & Digital Forensics">Cyber Security & Digital Forensics</option>
+                          <option value="Cloud Computing & DevOps">Cloud Computing & DevOps</option>
+                          <option value="Full Stack Software Engineering">Full Stack Software Engineering</option>
+                          <option value="Web & Mobile App Development">Web & Mobile App Development</option>
+                          <option value="IoT & Embedded Systems">IoT & Embedded Systems</option>
+                          <option value="Other IT Specialization">Other IT Specialization</option>
+                        </select>
+                        <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
+                      </div>
+                    </div>
+
+                    {/* Semester (Dynamic based on selected Degree) */}
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">
+                        Semester
+                      </label>
+                      <div className="relative">
+                        <select
+                          name="semester"
+                          value={formData.semester}
+                          onChange={handleChange}
+                          className="w-full pl-3 pr-8 py-2.5 rounded-lg bg-[#F8FAFC] border border-slate-200 text-slate-800 text-xs font-medium focus:bg-white focus:border-[#2D73B4] focus:ring-2 focus:ring-[#2D73B4]/15 outline-none transition-all duration-200 appearance-none cursor-pointer"
+                        >
+                          <option value="">Select Semester</option>
+                          {getSemesterOptions(formData.degree).map((sem) => (
+                            <option key={sem} value={sem}>
+                              {sem}
+                            </option>
+                          ))}
+                        </select>
+                        <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
+                      </div>
+                    </div>
+                  </div>
 
 
-                {/* Submit Button */}
-                <div className="pt-4 flex justify-end">
-                  <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="px-8 py-3.5 bg-[#2D73B4] hover:bg-blue-700 text-white font-bold rounded-xl transition-all duration-300 flex items-center justify-center gap-2 text-lg group cursor-pointer shadow-lg shadow-blue-500/30"
-                  >
-                    {isSubmitting ? (
-                      <span className="inline-block animate-pulse">Processing...</span>
-                    ) : (
-                      <>
-                        <span>Next</span>
-                        <ArrowRight size={20} className="transform group-hover:translate-x-1 transition-transform duration-300" />
-                      </>
-                    )}
-                  </button>
-                </div>
-              </form>
-            )}
-          </div>
-        </motion.div>
-      </div>
+                  {/* Submit Button */}
+                  <div className="pt-2 flex justify-end">
+                    <button
+                      type="submit"
+                      disabled={isSubmitting}
+                      className="px-6 py-2.5 bg-white border-2 border-slate-300 text-slate-900 font-bold rounded-lg hover:border-emerald-600 hover:text-emerald-600 hover:bg-emerald-50/30 transition-all duration-200 flex items-center justify-center gap-2 text-sm group cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
+                    >
+                      {isSubmitting ? (
+                        <span className="inline-block animate-pulse">Processing...</span>
+                      ) : (
+                        <>
+                          <span>Next</span>
+                          <ArrowRight size={18} className="transform group-hover:translate-x-1 transition-transform duration-300" />
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </form>
+              )}
+            </div>
+          </motion.div>
+        </div>
       </section>
     </div>
   );

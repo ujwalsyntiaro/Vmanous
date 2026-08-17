@@ -1,7 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { CreditCard, ShieldCheck, CheckCircle2, Lock, ArrowLeft } from 'lucide-react';
+import {
+  FileCheck,
+  CheckCircle2,
+  ChevronLeft,
+  Edit3,
+  User,
+  Mail,
+  Phone,
+  Calendar,
+  GraduationCap,
+  Building2,
+  Award,
+  ArrowRight,
+  AlertCircle,
+  Droplet,
+  MapPin,
+  BookOpen
+} from 'lucide-react';
 import Container from '../components/ui/Container';
 
 export const Payment = () => {
@@ -9,7 +26,6 @@ export const Payment = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState('card');
 
   useEffect(() => {
     // If no state is found, redirect back to enroll
@@ -22,202 +38,293 @@ export const Payment = () => {
 
   if (!formData) return null;
 
-  const handlePayment = (e) => {
+  const handleConfirm = (e) => {
     e.preventDefault();
     setIsProcessing(true);
-    
-    // Simulate payment processing
+
+    // Simulate final application processing
     setTimeout(() => {
       setIsProcessing(false);
-      navigate('/pass', { state: { formData, paymentId: 'PAY' + Math.floor(Math.random() * 1000000) } });
-    }, 2000);
+      navigate('/pass', {
+        state: {
+          formData,
+          paymentId: 'APP' + Math.floor(100000 + Math.random() * 900000)
+        }
+      });
+    }, 1500);
   };
 
+  const handleEdit = () => {
+    navigate('/application', { state: { formData } });
+  };
+
+  const fullName = `${formData.firstName} ${formData.middleName ? formData.middleName + ' ' : ''}${formData.lastName}`.trim();
+
   return (
-    <div className="bg-gray-50 min-h-screen pt-24 pb-12">
+    <div className="bg-gray-50 min-h-screen pt-6 pb-12">
       <Container>
-        <div className="max-w-4xl mx-auto">
-          
-          <button 
-            onClick={() => navigate(-1)}
-            className="flex items-center gap-2 text-slate-500 hover:text-slate-800 mb-6 transition-colors"
+        <div className="max-w-5xl mx-auto">
+
+          {/* Back Button */}
+          <button
+            onClick={handleEdit}
+            title="Back to Application Form"
+            aria-label="Back to Application Form"
+            className="p-1 -ml-1 text-slate-600 hover:text-emerald-600 mb-4 transition-colors group cursor-pointer"
           >
-            <ArrowLeft size={18} />
-            <span className="text-sm font-medium">Back to Form</span>
+            <ChevronLeft size={28} className="transform group-hover:-translate-x-0.5 transition-transform" />
           </button>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            
-            {/* Checkout Form */}
-            <div className="lg:col-span-2">
-              <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm mb-6">
-                <h2 className="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2">
-                  <CreditCard className="text-vmanous-green" />
-                  Payment Details
-                </h2>
 
-                <div className="flex gap-4 mb-6">
+            {/* Left Panel: Application Details Verification Card */}
+            <div className="lg:col-span-2">
+              <div className="bg-white rounded-md border border-gray-200 p-5 md:p-6 shadow-sm">
+
+                {/* Header */}
+                <div className="flex items-center justify-between pb-4 mb-4 border-b border-gray-100">
+                  <div>
+                    <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
+                      <FileCheck className="text-emerald-600" size={24} />
+                      Application Details Verification
+                    </h2>
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      Please review all your details carefully before final confirmation.
+                    </p>
+                  </div>
+
                   <button
-                    type="button"
-                    onClick={() => setPaymentMethod('card')}
-                    className={`flex-1 py-3 px-4 rounded-xl border-2 text-sm font-bold transition-all ${
-                      paymentMethod === 'card' 
-                        ? 'border-vmanous-green bg-emerald-50 text-vmanous-green' 
-                        : 'border-gray-200 text-gray-500 hover:border-gray-300'
-                    }`}
+                    onClick={handleEdit}
+                    className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-600 rounded-lg text-xs font-bold transition-colors cursor-pointer"
                   >
-                    Credit / Debit Card
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setPaymentMethod('upi')}
-                    className={`flex-1 py-3 px-4 rounded-xl border-2 text-sm font-bold transition-all ${
-                      paymentMethod === 'upi' 
-                        ? 'border-vmanous-green bg-emerald-50 text-vmanous-green' 
-                        : 'border-gray-200 text-gray-500 hover:border-gray-300'
-                    }`}
-                  >
-                    UPI / QR
+                    <Edit3 size={14} />
+                    <span>Edit Details</span>
                   </button>
                 </div>
 
-                <form onSubmit={handlePayment} className="space-y-5">
-                  {paymentMethod === 'card' ? (
-                    <>
-                      <div>
-                        <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">
-                          Cardholder Name
-                        </label>
-                        <input
-                          type="text"
-                          required
-                          placeholder="Name on card"
-                          defaultValue={formData.fullName}
-                          className="w-full px-4 py-3 rounded-lg bg-[#F8FAFC] border border-slate-200 text-slate-800 text-sm focus:border-vmanous-green outline-none"
+                {/* Verification Content Grid */}
+                <div className="space-y-4">
+
+                  {/* Top Row: Applicant Profile Summary & Selfie */}
+                  <div className="p-3 rounded-xl bg-[#F8FAFC] border border-slate-200 flex flex-col md:flex-row items-center justify-between gap-3">
+                    <div className="flex items-center gap-3.5">
+                      {formData.selfie ? (
+                        <img
+                          src={formData.selfie}
+                          alt="Applicant Selfie"
+                          className="w-14 h-14 rounded-full object-cover border-2 border-emerald-500 shadow-md flex-shrink-0"
                         />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">
-                          Card Number
-                        </label>
-                        <input
-                          type="text"
-                          required
-                          placeholder="0000 0000 0000 0000"
-                          maxLength="19"
-                          className="w-full px-4 py-3 rounded-lg bg-[#F8FAFC] border border-slate-200 text-slate-800 text-sm focus:border-vmanous-green outline-none tracking-widest"
-                        />
-                      </div>
-                      <div className="grid grid-cols-2 gap-5">
-                        <div>
-                          <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">
-                            Expiry (MM/YY)
-                          </label>
-                          <input
-                            type="text"
-                            required
-                            placeholder="MM/YY"
-                            maxLength="5"
-                            className="w-full px-4 py-3 rounded-lg bg-[#F8FAFC] border border-slate-200 text-slate-800 text-sm focus:border-vmanous-green outline-none"
-                          />
+                      ) : (
+                        <div className="w-12 h-12 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center flex-shrink-0">
+                          <User size={24} />
                         </div>
-                        <div>
-                          <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">
-                            CVV
-                          </label>
-                          <input
-                            type="password"
-                            required
-                            placeholder="***"
-                            maxLength="4"
-                            className="w-full px-4 py-3 rounded-lg bg-[#F8FAFC] border border-slate-200 text-slate-800 text-sm focus:border-vmanous-green outline-none"
-                          />
-                        </div>
-                      </div>
-                    </>
-                  ) : (
-                    <div className="text-center py-8">
-                      <div className="w-32 h-32 bg-gray-100 rounded-lg mx-auto mb-4 flex items-center justify-center">
-                        <span className="text-gray-400 text-sm">QR Code<br/>Placeholder</span>
-                      </div>
-                      <p className="text-sm text-slate-600 mb-4">Scan using any UPI App</p>
+                      )}
                       <div>
-                        <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-2 text-left">
-                          Or enter UPI ID
-                        </label>
-                        <input
-                          type="text"
-                          placeholder="username@upi"
-                          className="w-full px-4 py-3 rounded-lg bg-[#F8FAFC] border border-slate-200 text-slate-800 text-sm focus:border-vmanous-green outline-none"
-                        />
+                        <h3 className="text-base font-bold text-slate-800">{fullName}</h3>
+                        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-0.5 text-xs">
+                          <p className="text-slate-500 flex items-center gap-1">
+                            <Mail size={13} className="text-slate-400" />
+                            {formData.email}
+                          </p>
+                          {formData.phone && (
+                            <p className="text-slate-500 flex items-center gap-1">
+                              <Phone size={13} className="text-slate-400" />
+                              {formData.phone}
+                            </p>
+                          )}
+                          {formData.dob && (
+                            <p className="text-slate-500 flex items-center gap-1">
+                              <Calendar size={13} className="text-slate-400" />
+                              DOB: {formData.dob}
+                            </p>
+                          )}
+                          {formData.bloodGroup && (
+                            <p className="text-slate-500 flex items-center gap-1 font-semibold text-emerald-700">
+                              <Droplet size={12} className="fill-emerald-500 text-emerald-600" />
+                              Blood Group: {formData.bloodGroup}
+                            </p>
+                          )}
+                        </div>
                       </div>
                     </div>
-                  )}
+                  </div>
 
-                  <div className="pt-4">
-                    <button
-                      type="submit"
-                      disabled={isProcessing}
-                      className="w-full py-4 bg-vmanous-green hover:bg-emerald-600 text-white font-bold rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/30 disabled:opacity-70 disabled:cursor-not-allowed cursor-pointer"
-                    >
-                      {isProcessing ? (
-                        <>
-                          <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                          Processing Payment...
-                        </>
-                      ) : (
-                        <>
-                          <Lock size={18} />
-                          Pay ₹1,999 Securely
-                        </>
-                      )}
-                    </button>
+                  {/* Section 1: Contact Information */}
+                  <div>
+                    <h4 className="text-xs font-bold text-slate-500 mb-2 flex items-center gap-1.5">
+                      <Phone size={14} /> Contact Details
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <div className="p-2.5 rounded-lg bg-[#F8FAFC] border border-slate-100">
+                        <span className="text-xs text-slate-400 block font-medium">Primary Phone Number</span>
+                        <span className="text-sm font-semibold text-slate-800 mt-0.5 block">{formData.phone}</span>
+                      </div>
+                      <div className="p-2.5 rounded-lg bg-[#F8FAFC] border border-slate-100">
+                        <span className="text-xs text-slate-400 block font-medium">Alternate Phone Number</span>
+                        <span className="text-sm font-semibold text-slate-800 mt-0.5 block">
+                          {formData.alternatePhone || 'Not Provided'}
+                        </span>
+                      </div>
+                    </div>
                   </div>
-                  
-                  <div className="flex items-center justify-center gap-2 text-xs text-slate-500 mt-4">
-                    <ShieldCheck size={14} className="text-emerald-500" />
-                    Payments are secure and encrypted
+
+                  {/* Section 2: Academic Performance */}
+                  <div>
+                    <h4 className="text-xs font-bold text-slate-500 mb-2 flex items-center gap-1.5">
+                      <Award size={14} /> Academic Performance
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                      <div className="p-2.5 rounded-lg bg-[#F8FAFC] border border-slate-100">
+                        <span className="text-xs text-slate-400 block font-medium">10th Grade Marks (%)</span>
+                        <span className="text-sm font-semibold text-slate-800 mt-0.5 block">
+                          {formData.tenthPercentage ? `${formData.tenthPercentage}%` : 'N/A'}
+                        </span>
+                      </div>
+                      <div className="p-2.5 rounded-lg bg-[#F8FAFC] border border-slate-100">
+                        <span className="text-xs text-slate-400 block font-medium">12th Marks (%)</span>
+                        <span className="text-sm font-semibold text-slate-800 mt-0.5 block">
+                          {formData.twelfthPercentage ? `${formData.twelfthPercentage}%` : 'N/A'}
+                        </span>
+                      </div>
+                      <div className="p-2.5 rounded-lg bg-[#F8FAFC] border border-slate-100">
+                        <span className="text-xs text-slate-400 block font-medium">Diploma Marks (%)</span>
+                        <span className="text-sm font-semibold text-slate-800 mt-0.5 block">
+                          {formData.diplomaPercentage
+                            ? (formData.diplomaPercentage.toString().toUpperCase() === 'N/A' ? 'N/A' : `${formData.diplomaPercentage}%`)
+                            : 'N/A'}
+                        </span>
+                      </div>
+                    </div>
                   </div>
-                </form>
+
+                  {/* Section 3: College & Program Details */}
+                  <div>
+                    <h4 className="text-xs font-bold text-slate-500 mb-2 flex items-center gap-1.5">
+                      <GraduationCap size={14} /> College & Academic Info
+                    </h4>
+                    <div className="space-y-3">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div className="p-2.5 rounded-lg bg-[#F8FAFC] border border-slate-100">
+                          <span className="text-xs text-slate-400 block font-medium">College Name</span>
+                          <span className="text-sm font-semibold text-slate-800 mt-0.5 block">{formData.institution}</span>
+                        </div>
+                        <div className="p-2.5 rounded-lg bg-[#F8FAFC] border border-slate-100">
+                          <span className="text-xs text-slate-400 block font-medium">College Address</span>
+                          <span className="text-sm font-semibold text-slate-800 mt-0.5 block">{formData.collegeAddress || 'NIT Campus'}</span>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <div className="p-2.5 rounded-lg bg-[#F8FAFC] border border-slate-100">
+                          <span className="text-xs text-slate-400 block font-medium">Degree</span>
+                          <span className="text-sm font-semibold text-slate-800 mt-0.5 block">
+                            {formData.degree || 'Not Specified'}
+                          </span>
+                        </div>
+                        <div className="p-2.5 rounded-lg bg-[#F8FAFC] border border-slate-100">
+                          <span className="text-xs text-slate-400 block font-medium">Specialization</span>
+                          <span className="text-sm font-semibold text-slate-800 mt-0.5 block">
+                            {formData.branch || 'Not Specified'}
+                          </span>
+                        </div>
+                        <div className="p-2.5 rounded-lg bg-[#F8FAFC] border border-slate-100">
+                          <span className="text-xs text-slate-400 block font-medium">Semester</span>
+                          <span className="text-sm font-semibold text-slate-800 mt-0.5 block">
+                            {formData.semester || formData.year || 'Not Specified'}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                </div>
+
               </div>
             </div>
 
-            {/* Order Summary */}
+            {/* Right Panel: Payment & Order Summary */}
             <div className="lg:col-span-1">
-              <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm sticky top-24">
-                <h3 className="text-lg font-bold text-slate-800 mb-4">Order Summary</h3>
-                
-                <div className="space-y-4 mb-6">
-                  <div className="flex justify-between items-start gap-4">
-                    <div>
-                      <p className="text-sm font-bold text-slate-800">{formData.programInterest}</p>
-                      <p className="text-xs text-slate-500 mt-1">Workshop Enrollment Fee</p>
-                    </div>
-                    <span className="text-sm font-bold text-slate-800">₹1,999</span>
+              <div className="bg-white rounded-md border border-gray-200 p-6 shadow-sm sticky top-24">
+                <h3 className="text-lg font-bold text-slate-800 mb-4 pb-3 border-b border-gray-100">
+                  Payment & Fee Details
+                </h3>
+
+                {/* Selected Program Track */}
+                <div className="mb-5 pb-4 border-b border-gray-100">
+                  <span className="text-xs text-slate-400 font-medium block mb-1">Selected Program Track</span>
+                  <p className="text-sm font-bold text-slate-800">{formData.programInterest}</p>
+                  <p className="text-xs text-slate-500 mt-0.5">{formData.institution}</p>
+                </div>
+
+                {/* Itemized Price Breakdown */}
+                <div className="space-y-3 mb-6">
+                  <div className="flex justify-between items-center text-xs text-slate-600">
+                    <span>Workshop Registration Fee</span>
+                    <span className="font-semibold text-slate-800 w-16 text-left">₹1,999</span>
+                  </div>
+
+                  <div className="flex justify-between items-center text-xs text-slate-600">
+                    <span>Platform Fee</span>
+                    <span className="font-semibold text-emerald-600 w-16 text-left">₹0</span>
+                  </div>
+
+                  <div className="flex justify-between items-center text-xs text-slate-600">
+                    <span>Taxes</span>
+                    <span className="font-semibold text-emerald-600 w-16 text-left">₹0</span>
+                  </div>
+
+                  <div className="flex justify-between items-center text-xs text-slate-600">
+                    <span>Processing Fee</span>
+                    <span className="font-semibold text-emerald-600 w-16 text-left">₹0</span>
+                  </div>
+
+                  <div className="border-t border-gray-100 pt-3 flex justify-between items-center">
+                    <span className="text-sm font-bold text-slate-700">Subtotal</span>
+                    <span className="text-sm font-bold text-slate-800 w-16 text-left">₹1,999</span>
                   </div>
                 </div>
 
-                <div className="border-t border-gray-100 pt-4 mb-4">
-                  <div className="flex justify-between items-center text-sm mb-2 text-slate-600">
-                    <span>Subtotal</span>
-                    <span>₹1,999</span>
+                {/* Total Payable */}
+                <div className="bg-emerald-50/60 border border-emerald-100 rounded-lg p-4 mb-4 flex justify-between items-center">
+                  <div>
+                    <span className="text-xs text-slate-500 font-semibold uppercase tracking-wider block mb-1">Total Amount</span>
+                    <span className="text-[11px] font-medium text-emerald-700 bg-white px-2.5 py-0.5 rounded border border-emerald-200 shadow-xs inline-block">
+                      All Inclusive
+                    </span>
                   </div>
-                  <div className="flex justify-between items-center text-sm mb-2 text-slate-600">
-                    <span>Taxes & Fees</span>
-                    <span>₹0</span>
+                  <div className="text-right">
+                    <span className="text-2xl font-black text-emerald-600 block">₹1,999</span>
                   </div>
                 </div>
 
-                <div className="border-t border-gray-100 pt-4 flex justify-between items-center mb-6">
-                  <span className="text-base font-bold text-slate-800">Total</span>
-                  <span className="text-xl font-black text-vmanous-green">₹1,999</span>
+                {/* Non-Refundable Fee Notice */}
+                <div className="mb-4 px-3.5 py-2.5 bg-amber-50/90 border border-amber-200/80 rounded-lg flex items-center gap-2 text-[11px] text-amber-800 font-medium">
+                  <AlertCircle size={15} className="text-amber-600 shrink-0" />
+                  <span><strong>Note:</strong> Registration fee is strictly non-refundable once paid.</span>
                 </div>
 
-                <div className="bg-blue-50 text-blue-800 p-4 rounded-xl text-xs flex items-start gap-3">
-                  <CheckCircle2 size={24} className="text-blue-500 flex-shrink-0" />
-                  <p>
-                    By completing this payment, you will instantly receive your digital workshop pass and email confirmation.
-                  </p>
+                {/* Pay & Submit Button */}
+                <button
+                  type="button"
+                  onClick={handleConfirm}
+                  disabled={isProcessing}
+                  className="w-full py-3.5 bg-transparent border-2 border-emerald-600 text-emerald-600 font-bold rounded-lg hover:border-[3px] hover:border-emerald-700 hover:text-emerald-700 transition-all duration-150 flex items-center justify-center gap-2 text-sm cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed mb-4"
+                >
+                  {isProcessing ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-emerald-600/30 border-t-emerald-600 rounded-full animate-spin" />
+                      <span>Processing Payment...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>Pay Now</span>
+                      <ArrowRight size={18} />
+                    </>
+                  )}
+                </button>
+
+                <div className="text-center text-xs text-slate-400 font-medium">
+                  Payments are 100% encrypted and safe
                 </div>
               </div>
             </div>
@@ -230,3 +337,4 @@ export const Payment = () => {
 };
 
 export default Payment;
+

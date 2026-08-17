@@ -65,13 +65,6 @@ export const Enroll = () => {
             transition={{ duration: 0.6 }}
             className="max-w-3xl mx-auto"
           >
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/5 border border-white/10 mb-4 backdrop-blur-md">
-              <Sparkles size={14} className="text-vmanous-green animate-pulse" />
-              <span className="text-xs font-semibold tracking-widest text-vmanous-green uppercase">
-                ENROLLMENT HUB • VMANOUS
-              </span>
-            </div>
-
             <h1
               style={{ fontFamily: "'Josefin Sans', sans-serif", fontWeight: 100 }}
               className="text-2xl md:text-4xl lg:text-5xl text-white tracking-wide mb-2 leading-tight"
@@ -100,53 +93,76 @@ export const Enroll = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {upcomingSummits.map((summit, index) => (
                 <motion.div
-                  initial={{ opacity: 0, y: 10 }}
+                  initial={{ opacity: 0, y: 15 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1 }}
+                  transition={{ delay: index * 0.1, duration: 0.4 }}
                   key={summit.id}
-                  className="rounded-lg shadow-xl p-6 md:p-8 flex flex-col relative overflow-hidden"
+                  className="bg-white rounded-md border border-slate-200/80 shadow-md p-6 md:p-7 flex flex-col relative overflow-hidden transition-all duration-300 hover:shadow-2xl hover:-translate-y-1.5 group"
                 >
-                  <div className="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-bl-[100px] pointer-events-none" />
+                  {/* Subtle Background Accent */}
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 rounded-bl-full pointer-events-none group-hover:bg-emerald-500/10 transition-colors" />
 
                   <div className="flex-1 relative z-10">
-                    <div className="flex flex-wrap items-center gap-2 mb-4">
-                      <span className="bg-gray-200 text-black text-[11px] font-medium px-3 py-1.5 rounded-full uppercase tracking-wider backdrop-blur-sm border border-gray-300">
+                    {/* Event Type Badge */}
+                    <div className="flex items-center gap-2 mb-4">
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase bg-emerald-50 text-emerald-700 border border-emerald-200/60">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                         {summit.type}
                       </span>
                     </div>
 
-                    <h3 className="text-xl md:text-2xl font-medium text-black mb-1 leading-tight">
+                    {/* Title & College */}
+                    <h3 className="text-xl md:text-2xl font-bold text-slate-900 group-hover:text-emerald-700 transition-colors mb-2 tracking-tight">
                       {summit.title}
                     </h3>
-                    <p className="text-xs font-normal text-black mb-2 uppercase tracking-widest">
-                      {summit.college}
-                    </p>
-                    <h4 className="text-lg md:text-xl font-medium text-black mb-1 tracking-tight">
-                      {summit.duration} &bull; <span className="text-black font-normal text-base md:text-lg">{summit.date}</span>
-                    </h4>
-                    <p className="text-base font-normal text-black mb-6 tracking-wide">
+
+                    {/* Light Highlighted College Badge */}
+                    <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-emerald-50/80 text-emerald-800 border border-emerald-200/80 font-bold text-[11px] tracking-wider uppercase mb-4 shadow-2xs">
+                      <Building2 size={13} className="text-emerald-600 flex-shrink-0" />
+                      <span>{summit.college}</span>
+                    </div>
+
+                    {/* Schedule & Highlighted Date Box */}
+                    <div className="p-3.5 rounded-md bg-slate-50 border border-slate-200/60 mb-4 flex items-center justify-between gap-2 flex-wrap shadow-2xs">
+                      <div className="flex items-center gap-2">
+                        <div className="p-1 rounded-md bg-emerald-600 text-white shadow-2xs">
+                          <Calendar size={14} />
+                        </div>
+                        <span className="text-xs font-extrabold text-slate-900 tracking-tight">{summit.duration}</span>
+                      </div>
+                      <span className="text-xs font-extrabold text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded-md border border-emerald-200/80 shadow-2xs">
+                        {summit.date}
+                      </span>
+                    </div>
+
+                    {/* Subtitle / Objective */}
+                    <p className="text-xs md:text-sm font-medium text-slate-600 leading-relaxed mb-6">
                       {summit.subtitle}
                     </p>
 
-                    <div className="space-y-4 mb-8 mt-6">
+                    {/* Features List */}
+                    <div className="space-y-2.5 mb-3 pt-2 border-t border-slate-100">
                       {summit.features.map((feature, i) => (
-                        <div key={i} className="flex items-center gap-3 text-black">
-                          <div className="bg-[#2D73B4] rounded-full p-0.5">
-                            <CheckCircle2 size={16} className="text-white flex-shrink-0" />
+                        <div key={i} className="flex items-start gap-2.5">
+                          <div className="p-0.5 rounded-full bg-emerald-50 border border-emerald-100 text-emerald-600 mt-0.5 flex-shrink-0">
+                            <CheckCircle2 size={14} />
                           </div>
-                          <span className="font-normal text-xs md:text-sm tracking-wide">{feature}</span>
+                          <span className="text-xs md:text-sm font-medium text-slate-700 leading-snug">
+                            {feature}
+                          </span>
                         </div>
                       ))}
                     </div>
                   </div>
 
-                  <div className="mt-auto pt-6 border-t border-gray-200 relative z-10">
+                  {/* Card Footer Action */}
+                  <div className="mt-auto pt-2 border-t border-slate-100 relative z-10">
                     <button
                       onClick={() => handleRegisterClick(summit)}
-                      className="w-full px-6 py-3.5 bg-[#2D73B4] text-white text-base font-bold rounded-xl hover:bg-blue-600 transition-all flex items-center justify-center gap-2 hover:-translate-y-1 shadow-lg"
+                      className="w-full px-5 py-3.5 bg-transparent border-2 border-emerald-600 text-emerald-600 font-bold rounded-md hover:border-[3px] hover:border-emerald-700 hover:text-emerald-700 hover:shadow-md transition-all duration-150 flex items-center justify-center gap-2 text-sm cursor-pointer group/btn"
                     >
-                      Register Now
-                      <ArrowRight size={18} />
+                      <span>Register Now</span>
+                      <ArrowRight size={18} className="transform group-hover/btn:translate-x-1 transition-transform" />
                     </button>
                   </div>
                 </motion.div>

@@ -1,45 +1,45 @@
 export const INITIAL_SUMMITS = [
   {
     id: 1,
-    duration: "6 Months",
-    date: "Starts Oct 2026",
-    title: "AI Summit 2026",
-    subtitle: "Certificate Program in Generative AI",
+    duration: "2-Day Live Workshop",
+    date: "Oct 24-25, 2026",
+    title: "AI Summit Workshop 2026",
+    subtitle: "Generative AI, Prompt Engineering & Agentic LLMs",
     features: [
-      "Weekend Classes",
-      "No Coding Required",
-      "Perfect for Non-Techies",
-      "Certificate from NIT"
+      "Live Hands-on Building with OpenAI & Claude API",
+      "Build 3 Custom AI Agents & Workflows",
+      "1-on-1 Mentorship from AI Industry Experts",
+      "Official Workshop Certificate"
     ],
     type: "Flagship Event",
     college: "National Institute of Technology"
   },
   {
     id: 2,
-    duration: "6 Months",
-    date: "Starts Oct 2026",
-    title: "AI Summit 2026",
-    subtitle: "Certificate Program in Generative AI",
+    duration: "3-Day Hands-on Summit",
+    date: "Nov 14-16, 2026",
+    title: "AI Summit Workshop 2026",
+    subtitle: "Machine Learning, PyTorch & Deep Learning Models",
     features: [
-      "Weekend Classes",
-      "No Coding Required",
-      "Perfect for Non-Techies",
-      "Certificate from IIT"
+      "Real-World ML Pipeline & Model Fine-Tuning",
+      "Computer Vision & Neural Network Projects",
+      "Live Coding Hackathon & Portfolio Review",
+      "Official Workshop Certificate"
     ],
     type: "Flagship Event",
     college: "Indian Institute of Technology"
   },
   {
     id: 3,
-    duration: "6 Months",
-    date: "Starts Oct 2026",
-    title: "AI Summit 2026",
-    subtitle: "Certificate Program in Generative AI",
+    duration: "2-Day National Bootcamp",
+    date: "Dec 12-13, 2026",
+    title: "AI Summit Workshop 2026",
+    subtitle: "Full-Stack AI & RAG Architecture Engineering",
     features: [
-      "Weekend Classes",
-      "No Coding Required",
-      "Perfect for Non-Techies",
-      "Certificate from DTU"
+      "Deploy RAG Systems with Vector DBs & LangChain",
+      "HuggingFace, TensorFlow & Open-Source LLMs Lab",
+      "Network with Top AI Researchers & Recruiters",
+      "Official Workshop Certificate"
     ],
     type: "Flagship Event",
     college: "Delhi Technological University"
@@ -47,12 +47,8 @@ export const INITIAL_SUMMITS = [
 ];
 
 export const getSummits = () => {
-  const summits = localStorage.getItem('vmanous_summits');
-  if (!summits) {
-    localStorage.setItem('vmanous_summits', JSON.stringify(INITIAL_SUMMITS));
-    return INITIAL_SUMMITS;
-  }
-  return JSON.parse(summits);
+  localStorage.setItem('vmanous_summits', JSON.stringify(INITIAL_SUMMITS));
+  return INITIAL_SUMMITS;
 };
 
 export const saveSummits = (summits) => {
