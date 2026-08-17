@@ -12,10 +12,10 @@ const DataScienceHero = () => {
         <img
           src="/images/data-science/hero.jpg"
           alt="Data Science Background"
-          className="w-full h-full object-cover opacity-25 mix-blend-luminosity"
+          className="w-full h-full object-cover opacity-60 mix-blend-luminosity"
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-[#050816]/90 via-[#050816]/75 to-[#050816]/60" />
-        <div className="absolute inset-0 bg-gradient-to-b from-[#050816]/80 via-transparent to-[#050816]" />
+        <div className="absolute inset-0 bg-gradient-to-r from-[#050816]/70 via-[#050816]/40 to-[#050816]/20" />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#050816]/50 via-transparent to-[#050816]/80" />
         <div className="absolute top-1/2 left-1/4 -translate-x-1/2 -translate-y-1/2 w-[650px] h-[320px] bg-vmanous-ai-blue/20 rounded-full blur-[140px]" />
       </div>
 
@@ -30,7 +30,7 @@ const DataScienceHero = () => {
             style={{ fontFamily: "'Josefin Sans', sans-serif", fontWeight: 100 }}
             className="text-xl sm:text-3xl md:text-5xl lg:text-6xl text-white leading-tight mb-5 sm:mb-6 tracking-wide"
           >
-            Turn <span className="text-transparent bg-clip-text bg-gradient-to-r from-vmanous-ai-blue via-teal-400 to-purple-400">Data</span> Into <br className="hidden sm:block" />
+            Turn Data Into <br className="hidden sm:block" />
             Meaningful Intelligence.
           </h1>
 

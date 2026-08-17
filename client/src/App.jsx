@@ -52,38 +52,38 @@ const App = () => {
 
         {/* Future Layout Placeholders */}
         {/* <Route element={<DashboardLayout />}> ... </Route> */}
-        
+
         {/* Admin Dashboard Routes */}
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<DashboardHome />} />
-          
+
           {/* Management */}
           <Route path="students" element={<PlaceholderPage title="Students Management" />} />
           <Route path="colleges" element={<PlaceholderPage title="Colleges Management" />} />
           <Route path="trainers" element={<PlaceholderPage title="Trainers Management" />} />
           <Route path="organizations" element={<PlaceholderPage title="Organizations Management" />} />
-          
+
           {/* Programs */}
           <Route path="ai-summits" element={<ManagePrograms />} />
           <Route path="workshops" element={<PlaceholderPage title="Workshops Management" />} />
           <Route path="data-science" element={<PlaceholderPage title="Data Science Programs" />} />
           <Route path="internships" element={<PlaceholderPage title="Internships Management" />} />
-          
+
           {/* Enrollment */}
           <Route path="applications" element={<PlaceholderPage title="Applications" />} />
           <Route path="enrollments" element={<PlaceholderPage title="Enrollments" />} />
           <Route path="attendance" element={<PlaceholderPage title="Attendance" />} />
-          
+
           {/* Research */}
           <Route path="rd-projects" element={<PlaceholderPage title="R&D Projects" />} />
-          
+
           {/* Evaluation */}
           <Route path="assessments" element={<PlaceholderPage title="Assessments" />} />
           <Route path="evaluations" element={<PlaceholderPage title="Student Evaluations" />} />
-          
+
           {/* Certificates */}
           <Route path="certificates" element={<PlaceholderPage title="Certificates Management" />} />
-          
+
           {/* Platform */}
           <Route path="analytics" element={<PlaceholderPage title="Platform Analytics" />} />
           <Route path="announcements" element={<PlaceholderPage title="Announcements" />} />

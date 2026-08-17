@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Edit2, Trash2, Calendar, Clock, MapPin, CheckCircle2, Building2 } from 'lucide-react';
+import { Plus, Edit2, Trash2, Calendar, Clock, MapPin, CheckCircle2, Building2, LayoutGrid, List } from 'lucide-react';
 import { getSummits, addSummit, updateSummit, deleteSummit } from '../../services/summitService';
+import ProgramCard from '../../components/ui/ProgramCard';
 
 const ManagePrograms = () => {
   const [summits, setSummits] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState(null);
+  const [viewMode, setViewMode] = useState('grid');
   
   const [formData, setFormData] = useState({
     title: '',
@@ -79,22 +81,57 @@ const ManagePrograms = () => {
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
         <div>
           <h1 className="text-2xl font-bold text-vmanous-navy-dark">Manage AI Summits</h1>
           <p className="text-gray-500 mt-1">Add, edit, or remove upcoming programs.</p>
         </div>
-        <button 
-          onClick={openAddModal}
-          className="flex items-center gap-2 px-4 py-2 bg-[#2D73B4] text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm font-medium"
-        >
-          <Plus size={18} />
-          Add Program
-        </button>
+        <div className="flex items-center gap-3">
+          <div className="flex bg-white rounded-lg border border-gray-200 p-1">
+            <button
+              onClick={() => setViewMode('grid')}
+              className={`p-1.5 rounded-md transition-colors ${viewMode === 'grid' ? 'bg-gray-100 text-vmanous-navy-dark' : 'text-gray-400 hover:text-gray-600'}`}
+            >
+              <LayoutGrid size={18} />
+            </button>
+            <button
+              onClick={() => setViewMode('table')}
+              className={`p-1.5 rounded-md transition-colors ${viewMode === 'table' ? 'bg-gray-100 text-vmanous-navy-dark' : 'text-gray-400 hover:text-gray-600'}`}
+            >
+              <List size={18} />
+            </button>
+          </div>
+          <button 
+            onClick={openAddModal}
+            className="flex items-center gap-2 px-4 py-2 bg-[#2D73B4] text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm font-medium"
+          >
+            <Plus size={18} />
+            Add Program
+          </button>
+        </div>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-        <div className="overflow-x-auto">
+      {viewMode === 'grid' ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {summits.map((summit, index) => (
+            <ProgramCard
+              key={summit.id}
+              summit={summit}
+              index={index}
+              isAdmin={true}
+              onEdit={openEditModal}
+              onDelete={handleDelete}
+            />
+          ))}
+          {summits.length === 0 && (
+            <div className="col-span-full py-12 text-center text-gray-500 bg-white rounded-xl border border-gray-100">
+              No programs found. Add a new program.
+            </div>
+          )}
+        </div>
+      ) : (
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+          <div className="overflow-x-auto">
           <table className="w-full text-left text-sm text-gray-600">
             <thead className="bg-gray-50 border-b border-gray-100 text-gray-700 text-xs uppercase font-semibold">
               <tr>
@@ -161,6 +198,7 @@ const ManagePrograms = () => {
           </table>
         </div>
       </div>
+      )}
 
       {/* Add/Edit Modal */}
       {isModalOpen && (

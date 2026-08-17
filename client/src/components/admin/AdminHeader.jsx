@@ -5,13 +5,13 @@ const AdminHeader = ({ setIsMobileOpen }) => {
   return (
     <header className="h-16 bg-white border-b border-gray-200 sticky top-0 z-30 flex items-center justify-between px-4 sm:px-6 lg:px-8">
       <div className="flex items-center gap-4 flex-1">
-        <button 
+        <button
           onClick={() => setIsMobileOpen(true)}
           className="lg:hidden p-2 -ml-2 text-gray-500 hover:text-vmanous-navy-dark hover:bg-gray-100 rounded-lg transition-colors"
         >
           <Menu size={24} />
         </button>
-        
+
         {/* Breadcrumb Placeholder */}
         <div className="hidden sm:flex items-center text-sm font-medium text-gray-500">
           <span>Admin</span>
@@ -24,9 +24,9 @@ const AdminHeader = ({ setIsMobileOpen }) => {
         {/* Search */}
         <div className="hidden md:flex relative">
           <Search size={18} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-          <input 
-            type="text" 
-            placeholder="Search..." 
+          <input
+            type="text"
+            placeholder="Search..."
             className="pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all w-64"
           />
         </div>

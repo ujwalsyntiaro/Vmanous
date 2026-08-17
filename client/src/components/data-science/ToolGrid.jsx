@@ -33,7 +33,7 @@ const ToolGrid = () => {
       {/* Background accents */}
       <div className="absolute top-0 right-0 w-96 h-96 bg-blue-50 rounded-full blur-[100px] -z-10" />
       <div className="absolute bottom-0 left-0 w-96 h-96 bg-purple-50 rounded-full blur-[100px] -z-10" />
-      
+
       <Container>
         <div className="text-center max-w-3xl mx-auto mb-6 md:mb-12">
           <h2 className="text-2xl md:text-4xl font-medium text-vmanous-navy-deep mb-2 sm:mb-4">
