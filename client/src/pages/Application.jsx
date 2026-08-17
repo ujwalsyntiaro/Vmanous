@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { CheckCircle2, Send, ChevronDown, ArrowRight, Camera, X, RefreshCw, User } from 'lucide-react';
+import { CheckCircle2, Send, ChevronDown, ArrowRight, Camera, X, RefreshCw, User, Upload } from 'lucide-react';
 
 const PROGRAM_OPTIONS = [
   { value: 'AI Summit', label: 'AI Summit' },
@@ -78,11 +78,15 @@ export const Application = () => {
   const startCamera = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-      }
       setIsCameraOpen(true);
       setCameraError('');
+      
+      // Wait for React to render the video element before assigning the stream
+      setTimeout(() => {
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+        }
+      }, 50);
     } catch (err) {
       console.error("Camera error:", err);
       setCameraError('Camera access denied or unavailable.');
@@ -111,6 +115,17 @@ export const Application = () => {
   const retakePhoto = () => {
     setFormData({ ...formData, selfie: null });
     startCamera();
+  };
+
+  const handleImageUpload = (e) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFormData(prev => ({ ...prev, selfie: reader.result }));
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   useEffect(() => {
@@ -509,11 +524,10 @@ export const Application = () => {
                                   handleChange(e);
                                   if (e.target.value) setErrors(prev => ({ ...prev, bloodGroup: null }));
                                 }}
-                                className={`w-full pl-3 pr-8 py-2.5 rounded-lg bg-[#F8FAFC] border text-slate-800 text-xs font-medium focus:bg-white focus:ring-2 outline-none transition-all duration-200 appearance-none cursor-pointer ${
-                                  errors.bloodGroup
+                                className={`w-full pl-3 pr-8 py-2.5 rounded-lg bg-[#F8FAFC] border text-slate-800 text-xs font-medium focus:bg-white focus:ring-2 outline-none transition-all duration-200 appearance-none cursor-pointer ${errors.bloodGroup
                                     ? 'border-red-500 focus:border-red-500 focus:ring-red-500/15'
                                     : 'border-slate-200 focus:border-emerald-600 focus:ring-emerald-600/15'
-                                }`}
+                                  }`}
                               >
                                 <option value="">Select</option>
                                 <option value="A+">A+</option>
@@ -580,9 +594,22 @@ export const Application = () => {
                               </div>
                             </div>
                             {cameraError && <p className="text-[11px] text-red-500 font-medium text-center max-w-[180px]">{cameraError}</p>}
-                            <button type="button" onClick={startCamera} className="px-5 py-2 border-2 border-emerald-600 text-emerald-700 bg-white text-xs font-bold rounded-lg shadow-sm hover:bg-emerald-50 transition-colors cursor-pointer flex items-center gap-1.5">
-                              <Camera size={14} /> Capture Image
-                            </button>
+                            <div className="flex flex-wrap justify-center items-center gap-2">
+                              <button type="button" onClick={startCamera} className="px-4 py-2 border-2 border-emerald-600 text-emerald-700 bg-white text-xs font-bold rounded-lg shadow-sm hover:bg-emerald-50 transition-colors cursor-pointer flex items-center gap-1.5">
+                                <Camera size={14} /> Capture
+                              </button>
+                              <div className="relative overflow-hidden">
+                                <button type="button" className="px-4 py-2 border-2 border-[#2D73B4] text-[#2D73B4] bg-white text-xs font-bold rounded-lg shadow-sm hover:bg-blue-50 transition-colors cursor-pointer flex items-center gap-1.5">
+                                  <Upload size={14} /> Upload
+                                </button>
+                                <input 
+                                  type="file" 
+                                  accept="image/*" 
+                                  onChange={handleImageUpload} 
+                                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                />
+                              </div>
+                            </div>
                           </div>
                         )}
                       </div>
@@ -663,11 +690,10 @@ export const Application = () => {
                           placeholder="e.g. 85.0 or N/A"
                           value={formData.diplomaPercentage}
                           onChange={handleChange}
-                          className={`w-full px-4 py-2.5 ${
-                            formData.diplomaPercentage && formData.diplomaPercentage.toString().toUpperCase() !== 'N/A' ? 'pr-8' : 'pr-4'
-                          } rounded-lg bg-[#F8FAFC] border text-slate-800 text-sm font-medium focus:bg-white focus:ring-2 outline-none transition-all duration-200 placeholder:text-slate-400 ${errors.diplomaPercentage
-                            ? 'border-red-500 focus:border-red-500 focus:ring-red-500/15'
-                            : 'border-slate-200 focus:border-[#2D73B4] focus:ring-[#2D73B4]/15'
+                          className={`w-full px-4 py-2.5 ${formData.diplomaPercentage && formData.diplomaPercentage.toString().toUpperCase() !== 'N/A' ? 'pr-8' : 'pr-4'
+                            } rounded-lg bg-[#F8FAFC] border text-slate-800 text-sm font-medium focus:bg-white focus:ring-2 outline-none transition-all duration-200 placeholder:text-slate-400 ${errors.diplomaPercentage
+                              ? 'border-red-500 focus:border-red-500 focus:ring-red-500/15'
+                              : 'border-slate-200 focus:border-[#2D73B4] focus:ring-[#2D73B4]/15'
                             }`}
                         />
                         {formData.diplomaPercentage && formData.diplomaPercentage.toString().toUpperCase() !== 'N/A' && !isNaN(parseFloat(formData.diplomaPercentage)) && (
@@ -728,14 +754,14 @@ export const Application = () => {
                           className="w-full pl-3 pr-8 py-2.5 rounded-lg bg-[#F8FAFC] border border-slate-200 text-slate-800 text-xs font-medium focus:bg-white focus:border-[#2D73B4] focus:ring-2 focus:ring-[#2D73B4]/15 outline-none transition-all duration-200 appearance-none cursor-pointer"
                         >
                           <option value="">Select Degree</option>
-                          <option value="B.Tech (CSE / IT / AI / Data Science)">B.Tech (CSE / IT / AI / Data Science)</option>
-                          <option value="B.E. (Computer Science / IT)">B.E. (Computer Science / IT)</option>
-                          <option value="BCA (Bachelor of Computer Applications)">BCA (Bachelor of Computer Applications)</option>
-                          <option value="B.Sc (Computer Science / IT)">B.Sc (Computer Science / IT)</option>
-                          <option value="M.Tech (CSE / IT / AI)">M.Tech (CSE / IT / AI)</option>
-                          <option value="MCA (Master of Computer Applications)">MCA (Master of Computer Applications)</option>
-                          <option value="M.Sc (Computer Science / IT)">M.Sc (Computer Science / IT)</option>
-                          <option value="Diploma (CS / IT)">Diploma (CS / IT)</option>
+                          <option value="B.Tech">B.Tech</option>
+                          <option value="B.E.">B.E.</option>
+                          <option value="BCA">BCA</option>
+                          <option value="B.Sc">B.Sc</option>
+                          <option value="M.Tech">M.Tech</option>
+                          <option value="MCA">MCA</option>
+                          <option value="M.Sc">M.Sc</option>
+                          <option value="Diploma">Diploma</option>
                           <option value="Other IT Degree">Other IT Degree</option>
                         </select>
                         <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />

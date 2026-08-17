@@ -1,10 +1,12 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Users, Building2, BookOpen, Calendar, Briefcase, FileText } from 'lucide-react';
 import StatCard from '../../components/admin/StatCard';
 import EventCard from '../../components/admin/EventCard';
 import { getSummits } from '../../services/summitService';
 
 const DashboardHome = () => {
+  const navigate = useNavigate();
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
       {/* Welcome Section */}
@@ -18,13 +20,14 @@ const DashboardHome = () => {
       </div>
 
       {/* KPI Cards Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-2">
         <StatCard 
           title="Total Students" 
           value="1,248" 
           icon={Users} 
           trend="up" 
           trendValue="+12% this month" 
+          onClick={() => navigate('/admin/students')}
         />
         <StatCard 
           title="Partner Colleges" 
@@ -32,6 +35,7 @@ const DashboardHome = () => {
           icon={Building2} 
           trend="up" 
           trendValue="+3 this month" 
+          onClick={() => navigate('/admin/colleges')}
         />
         <StatCard 
           title="Active Programs" 
@@ -39,11 +43,13 @@ const DashboardHome = () => {
           icon={BookOpen} 
           trend="up" 
           trendValue="+2 this month" 
+          onClick={() => navigate('/admin/ai-summits')}
         />
         <StatCard 
           title="Upcoming AI Summits" 
           value="3" 
           icon={Calendar} 
+          onClick={() => navigate('/admin/ai-summits')}
         />
         <StatCard 
           title="Internship Candidates" 
@@ -51,11 +57,13 @@ const DashboardHome = () => {
           icon={Briefcase} 
           trend="down" 
           trendValue="-5% this month" 
+          onClick={() => navigate('/admin/internships')}
         />
         <StatCard 
           title="Pending Applications" 
           value="89" 
           icon={FileText} 
+          onClick={() => navigate('/admin/applications')}
         />
       </div>
 

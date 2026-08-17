@@ -44,18 +44,7 @@ const ProjectShowcase = () => {
                   {project.description}
                 </p>
                 
-                <div className="mb-5">
-                  <h4 className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-2">
-                    Technologies
-                  </h4>
-                  <div className="flex flex-wrap gap-2">
-                    {project.tools.map(tool => (
-                      <span key={tool} className="px-2 py-1 bg-vmanous-ai-blue/10 text-vmanous-ai-blue rounded-md text-xs font-medium">
-                        {tool}
-                      </span>
-                    ))}
-                  </div>
-                </div>
+
                 
                 <div>
                   <h4 className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-2">

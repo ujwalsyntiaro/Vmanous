@@ -47,6 +47,10 @@ export const INITIAL_SUMMITS = [
 ];
 
 export const getSummits = () => {
+  const stored = localStorage.getItem('vmanous_summits');
+  if (stored) {
+    return JSON.parse(stored);
+  }
   localStorage.setItem('vmanous_summits', JSON.stringify(INITIAL_SUMMITS));
   return INITIAL_SUMMITS;
 };
@@ -58,7 +62,7 @@ export const saveSummits = (summits) => {
 export const addSummit = (summit) => {
   const summits = getSummits();
   const newSummit = { ...summit, id: Date.now() };
-  summits.push(newSummit);
+  summits.unshift(newSummit);
   saveSummits(summits);
   return newSummit;
 };

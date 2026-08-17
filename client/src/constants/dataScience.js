@@ -1,57 +1,9 @@
-import { 
-  Database, FileCode2, BarChart3, LineChart, 
+import {
+  Database, FileCode2, BarChart3, LineChart,
   BrainCircuit, Bot, Code2, Binary, ListTree, PieChart, Focus, Share2
 } from 'lucide-react';
 
 export const dataScienceTools = [
-  {
-    name: "Python",
-    category: "Programming",
-    description: "Build data pipelines, analysis workflows and machine learning applications.",
-    icon: Code2
-  },
-  {
-    name: "SQL",
-    category: "Database",
-    description: "Extract, filter, and aggregate relational data efficiently.",
-    icon: Database
-  },
-  {
-    name: "Pandas",
-    category: "Data Analysis",
-    description: "Manipulate, clean and analyze structured datasets.",
-    icon: FileCode2
-  },
-  {
-    name: "NumPy",
-    category: "Scientific Computing",
-    description: "Perform advanced mathematical and array operations.",
-    icon: Binary
-  },
-  {
-    name: "Matplotlib",
-    category: "Data Visualization",
-    description: "Create static, animated, and interactive visualizations.",
-    icon: BarChart3
-  },
-  {
-    name: "Seaborn",
-    category: "Data Visualization",
-    description: "Draw attractive and informative statistical graphics.",
-    icon: LineChart
-  },
-  {
-    name: "Scikit-learn",
-    category: "Machine Learning",
-    description: "Build and evaluate practical machine learning models.",
-    icon: BrainCircuit
-  },
-  {
-    name: "Jupyter Notebook",
-    category: "Development",
-    description: "Create and share documents with live code, equations, and narrative text.",
-    icon: ListTree
-  },
   {
     name: "Power BI",
     category: "Business Intelligence",
@@ -65,49 +17,44 @@ export const dataScienceTools = [
     icon: Focus
   },
   {
-    name: "TensorFlow",
-    category: "Deep Learning",
-    description: "Develop and train advanced neural networks for complex tasks.",
-    icon: Bot
+    name: "Python",
+    category: "Programming",
+    description: "Build data pipelines, analysis workflows and machine learning applications.",
+    icon: Code2
   },
   {
-    name: "Git & GitHub",
-    category: "Version Control",
-    description: "Collaborate on projects, manage source code, and track changes.",
-    icon: Share2
+    name: "SQL",
+    category: "Database",
+    description: "Extract, filter, and aggregate relational data efficiently.",
+    icon: Database
   }
 ];
 
 export const dataScienceWorkflow = [
   {
     step: "01",
-    title: "Collect",
+    title: "Data mining",
     description: "Gather structured and unstructured data."
   },
   {
     step: "02",
-    title: "Clean",
+    title: "Data Transformation",
     description: "Handle missing values, duplicates and inconsistencies."
   },
   {
     step: "03",
-    title: "Explore",
-    description: "Discover patterns and relationships."
+    title: "Data modeling",
+    description: "Design data structures and discover relationships."
   },
   {
     step: "04",
-    title: "Visualize",
-    description: "Turn data into meaningful visual stories."
+    title: "Data load",
+    description: "Load processed data into target systems."
   },
   {
     step: "05",
-    title: "Model",
-    description: "Apply statistical and machine learning techniques."
-  },
-  {
-    step: "06",
-    title: "Predict",
-    description: "Generate insights and support better decisions."
+    title: "Visual",
+    description: "Turn data into meaningful visual stories."
   }
 ];
 
