@@ -5,12 +5,7 @@ export const INITIAL_SUMMITS = [
     date: "Oct 24-25, 2026",
     title: "AI Summit Workshop 2026",
     subtitle: "Generative AI, Prompt Engineering & Agentic LLMs",
-    features: [
-      "Live Hands-on Building with OpenAI & Claude API",
-      "Build 3 Custom AI Agents & Workflows",
-      "1-on-1 Mentorship from AI Industry Experts",
-      "Official Workshop Certificate"
-    ],
+    features: [],
     type: "Flagship Event",
     college: "National Institute of Technology"
   },
@@ -20,12 +15,7 @@ export const INITIAL_SUMMITS = [
     date: "Nov 14-16, 2026",
     title: "AI Summit Workshop 2026",
     subtitle: "Machine Learning, PyTorch & Deep Learning Models",
-    features: [
-      "Real-World ML Pipeline & Model Fine-Tuning",
-      "Computer Vision & Neural Network Projects",
-      "Live Coding Hackathon & Portfolio Review",
-      "Official Workshop Certificate"
-    ],
+    features: [],
     type: "Flagship Event",
     college: "Indian Institute of Technology"
   },
@@ -35,12 +25,7 @@ export const INITIAL_SUMMITS = [
     date: "Dec 12-13, 2026",
     title: "AI Summit Workshop 2026",
     subtitle: "Full-Stack AI & RAG Architecture Engineering",
-    features: [
-      "Deploy RAG Systems with Vector DBs & LangChain",
-      "HuggingFace, TensorFlow & Open-Source LLMs Lab",
-      "Network with Top AI Researchers & Recruiters",
-      "Official Workshop Certificate"
-    ],
+    features: [],
     type: "Flagship Event",
     college: "Delhi Technological University"
   }
@@ -49,7 +34,11 @@ export const INITIAL_SUMMITS = [
 export const getSummits = () => {
   const stored = localStorage.getItem('vmanous_summits');
   if (stored) {
-    return JSON.parse(stored);
+    const parsed = JSON.parse(stored);
+    return parsed.map((s) => ({
+      ...s,
+      features: []
+    }));
   }
   localStorage.setItem('vmanous_summits', JSON.stringify(INITIAL_SUMMITS));
   return INITIAL_SUMMITS;

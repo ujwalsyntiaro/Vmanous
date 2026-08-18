@@ -11,6 +11,29 @@ const PROGRAM_OPTIONS = [
   { value: 'Mentorship & Training', label: 'Expert Mentorship & Training' }
 ];
 
+const SPECIALIZATION_OPTIONS = [
+  'Computer Science',
+  'Information Technology (IT)',
+  'Artificial Intelligence & Machine Learning (AI & ML)',
+  'Data Science & Analytics',
+  'Cyber Security & Digital Forensics',
+  'Cloud Computing & DevOps',
+  'Full Stack Software Engineering',
+  'Web & Mobile App Development',
+  'IoT & Embedded Systems'
+];
+
+const DEGREE_OPTIONS = [
+  'B.Tech',
+  'B.E.',
+  'BCA',
+  'B.Sc',
+  'M.Tech',
+  'MCA',
+  'M.Sc',
+  'Diploma'
+];
+
 const getSemesterOptions = (degree) => {
   if (!degree) {
     return [
@@ -43,6 +66,48 @@ export const Application = () => {
   const summitDetails = location.state?.summitDetails;
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const existingData = location.state?.formData;
+  const initialBranch = existingData?.branch || '';
+
+  // Extract custom branch string if formatted as "Other (xyz)" or standalone custom
+  let extractedCustom = '';
+  let isCustomInitial = false;
+  if (initialBranch) {
+    if (!SPECIALIZATION_OPTIONS.includes(initialBranch)) {
+      isCustomInitial = true;
+      if (initialBranch.startsWith('Other (') && initialBranch.endsWith(')')) {
+        extractedCustom = initialBranch.slice(7, -1);
+      } else if (initialBranch !== 'Other' && initialBranch !== 'Other IT Specialization') {
+        extractedCustom = initialBranch;
+      }
+    }
+  }
+
+  const [selectedBranch, setSelectedBranch] = useState(
+    isCustomInitial ? 'Other' : (initialBranch === 'Other IT Specialization' ? 'Other' : initialBranch)
+  );
+  const [customBranch, setCustomBranch] = useState(extractedCustom);
+  const [isCustomBranchOpen, setIsCustomBranchOpen] = useState(isCustomInitial && !extractedCustom);
+
+  // Extract custom degree string if formatted as "Other (xyz)" or standalone custom
+  const initialDegree = existingData?.degree || '';
+  let extractedDegreeCustom = '';
+  let isCustomDegreeInitial = false;
+  if (initialDegree) {
+    if (!DEGREE_OPTIONS.includes(initialDegree)) {
+      isCustomDegreeInitial = true;
+      if (initialDegree.startsWith('Other (') && initialDegree.endsWith(')')) {
+        extractedDegreeCustom = initialDegree.slice(7, -1);
+      } else if (initialDegree !== 'Other' && initialDegree !== 'Other IT Degree') {
+        extractedDegreeCustom = initialDegree;
+      }
+    }
+  }
+
+  const [selectedDegree, setSelectedDegree] = useState(
+    isCustomDegreeInitial ? 'Other' : (initialDegree === 'Other IT Degree' ? 'Other' : initialDegree)
+  );
+  const [customDegree, setCustomDegree] = useState(extractedDegreeCustom);
+  const [isCustomDegreeOpen, setIsCustomDegreeOpen] = useState(isCustomDegreeInitial && !extractedDegreeCustom);
   const [formData, setFormData] = useState({
     firstName: existingData?.firstName || '',
     middleName: existingData?.middleName || '',
@@ -80,7 +145,7 @@ export const Application = () => {
       const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
       setIsCameraOpen(true);
       setCameraError('');
-      
+
       // Wait for React to render the video element before assigning the stream
       setTimeout(() => {
         if (videoRef.current) {
@@ -134,6 +199,93 @@ export const Application = () => {
       stopCamera(); // Cleanup on unmount
     };
   }, []);
+
+  const handleBranchSelect = (e) => {
+    const val = e.target.value;
+    setSelectedBranch(val);
+    if (val !== 'Other') {
+      setCustomBranch('');
+      setIsCustomBranchOpen(false);
+      setFormData((prev) => ({ ...prev, branch: val }));
+    } else {
+      setIsCustomBranchOpen(true);
+      const branchVal = customBranch.trim() ? `Other (${customBranch.trim()})` : 'Other';
+      setFormData((prev) => ({ ...prev, branch: branchVal }));
+    }
+  };
+
+  const handleCustomBranchChange = (e) => {
+    const val = e.target.value;
+    setCustomBranch(val);
+    const branchVal = val.trim() ? `Other (${val.trim()})` : 'Other';
+    setFormData((prev) => ({ ...prev, branch: branchVal }));
+  };
+
+  const handleCustomBranchKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      if (customBranch.trim()) {
+        setIsCustomBranchOpen(false);
+      }
+    }
+  };
+
+  const handleCustomBranchBlur = () => {
+    if (customBranch.trim()) {
+      setIsCustomBranchOpen(false);
+    }
+  };
+
+  const handleDegreeSelect = (e) => {
+    const val = e.target.value;
+    setSelectedDegree(val);
+    if (val !== 'Other') {
+      setCustomDegree('');
+      setIsCustomDegreeOpen(false);
+      setFormData((prev) => ({ ...prev, degree: val }));
+    } else {
+      setIsCustomDegreeOpen(true);
+      const degreeVal = customDegree.trim() ? `Other (${customDegree.trim()})` : 'Other';
+      setFormData((prev) => ({ ...prev, degree: degreeVal }));
+    }
+  };
+
+  const handleCustomDegreeChange = (e) => {
+    const val = e.target.value;
+    setCustomDegree(val);
+    const degreeVal = val.trim() ? `Other (${val.trim()})` : 'Other';
+    setFormData((prev) => ({ ...prev, degree: degreeVal }));
+  };
+
+  const handleCustomDegreeKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      if (customDegree.trim()) {
+        setIsCustomDegreeOpen(false);
+      }
+    }
+  };
+
+  const handleCustomDegreeBlur = () => {
+    if (customDegree.trim()) {
+      setIsCustomDegreeOpen(false);
+    }
+  };
+
+  const handleDobChange = (e) => {
+    let input = e.target.value.replace(/\D/g, '');
+    if (input.length > 8) input = input.substring(0, 8);
+
+    let formatted = input;
+    if (input.length > 4) {
+      formatted = `${input.substring(0, 2)}/${input.substring(2, 4)}/${input.substring(4, 8)}`;
+    } else if (input.length > 2) {
+      formatted = `${input.substring(0, 2)}/${input.substring(2)}`;
+    }
+
+    setFormData(prev => ({ ...prev, dob: formatted }));
+    if (errors.dob) setErrors(prev => ({ ...prev, dob: null }));
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -229,6 +381,11 @@ export const Application = () => {
     // Validate Blood Group
     if (!formData.bloodGroup || formData.bloodGroup.trim() === '') {
       newErrors.bloodGroup = 'Blood Group is required';
+    }
+
+    // Validate DOB (DD/MM/YYYY)
+    if (!formData.dob || formData.dob.trim().length !== 10) {
+      newErrors.dob = 'Please enter Date of Birth (DD/MM/YYYY)';
     }
 
     // Validate 10th Marks (%)
@@ -501,13 +658,24 @@ export const Application = () => {
                               Date of Birth <span className="text-red-500">*</span>
                             </label>
                             <input
-                              type="date"
+                              type="text"
                               name="dob"
                               required
+                              placeholder="DD/MM/YYYY"
+                              maxLength={10}
                               value={formData.dob}
-                              onChange={handleChange}
-                              className="w-full px-3 py-2.5 rounded-lg bg-[#F8FAFC] border border-slate-200 text-slate-800 text-xs font-medium focus:bg-white focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/15 outline-none transition-all duration-200 placeholder:text-slate-400 cursor-pointer [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:appearance-none"
+                              onChange={handleDobChange}
+                              className={`w-full px-3 py-2.5 rounded-lg bg-[#F8FAFC] border text-slate-800 text-xs font-medium focus:bg-white focus:ring-2 outline-none transition-all duration-200 placeholder:text-slate-400 ${
+                                errors.dob
+                                  ? 'border-red-500 focus:border-red-500 focus:ring-red-500/15'
+                                  : 'border-slate-200 focus:border-emerald-600 focus:ring-emerald-600/15'
+                              }`}
                             />
+                            {errors.dob && (
+                              <p className="mt-1 text-[11px] text-red-500 font-semibold flex items-center gap-1">
+                                <span>•</span> {errors.dob}
+                              </p>
+                            )}
                           </div>
 
                           {/* Blood Group */}
@@ -525,8 +693,8 @@ export const Application = () => {
                                   if (e.target.value) setErrors(prev => ({ ...prev, bloodGroup: null }));
                                 }}
                                 className={`w-full pl-3 pr-8 py-2.5 rounded-lg bg-[#F8FAFC] border text-slate-800 text-xs font-medium focus:bg-white focus:ring-2 outline-none transition-all duration-200 appearance-none cursor-pointer ${errors.bloodGroup
-                                    ? 'border-red-500 focus:border-red-500 focus:ring-red-500/15'
-                                    : 'border-slate-200 focus:border-emerald-600 focus:ring-emerald-600/15'
+                                  ? 'border-red-500 focus:border-red-500 focus:ring-red-500/15'
+                                  : 'border-slate-200 focus:border-emerald-600 focus:ring-emerald-600/15'
                                   }`}
                               >
                                 <option value="">Select</option>
@@ -586,12 +754,20 @@ export const Application = () => {
                           <div className="flex flex-col items-center justify-center gap-3">
                             <div
                               onClick={startCamera}
-                              className="w-36 h-36 rounded-full border-2 border-dashed border-emerald-400 p-1.5 flex items-center justify-center relative group cursor-pointer hover:border-emerald-600 transition-all duration-300 shadow-sm"
+                              className="w-36 h-36 rounded-full bg-slate-200 border-2 border-white shadow-md flex items-center justify-center overflow-hidden shrink-0 relative group cursor-pointer hover:shadow-lg transition-all duration-300"
                             >
-                              <div className="w-full h-full rounded-full bg-emerald-100/90 text-emerald-700 flex flex-col items-center justify-center group-hover:bg-emerald-200/80 transition-colors">
-                                <User size={52} className="text-emerald-700 mb-0.5 group-hover:scale-105 transition-transform" />
-                                <span className="text-[10px] font-bold text-emerald-800 uppercase tracking-wider">Selfie</span>
-                              </div>
+                              <svg
+                                width="144"
+                                height="144"
+                                viewBox="0 0 100 100"
+                                fill="none"
+                                xmlns="http://www.w3.org/2000/svg"
+                                className="w-full h-full group-hover:scale-105 transition-transform"
+                              >
+                                <circle cx="50" cy="50" r="50" fill="#E2E8F0" />
+                                <circle cx="50" cy="38" r="17" fill="#94A3B8" />
+                                <path d="M 16 92 A 36 36 0 0 1 84 92 Z" fill="#94A3B8" />
+                              </svg>
                             </div>
                             {cameraError && <p className="text-[11px] text-red-500 font-medium text-center max-w-[180px]">{cameraError}</p>}
                             <div className="flex flex-wrap justify-center items-center gap-2">
@@ -602,10 +778,10 @@ export const Application = () => {
                                 <button type="button" className="px-4 py-2 border-2 border-[#2D73B4] text-[#2D73B4] bg-white text-xs font-bold rounded-lg shadow-sm hover:bg-blue-50 transition-colors cursor-pointer flex items-center gap-1.5">
                                   <Upload size={14} /> Upload
                                 </button>
-                                <input 
-                                  type="file" 
-                                  accept="image/*" 
-                                  onChange={handleImageUpload} 
+                                <input
+                                  type="file"
+                                  accept="image/*"
+                                  onChange={handleImageUpload}
                                   className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                                 />
                               </div>
@@ -748,24 +924,61 @@ export const Application = () => {
                       </label>
                       <div className="relative">
                         <select
-                          name="degree"
-                          value={formData.degree}
-                          onChange={handleChange}
+                          name="degreeSelect"
+                          value={selectedDegree}
+                          onChange={handleDegreeSelect}
+                          onClick={() => {
+                            if (selectedDegree === 'Other' && !isCustomDegreeOpen) {
+                              setIsCustomDegreeOpen(true);
+                            }
+                          }}
                           className="w-full pl-3 pr-8 py-2.5 rounded-lg bg-[#F8FAFC] border border-slate-200 text-slate-800 text-xs font-medium focus:bg-white focus:border-[#2D73B4] focus:ring-2 focus:ring-[#2D73B4]/15 outline-none transition-all duration-200 appearance-none cursor-pointer"
                         >
                           <option value="">Select Degree</option>
-                          <option value="B.Tech">B.Tech</option>
-                          <option value="B.E.">B.E.</option>
-                          <option value="BCA">BCA</option>
-                          <option value="B.Sc">B.Sc</option>
-                          <option value="M.Tech">M.Tech</option>
-                          <option value="MCA">MCA</option>
-                          <option value="M.Sc">M.Sc</option>
-                          <option value="Diploma">Diploma</option>
-                          <option value="Other IT Degree">Other IT Degree</option>
+                          {DEGREE_OPTIONS.map((opt) => (
+                            <option key={opt} value={opt}>
+                              {opt}
+                            </option>
+                          ))}
+                          <option value="Other">
+                            {customDegree.trim() ? `Other (${customDegree.trim()})` : 'Other'}
+                          </option>
                         </select>
                         <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
                       </div>
+
+                      {/* Custom Degree Input when "Other" is chosen & input is open */}
+                      {selectedDegree === 'Other' && isCustomDegreeOpen && (
+                        <motion.div
+                          initial={{ opacity: 0, y: -4 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -4 }}
+                          className="mt-2 relative flex items-center gap-1.5"
+                        >
+                          <input
+                            type="text"
+                            placeholder="Type & press Enter"
+                            value={customDegree}
+                            onChange={handleCustomDegreeChange}
+                            onKeyDown={handleCustomDegreeKeyDown}
+                            onBlur={handleCustomDegreeBlur}
+                            className="w-full pl-3 pr-3 py-2 rounded-lg bg-white border border-slate-700 text-slate-800 text-xs font-medium focus:ring-2 focus:ring-slate-700/20 outline-none transition-all placeholder:text-slate-400"
+                            autoFocus
+                          />
+                          <button
+                            type="button"
+                            onMouseDown={(e) => {
+                              e.preventDefault();
+                              if (customDegree.trim()) {
+                                setIsCustomDegreeOpen(false);
+                              }
+                            }}
+                            className="px-2.5 py-1.5 bg-transparent border border-slate-700 text-slate-700 hover:bg-slate-100 hover:text-slate-900 text-[11px] font-semibold rounded-md transition-colors shrink-0 cursor-pointer"
+                          >
+                            Done
+                          </button>
+                        </motion.div>
+                      )}
                     </div>
 
                     {/* Specialization (IT Focused) */}
@@ -775,25 +988,61 @@ export const Application = () => {
                       </label>
                       <div className="relative">
                         <select
-                          name="branch"
-                          value={formData.branch}
-                          onChange={handleChange}
+                          name="branchSelect"
+                          value={selectedBranch}
+                          onChange={handleBranchSelect}
+                          onClick={() => {
+                            if (selectedBranch === 'Other' && !isCustomBranchOpen) {
+                              setIsCustomBranchOpen(true);
+                            }
+                          }}
                           className="w-full pl-3 pr-8 py-2.5 rounded-lg bg-[#F8FAFC] border border-slate-200 text-slate-800 text-xs font-medium focus:bg-white focus:border-[#2D73B4] focus:ring-2 focus:ring-[#2D73B4]/15 outline-none transition-all duration-200 appearance-none cursor-pointer"
                         >
                           <option value="">Select Specialization</option>
-                          <option value="Computer Science">Computer Science</option>
-                          <option value="Information Technology (IT)">Information Technology (IT)</option>
-                          <option value="Artificial Intelligence & Machine Learning (AI & ML)">Artificial Intelligence & Machine Learning (AI & ML)</option>
-                          <option value="Data Science & Analytics">Data Science & Analytics</option>
-                          <option value="Cyber Security & Digital Forensics">Cyber Security & Digital Forensics</option>
-                          <option value="Cloud Computing & DevOps">Cloud Computing & DevOps</option>
-                          <option value="Full Stack Software Engineering">Full Stack Software Engineering</option>
-                          <option value="Web & Mobile App Development">Web & Mobile App Development</option>
-                          <option value="IoT & Embedded Systems">IoT & Embedded Systems</option>
-                          <option value="Other IT Specialization">Other IT Specialization</option>
+                          {SPECIALIZATION_OPTIONS.map((opt) => (
+                            <option key={opt} value={opt}>
+                              {opt}
+                            </option>
+                          ))}
+                          <option value="Other">
+                            {customBranch.trim() ? `Other (${customBranch.trim()})` : 'Other'}
+                          </option>
                         </select>
                         <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
                       </div>
+
+                      {/* Custom Specialization Input when "Other" is chosen & input is open */}
+                      {selectedBranch === 'Other' && isCustomBranchOpen && (
+                        <motion.div
+                          initial={{ opacity: 0, y: -4 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -4 }}
+                          className="mt-2 relative flex items-center gap-1.5"
+                        >
+                          <input
+                            type="text"
+                            placeholder="Type & press Enter"
+                            value={customBranch}
+                            onChange={handleCustomBranchChange}
+                            onKeyDown={handleCustomBranchKeyDown}
+                            onBlur={handleCustomBranchBlur}
+                            className="w-full pl-3 pr-3 py-2 rounded-lg bg-white border border-slate-700 text-slate-800 text-xs font-medium focus:ring-2 focus:ring-slate-700/20 outline-none transition-all placeholder:text-slate-400"
+                            autoFocus
+                          />
+                          <button
+                            type="button"
+                            onMouseDown={(e) => {
+                              e.preventDefault();
+                              if (customBranch.trim()) {
+                                setIsCustomBranchOpen(false);
+                              }
+                            }}
+                            className="px-2.5 py-1.5 bg-transparent border border-slate-700 text-slate-700 hover:bg-slate-100 hover:text-slate-900 text-[11px] font-semibold rounded-md transition-colors shrink-0 cursor-pointer"
+                          >
+                            Done
+                          </button>
+                        </motion.div>
+                      )}
                     </div>
 
                     {/* Semester (Dynamic based on selected Degree) */}

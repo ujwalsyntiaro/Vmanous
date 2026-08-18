@@ -71,7 +71,7 @@ export const Enroll = () => {
               className="text-2xl md:text-4xl lg:text-5xl text-white tracking-wide mb-2 leading-tight"
             >
               Take the First Step Into the <br className="hidden md:block" />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-vmanous-green via-teal-400 to-vmanous-ai-blue">
+              <span className="text-white">
                 VMANOUS Ecosystem
               </span>
             </h1>
@@ -82,10 +82,10 @@ export const Enroll = () => {
 
 
       {/* 03 UPCOMING AI SUMMITS */}
-      <section id="upcoming-summits" className="py-8 bg-gray-50/50">
+      <section id="upcoming-summits" className="py-3 bg-gray-50/50">
         <Container>
           <div className="max-w-7xl mx-auto">
-            <div className="text-center mb-6">
+            <div className="text-center mb-3">
               <h2 className="text-2xl md:text-3xl font-bold text-[#0F172A] tracking-tight">
                 Upcoming Programs
               </h2>

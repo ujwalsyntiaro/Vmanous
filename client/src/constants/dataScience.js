@@ -8,25 +8,29 @@ export const dataScienceTools = [
     name: "Power BI",
     category: "Business Intelligence",
     description: "Create interactive dashboards and data-driven reports.",
-    icon: PieChart
+    icon: PieChart,
+    libraries: ["DAX", "Power Query", "Data Modeling", "Power BI Service"]
   },
   {
     name: "Tableau",
     category: "Business Intelligence",
     description: "Transform raw data into an understandable format with interactive visualizations.",
-    icon: Focus
+    icon: Focus,
+    libraries: ["Tableau Desktop", "Tableau Prep", "LOD Expressions", "Calculated Fields"]
   },
   {
     name: "Python",
     category: "Programming",
     description: "Build data pipelines, analysis workflows and machine learning applications.",
-    icon: Code2
+    icon: Code2,
+    libraries: ["NumPy", "Pandas", "Matplotlib", "Seaborn", "Scikit-Learn"]
   },
   {
     name: "SQL",
     category: "Database",
     description: "Extract, filter, and aggregate relational data efficiently.",
-    icon: Database
+    icon: Database,
+    libraries: ["MySQL", "PostgreSQL", "MS SQL Server", "SQLite"]
   }
 ];
 
@@ -53,7 +57,7 @@ export const dataScienceWorkflow = [
   },
   {
     step: "05",
-    title: "Visual",
+    title: "Visualize",
     description: "Turn data into meaningful visual stories."
   }
 ];

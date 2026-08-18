@@ -8,7 +8,7 @@ const ProgramCard = ({ summit, index = 0, isAdmin = false, onRegister, onEdit, o
       initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.1, duration: 0.4 }}
-      className="bg-white rounded-md border border-slate-200/80 shadow-md p-6 md:p-7 flex flex-col relative overflow-hidden transition-all duration-300 hover:shadow-2xl hover:-translate-y-1.5 group h-full min-h-[450px]"
+      className="bg-white rounded-md border border-slate-200/80 shadow-md p-6 md:p-7 flex flex-col relative overflow-hidden transition-all duration-300 hover:shadow-2xl hover:-translate-y-1.5 group h-full min-h-[320px]"
     >
       {/* Subtle Background Accent */}
       <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 rounded-bl-full pointer-events-none group-hover:bg-emerald-500/10 transition-colors" />
@@ -47,23 +47,25 @@ const ProgramCard = ({ summit, index = 0, isAdmin = false, onRegister, onEdit, o
         </div>
 
         {/* Subtitle / Objective */}
-        <p className="text-xs md:text-sm font-medium text-slate-600 leading-relaxed mb-6">
+        <p className="text-xs md:text-sm font-medium text-slate-600 leading-relaxed mb-4">
           {summit.subtitle}
         </p>
 
-        {/* Features List */}
-        <div className="space-y-2.5 mb-6 pt-2 border-t border-slate-100 flex-1">
-          {summit.features && summit.features.map((feature, i) => (
-            <div key={i} className="flex items-start gap-2.5">
-              <div className="p-0.5 rounded-full bg-emerald-50 border border-emerald-100 text-emerald-600 mt-0.5 flex-shrink-0">
-                <CheckCircle2 size={14} />
+        {/* Features List (rendered only if present) */}
+        {summit.features && summit.features.length > 0 && (
+          <div className="space-y-2.5 mb-6 pt-2 border-t border-slate-100 flex-1">
+            {summit.features.map((feature, i) => (
+              <div key={i} className="flex items-start gap-2.5">
+                <div className="p-0.5 rounded-full bg-emerald-50 border border-emerald-100 text-emerald-600 mt-0.5 flex-shrink-0">
+                  <CheckCircle2 size={14} />
+                </div>
+                <span className="text-xs md:text-sm font-medium text-slate-700 leading-snug">
+                  {feature}
+                </span>
               </div>
-              <span className="text-xs md:text-sm font-medium text-slate-700 leading-snug">
-                {feature}
-              </span>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Card Footer Action */}

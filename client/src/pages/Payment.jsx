@@ -14,7 +14,6 @@ import {
   Building2,
   Award,
   ArrowRight,
-  AlertCircle,
   Droplet,
   MapPin,
   BookOpen
@@ -95,10 +94,10 @@ export const Payment = () => {
 
                   <button
                     onClick={handleEdit}
-                    className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-600 rounded-lg text-xs font-bold transition-colors cursor-pointer"
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-slate-900 hover:text-emerald-600 text-xs font-bold transition-all duration-200 hover:scale-110 active:scale-95 cursor-pointer bg-transparent"
                   >
                     <Edit3 size={14} />
-                    <span>Edit Details</span>
+                    <span>Edit</span>
                   </button>
                 </div>
 
@@ -112,11 +111,22 @@ export const Payment = () => {
                         <img
                           src={formData.selfie}
                           alt="Applicant Selfie"
-                          className="w-14 h-14 rounded-full object-cover border-2 border-emerald-500 shadow-md flex-shrink-0"
+                          className="w-14 h-14 rounded-full object-cover border-2 border-slate-700 shadow-md flex-shrink-0"
                         />
                       ) : (
-                        <div className="w-12 h-12 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center flex-shrink-0">
-                          <User size={24} />
+                        <div className="w-12 h-12 rounded-full bg-slate-200 border border-white shadow-xs flex items-center justify-center overflow-hidden shrink-0">
+                          <svg
+                            width="48"
+                            height="48"
+                            viewBox="0 0 100 100"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="w-full h-full"
+                          >
+                            <circle cx="50" cy="50" r="50" fill="#E2E8F0" />
+                            <circle cx="50" cy="38" r="17" fill="#94A3B8" />
+                            <path d="M 16 92 A 36 36 0 0 1 84 92 Z" fill="#94A3B8" />
+                          </svg>
                         </div>
                       )}
                       <div>
@@ -265,17 +275,17 @@ export const Payment = () => {
 
                   <div className="flex justify-between items-center text-xs text-slate-600">
                     <span>Platform Fee</span>
-                    <span className="font-semibold text-emerald-600 w-16 text-left">₹0</span>
+                    <span className="font-semibold text-slate-800 w-16 text-left">₹0</span>
                   </div>
 
                   <div className="flex justify-between items-center text-xs text-slate-600">
                     <span>Taxes</span>
-                    <span className="font-semibold text-emerald-600 w-16 text-left">₹0</span>
+                    <span className="font-semibold text-slate-800 w-16 text-left">₹0</span>
                   </div>
 
                   <div className="flex justify-between items-center text-xs text-slate-600">
                     <span>Processing Fee</span>
-                    <span className="font-semibold text-emerald-600 w-16 text-left">₹0</span>
+                    <span className="font-semibold text-slate-800 w-16 text-left">₹0</span>
                   </div>
 
                   <div className="border-t border-gray-100 pt-3 flex justify-between items-center">
@@ -285,21 +295,20 @@ export const Payment = () => {
                 </div>
 
                 {/* Total Payable */}
-                <div className="bg-emerald-50/60 border border-emerald-100 rounded-lg p-4 mb-4 flex justify-between items-center">
+                <div className="bg-[#F8FAFC] rounded-lg p-4 mb-4 flex justify-between items-center">
                   <div>
                     <span className="text-xs text-slate-500 font-semibold uppercase tracking-wider block mb-1">Total Amount</span>
-                    <span className="text-[11px] font-medium text-emerald-700 bg-white px-2.5 py-0.5 rounded border border-emerald-200 shadow-xs inline-block">
+                    <span className="text-[11px] font-medium text-slate-600 bg-white px-2.5 py-0.5 rounded border border-slate-200 shadow-xs inline-block">
                       All Inclusive
                     </span>
                   </div>
                   <div className="text-right">
-                    <span className="text-2xl font-black text-emerald-600 block">₹1,999</span>
+                    <span className="text-2xl font-black text-slate-900 block">₹1,999</span>
                   </div>
                 </div>
 
                 {/* Non-Refundable Fee Notice */}
-                <div className="mb-4 px-3.5 py-2.5 bg-amber-50/90 border border-amber-200/80 rounded-lg flex items-center gap-2 text-[11px] text-amber-800 font-medium">
-                  <AlertCircle size={15} className="text-amber-600 shrink-0" />
+                <div className="mb-4 text-[11px] text-amber-800 font-medium px-1">
                   <span><strong>Note:</strong> Registration fee is strictly non-refundable once paid.</span>
                 </div>
 
@@ -308,7 +317,7 @@ export const Payment = () => {
                   type="button"
                   onClick={handleConfirm}
                   disabled={isProcessing}
-                  className="w-full py-3.5 bg-transparent border-2 border-emerald-600 text-emerald-600 font-bold rounded-lg hover:border-[3px] hover:border-emerald-700 hover:text-emerald-700 transition-all duration-150 flex items-center justify-center gap-2 text-sm cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed mb-4"
+                  className="w-full py-3.5 bg-transparent border-2 border-slate-700 text-slate-700 hover:border-emerald-600 hover:text-emerald-600 font-bold rounded-lg transition-all duration-200 hover:scale-105 active:scale-95 flex items-center justify-center gap-2 text-sm cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed mb-4"
                 >
                   {isProcessing ? (
                     <>
