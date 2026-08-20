@@ -1,39 +1,53 @@
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
-const connectDB = require('./config/db');
 
 // Load env vars
 dotenv.config();
 
-// Connect to database
-// connectDB(); // Uncomment when MongoDB URI is available
-
 const app = express();
 
-// Body parser
-app.use(express.json());
+// Body parser (Increased limit for selfie photos & large payloads)
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 // Enable CORS
 app.use(cors());
 
-// Mount routers
-// app.use('/api/v1/users', require('./routes/users'));
-
+// Health Check
 app.get('/health', (req, res) => {
-  res.status(200).json({ status: 'success', message: 'API is running' });
+  res.status(200).json({ status: 'success', message: 'VMANOUS MySQL API Server is running' });
+});
+
+// Mount routers
+app.use('/api/v1/applications', require('./routes/applicationRoutes'));
+app.use('/api/v1/summits', require('./routes/summitRoutes'));
+app.use('/api/v1/students', require('./routes/studentRoutes'));
+app.use('/api/v1/payments', require('./routes/paymentRoutes'));
+
+const { sendCollegeRequestEmail } = require('./services/emailService');
+
+// College Requests Endpoint
+app.post('/api/v1/college-requests', async (req, res) => {
+  console.log('Received College AI Summit Request:', req.body);
+
+  // Send Email Notification to kiran@vmanous.com
+  const emailRes = await sendCollegeRequestEmail(req.body);
+
+  res.status(200).json({
+    success: true,
+    message: 'College AI Summit Request received successfully',
+    emailNotificationSent: emailRes.success
+  });
 });
 
 const PORT = process.env.PORT || 5000;
 
 const server = app.listen(
   PORT,
-  console.log(`Server running on port ${PORT}`)
+  () => console.log(`VMANOUS Server running on port ${PORT}`)
 );
 
-// Handle unhandled promise rejections
-process.on('unhandledRejection', (err, promise) => {
-  console.log(`Error: ${err.message}`);
-  // Close server & exit process
-  // server.close(() => process.exit(1));
+process.on('unhandledRejection', (err) => {
+  console.log(`Unhandled Rejection Error: ${err.message}`);
 });

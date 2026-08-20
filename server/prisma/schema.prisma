@@ -1,0 +1,109 @@
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  name      String?
+  role      String   @default("admin")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Summit {
+  id                Int           @id @default(autoincrement())
+  title             String
+  subtitle          String?       @db.Text
+  type              String        @default("Flagship Event")
+  college           String
+  address           String?       @db.Text
+  price             Float         @default(1999)
+  originalPrice     Float         @default(4999)
+  taxRate           Float         @default(18)
+  taxMode           String        @default("Exclusive")
+  processingFee     Float         @default(0)
+  processingFeeType String        @default("Fixed")
+  duration          String
+  time              String
+  startDate         String?
+  endDate           String?
+  date              String?
+  seatCapacity      Int           @default(100)
+  status            String        @default("Registration Open")
+  features          Json?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+  applications      Application[]
+}
+
+model Application {
+  id                   String   @id @default(uuid())
+  studentName          String
+  email                String
+  phone                String
+  collegeName          String
+  venueLocation        String?
+  branch               String?
+  year                 String?
+  degree               String?
+  marksTenth           String?
+  marksTwelfth         String?
+  selfiePhotoUrl       String?  @db.LongText
+  programTitle         String
+  summitId             Int?
+  summit               Summit?  @relation(fields: [summitId], references: [id], onDelete: SetNull)
+  paymentStatus        String   @default("Paid")
+  paymentFailureReason String?  @db.Text
+  verificationStatus   String   @default("Pending Audit")
+  transactionId        String?
+  amountPaid           Float    @default(0)
+  baseAmount           Float?
+  gstAmount            Float?
+  platformFee          Float?   @default(0)
+  passCode             String?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+}
+
+model PaymentTransaction {
+  id                   String   @id @default(uuid())
+  applicationId        String?
+  transactionId        String   @unique
+  studentName          String
+  email                String
+  phone                String
+  collegeName          String
+  programTitle         String
+  amountPaid           Float    @default(0)
+  baseAmount           Float    @default(0)
+  gstAmount            Float    @default(0)
+  platformFee          Float    @default(0)
+  paymentStatus        String   @default("Paid") // Paid or Failed
+  paymentMethod        String   @default("UPI / QR Code")
+  paymentFailureReason String?  @db.Text
+  passCode             String?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+}
+
+
+
+model Student {
+  id          Int      @id @default(autoincrement())
+  name        String
+  email       String   @unique
+  phone       String
+  collegeName String
+  branch      String?
+  year        String?
+  passCode    String?
+  status      String   @default("Active")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
