@@ -6,7 +6,7 @@ const API_BASE_URL = 'http://localhost:5000/api/v1/payments';
 export const initiatePhonePePayment = async (formData) => {
   try {
     const payload = {
-      studentName: `${formData.firstName || ''} ${formData.middleName || ''} ${formData.lastName || ''}`.trim() || 'Student Applicant',
+      studentName: `${formData.firstName || ''} ${formData.middleName ? formData.middleName + ' ' : ''}${formData.lastName || ''}`.trim() || 'Student Applicant',
       email: formData.email,
       phone: formData.phone,
       collegeName: formData.institution,
@@ -21,6 +21,14 @@ export const initiatePhonePePayment = async (formData) => {
       programTitle: formData.programInterest || 'AI Summit Workshop 2026',
       amountPaid: Number(formData.totalAmount || formData.amountPaid) || 2358.82
     };
+
+    if (typeof window !== 'undefined') {
+      try {
+        sessionStorage.setItem('vmanous_pending_payment', JSON.stringify({ ...formData, ...payload }));
+      } catch (e) {
+        console.warn('Could not save pending payment to sessionStorage', e);
+      }
+    }
 
     console.log('[Frontend Payment Service] Sending order payload to backend:', payload);
 
@@ -43,14 +51,27 @@ export const initiatePhonePePayment = async (formData) => {
 /**
  * 2. Verify PhonePe Payment Status after Callback
  */
-export const verifyPhonePeStatus = async (merchantTransactionId) => {
+export const verifyPhonePeStatus = async (merchantTransactionId, extraFormData = null) => {
   try {
+    let cachedFormData = extraFormData;
+    if (!cachedFormData && typeof window !== 'undefined') {
+      try {
+        const stored = sessionStorage.getItem('vmanous_pending_payment');
+        if (stored) cachedFormData = JSON.parse(stored);
+      } catch (e) {
+        console.warn('Could not read pending payment from sessionStorage', e);
+      }
+    }
+
     const response = await fetch(`${API_BASE_URL}/verify-status`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ merchantTransactionId })
+      body: JSON.stringify({
+        merchantTransactionId,
+        formData: cachedFormData
+      })
     });
 
     const result = await response.json();
@@ -60,3 +81,4 @@ export const verifyPhonePeStatus = async (merchantTransactionId) => {
     return { success: false, error: 'Failed to verify payment status with server' };
   }
 };
+

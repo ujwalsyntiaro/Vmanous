@@ -98,6 +98,14 @@ const createApplication = async (req, res) => {
     const txnId = transactionId || `TXN_${isPaid ? '' : 'FAIL_'}${Math.floor(10000000 + Math.random() * 90000000)}`;
     const finalPassCode = isPaid ? (passCode || `PASS-${(collegeName || 'VM').slice(0, 4).toUpperCase()}-${Math.floor(100 + Math.random() * 900)}`) : null;
 
+    // Check if application with this transaction ID already exists
+    const existing = await prisma.application.findFirst({
+      where: { transactionId: txnId }
+    });
+    if (existing) {
+      return res.status(200).json({ success: true, data: existing, message: 'Application already exists' });
+    }
+
     // 1. Create Application Record
     const newApp = await prisma.application.create({
       data: {
@@ -109,8 +117,8 @@ const createApplication = async (req, res) => {
         branch,
         year,
         degree,
-        marksTenth,
-        marksTwelfth,
+        marksTenth: String(marksTenth || ''),
+        marksTwelfth: String(marksTwelfth || ''),
         selfiePhotoUrl,
         programTitle,
         summitId: summitId ? Number(summitId) : null,
@@ -127,25 +135,29 @@ const createApplication = async (req, res) => {
     });
 
     // 2. Log in PaymentTransaction History table
-    await prisma.paymentTransaction.create({
-      data: {
-        applicationId: newApp.id,
-        transactionId: txnId,
-        studentName,
-        email,
-        phone,
-        collegeName,
-        programTitle,
-        amountPaid: totalPaid,
-        baseAmount,
-        gstAmount,
-        platformFee: feeAmount,
-        paymentStatus: status,
-        paymentMethod: 'UPI / QR Code',
-        paymentFailureReason: isPaid ? null : (paymentFailureReason || 'Bank Timeout'),
-        passCode: finalPassCode
-      }
-    });
+    try {
+      await prisma.paymentTransaction.create({
+        data: {
+          applicationId: newApp.id,
+          transactionId: txnId,
+          studentName,
+          email,
+          phone,
+          collegeName,
+          programTitle,
+          amountPaid: totalPaid,
+          baseAmount,
+          gstAmount,
+          platformFee: feeAmount,
+          paymentStatus: status,
+          paymentMethod: 'UPI / QR Code',
+          paymentFailureReason: isPaid ? null : (paymentFailureReason || 'Bank Timeout'),
+          passCode: finalPassCode
+        }
+      });
+    } catch (txnErr) {
+      console.warn('Payment transaction log notice:', txnErr.message);
+    }
 
     res.status(201).json({ success: true, data: newApp });
   } catch (error) {
