@@ -254,6 +254,74 @@ export const getSummits = () => {
   return updated;
 };
 
+export const isSummitActive = (summit) => {
+  if (!summit) return false;
+
+  // 1. Seats Full Validation
+  const enrolledCount = (summit.enrolledCount !== undefined && summit.enrolledCount !== null)
+    ? Number(summit.enrolledCount)
+    : (Array.isArray(summit.applications)
+      ? summit.applications.filter(a => a.paymentStatus === 'Paid' || !a.paymentStatus).length
+      : 0);
+  const seatCapacity = summit.seatCapacity !== undefined ? Number(summit.seatCapacity) : 100;
+
+  if (seatCapacity > 0 && enrolledCount >= seatCapacity) {
+    return false; // Seats are full -> hide
+  }
+
+  // 2. Date Completed / Expired Validation
+  const now = new Date();
+  now.setHours(0, 0, 0, 0);
+
+  const parseDateStr = (dStr) => {
+    if (!dStr) return null;
+    const str = String(dStr).trim();
+
+    // DD-MM-YYYY or DD/MM/YYYY (e.g. 19-08-2026)
+    if (/^\d{1,2}[-\/]\d{1,2}[-\/]\d{4}$/.test(str)) {
+      const parts = str.split(/[-\/]/).map(Number);
+      return new Date(parts[2], parts[1] - 1, parts[0]);
+    }
+
+    // YYYY-MM-DD (e.g. 2026-08-19)
+    if (/^\d{4}-\d{2}-\d{2}$/.test(str)) {
+      const [y, m, d] = str.split('-').map(Number);
+      return new Date(y, m - 1, d);
+    }
+
+    // Range e.g. "Aug 20-25, 2026" or "Aug 20 - 25, 2026"
+    const rangeMatch = str.match(/([A-Za-z]+)\s+\d+(?:\s*-\s*(\d+))?,\s*(\d{4})/);
+    if (rangeMatch) {
+      const month = rangeMatch[1];
+      const endDay = rangeMatch[2] || '28';
+      const year = rangeMatch[3];
+      const parsedRange = new Date(`${month} ${endDay}, ${year}`);
+      if (!isNaN(parsedRange.getTime())) return parsedRange;
+    }
+
+    const parsed = new Date(str);
+    if (!isNaN(parsed.getTime())) return parsed;
+
+    return null;
+  };
+
+  const eventDate = parseDateStr(summit.endDate) || parseDateStr(summit.date) || parseDateStr(summit.startDate);
+
+  if (eventDate) {
+    eventDate.setHours(23, 59, 59, 999);
+    if (eventDate < now) {
+      return false; // Event date completed -> hide
+    }
+  }
+
+  return true;
+};
+
+export const getActiveSummits = () => {
+  const summits = getSummits();
+  return summits.filter(isSummitActive);
+};
+
 export const saveSummits = (summits) => {
   localStorage.setItem('vmanous_summits', JSON.stringify(summits));
 };

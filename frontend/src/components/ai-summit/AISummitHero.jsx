@@ -70,7 +70,7 @@ export const AISummitHero = ({ data }) => {
         >
           <Link
             to="/enroll"
-            className="inline-flex items-center justify-center px-4 py-2 sm:px-7 sm:py-3 rounded-lg text-xs sm:text-base font-bold text-white border-2 border-white bg-white/10 backdrop-blur-md hover:bg-white/25 hover:border-white transform hover:-translate-y-0.5 transition-all duration-200 group cursor-pointer whitespace-nowrap shadow-xl"
+            className="inline-flex items-center justify-center px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-lg text-xs sm:text-sm font-semibold text-white border-2 border-white bg-white/10 backdrop-blur-md hover:bg-white/25 hover:border-white transform hover:-translate-y-0.5 transition-all duration-200 group cursor-pointer whitespace-nowrap shadow-xl"
           >
             <span className="flex items-center gap-2">
               Enroll Now

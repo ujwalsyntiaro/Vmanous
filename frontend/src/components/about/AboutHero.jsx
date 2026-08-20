@@ -28,9 +28,7 @@ const AboutHero = () => {
             className="text-xl sm:text-3xl md:text-5xl lg:text-6xl tracking-wide text-white mb-3 sm:mb-5 leading-tight"
           >
             Built for the Next Generation of <br className="hidden md:block" />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-teal-300 to-emerald-500 font-normal">
-              AI & Data Science Talent.
-            </span>
+            AI & Data Science Talent.
           </h1>
 
           <p 

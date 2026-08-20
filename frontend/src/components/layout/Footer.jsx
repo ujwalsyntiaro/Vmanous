@@ -103,7 +103,9 @@ const Footer = () => {
 
                 {/* Instagram Icon */}
                 <a
-                  href="#"
+                  href="https://www.instagram.com/_vmanous?igsi=MTJ6MGEwZGQwbmRy"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   aria-label="Instagram"
                   className="hover:opacity-75 transition-opacity"
                 >
@@ -116,8 +118,8 @@ const Footer = () => {
 
                 {/* Messenger / Chat Icon */}
                 <a
-                  href="#"
-                  aria-label="Messenger"
+                  href="mailto:info@vmanous.com"
+                  aria-label="Email Us"
                   className="hover:opacity-75 transition-opacity"
                 >
                   <svg className="w-5 h-5 stroke-[#0084FF] stroke-[2] fill-none" viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round">

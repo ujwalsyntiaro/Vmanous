@@ -603,7 +603,7 @@ export const Application = () => {
                             type="text"
                             name="firstName"
                             required
-                            placeholder="Rahul"
+                            placeholder="Enter first name"
                             value={formData.firstName}
                             onChange={handleChange}
                             className="w-full px-4 py-2.5 rounded-lg bg-white border border-slate-400 text-slate-800 text-sm font-medium focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/15 outline-none transition-all duration-200 placeholder:text-slate-400"
@@ -618,7 +618,7 @@ export const Application = () => {
                           <input
                             type="text"
                             name="middleName"
-                            placeholder="Kumar"
+                            placeholder="Enter middle name"
                             value={formData.middleName}
                             onChange={handleChange}
                             className="w-full px-4 py-2.5 rounded-lg bg-white border border-slate-400 text-slate-800 text-sm font-medium focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/15 outline-none transition-all duration-200 placeholder:text-slate-400"
@@ -637,7 +637,7 @@ export const Application = () => {
                             type="text"
                             name="lastName"
                             required
-                            placeholder="Sharma"
+                            placeholder="Enter last name"
                             value={formData.lastName}
                             onChange={handleChange}
                             className="w-full px-4 py-2.5 rounded-lg bg-white border border-slate-400 text-slate-800 text-sm font-medium focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/15 outline-none transition-all duration-200 placeholder:text-slate-400"
@@ -659,7 +659,7 @@ export const Application = () => {
                             name="phone"
                             required
                             maxLength={10}
-                            placeholder="9876543210"
+                            placeholder="Enter 10-digit phone number"
                             value={formData.phone}
                             onChange={handleChange}
                             className={`w-full px-4 py-2.5 rounded-lg bg-white border text-slate-800 text-sm font-medium focus:ring-2 outline-none transition-all duration-200 placeholder:text-slate-400 ${errors.phone
@@ -683,7 +683,7 @@ export const Application = () => {
                             type="tel"
                             name="alternatePhone"
                             maxLength={10}
-                            placeholder="9876543210"
+                            placeholder="Enter alternate phone number"
                             value={formData.alternatePhone}
                             onChange={handleChange}
                             className={`w-full px-4 py-2.5 rounded-lg bg-white border text-slate-800 text-sm font-medium focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/15 outline-none transition-all duration-200 placeholder:text-slate-400 ${errors.alternatePhone
@@ -710,7 +710,7 @@ export const Application = () => {
                             type="email"
                             name="email"
                             required
-                            placeholder="rahul@example.com"
+                            placeholder="Enter email address"
                             value={formData.email}
                             onChange={handleChange}
                             className="w-full px-4 py-2.5 rounded-lg bg-white border border-slate-400 text-slate-800 text-sm font-medium focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/15 outline-none transition-all duration-200 placeholder:text-slate-400"
@@ -876,7 +876,7 @@ export const Application = () => {
                           min="0"
                           max="100"
                           step="0.01"
-                          placeholder="e.g. 88.5"
+                          placeholder="Enter 10th percentage"
                           value={formData.tenthPercentage}
                           onChange={handleChange}
                           className={`w-full px-4 py-2.5 pr-8 rounded-lg bg-white border text-slate-800 text-sm font-medium focus:ring-2 outline-none transition-all duration-200 placeholder:text-slate-400 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${errors.tenthPercentage
@@ -906,7 +906,7 @@ export const Application = () => {
                           min="0"
                           max="100"
                           step="0.01"
-                          placeholder="e.g. 91.2"
+                          placeholder="Enter 12th percentage"
                           value={formData.twelfthPercentage}
                           onChange={handleChange}
                           className={`w-full px-4 py-2.5 pr-8 rounded-lg bg-white border text-slate-800 text-sm font-medium focus:ring-2 outline-none transition-all duration-200 placeholder:text-slate-400 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${errors.twelfthPercentage
@@ -932,7 +932,7 @@ export const Application = () => {
                         <input
                           type="text"
                           name="diplomaPercentage"
-                          placeholder="e.g. 85.0 or N/A"
+                          placeholder="Enter diploma percentage or N/A"
                           value={formData.diplomaPercentage}
                           onChange={handleChange}
                           className={`w-full px-4 py-2.5 ${formData.diplomaPercentage && formData.diplomaPercentage.toString().toUpperCase() !== 'N/A' ? 'pr-8' : 'pr-4'

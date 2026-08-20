@@ -21,7 +21,7 @@ import {
 import Container from '../components/ui/Container';
 import ProgramCard from '../components/ui/ProgramCard';
 import { ENROLLMENT_FAQS } from '../constants/enrollment';
-import { getSummits, fetchSummitsAsync } from '../services/summitService';
+import { getSummits, fetchSummitsAsync, isSummitActive } from '../services/summitService';
 
 const PROGRAM_OPTIONS = [
   { value: 'AI Summit', label: 'AI Summit' },
@@ -44,7 +44,7 @@ export const Enroll = () => {
     window.scrollTo(0, 0);
     const loadSummits = async () => {
       const data = await fetchSummitsAsync();
-      setUpcomingSummits(data);
+      setUpcomingSummits(data.filter(isSummitActive));
     };
     loadSummits();
   }, []);
