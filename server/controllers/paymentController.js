@@ -217,24 +217,14 @@ const verifyPaymentStatus = async (req, res) => {
         isSuccess = true;
         paymentCode = 'PAYMENT_SUCCESS';
         phonePeTxnId = response.data.data?.transactionId || merchantTransactionId;
-      } else if (isSandbox) {
-        // In UAT Sandbox environment simulator, treat gateway redirect as success
-        console.log('[PhonePe Sandbox] Pre-prod Sandbox Simulator callback received - marking success');
-        isSuccess = true;
-        paymentCode = 'PAYMENT_SUCCESS';
-        phonePeTxnId = response.data?.data?.transactionId || merchantTransactionId;
       } else {
-        paymentCode = code || 'PAYMENT_ERROR';
+        isSuccess = false;
+        paymentCode = code || responseCode || state || 'PAYMENT_FAILED';
       }
     } catch (apiErr) {
-      console.warn('[PhonePe Status API Warning] Pre-prod status check fallback:', apiErr.response?.data || apiErr.message);
-      // In Sandbox mode, if redirect was received, treat as success
-      if (isSandbox) {
-        isSuccess = true;
-        paymentCode = 'PAYMENT_SUCCESS';
-      } else {
-        paymentCode = apiErr.response?.data?.code || 'STATUS_CHECK_FAILED';
-      }
+      console.warn('[PhonePe Status API Error]:', apiErr.response?.data || apiErr.message);
+      isSuccess = false;
+      paymentCode = apiErr.response?.data?.code || apiErr.response?.data?.message || 'STATUS_CHECK_FAILED';
     }
 
     const totalPaid = Number(orderDetails.amountPaid || 2358.82);
@@ -323,59 +313,18 @@ const verifyPaymentStatus = async (req, res) => {
         data: emailPayload
       });
     } else {
-      // Record Failed Transaction in DB
-      try {
-        const failedApp = await prisma.application.create({
-          data: {
-            studentName: orderDetails.studentName,
-            email: orderDetails.email,
-            phone: orderDetails.phone,
-            collegeName: orderDetails.collegeName,
-            venueLocation: orderDetails.venueLocation,
-            branch: orderDetails.branch,
-            year: orderDetails.year,
-            degree: orderDetails.degree,
-            marksTenth: String(orderDetails.marksTenth || ''),
-            marksTwelfth: String(orderDetails.marksTwelfth || ''),
-            selfiePhotoUrl: photoUrl,
-            programTitle: orderDetails.programTitle,
-            summitId: orderDetails.summitId ? Number(orderDetails.summitId) : null,
-            paymentStatus: 'Failed',
-            paymentFailureReason: `PhonePe Status: ${paymentCode}`,
-            verificationStatus: 'Pending Audit',
-            transactionId: merchantTransactionId,
-            amountPaid: 0,
-            baseAmount: 0,
-            gstAmount: 0
-          }
-        });
-
-        await prisma.paymentTransaction.create({
-          data: {
-            applicationId: failedApp.id,
-            transactionId: merchantTransactionId,
-            studentName: failedApp.studentName,
-            email: failedApp.email,
-            phone: failedApp.phone,
-            collegeName: failedApp.collegeName,
-            programTitle: failedApp.programTitle,
-            amountPaid: 0,
-            baseAmount: 0,
-            gstAmount: 0,
-            paymentStatus: 'Failed',
-            paymentMethod: 'PhonePe Gateway',
-            paymentFailureReason: `PhonePe Status: ${paymentCode}`
-          }
-        });
-      } catch (err) {
-        console.error('Failed record saving notice:', err.message);
-      }
-
+      console.log(`[PhonePe Status Check] Transaction ${merchantTransactionId} failed/cancelled (${paymentCode}). Skipping DB record creation.`);
       pendingOrders.delete(merchantTransactionId);
 
-      return res.status(400).json({
+      return res.status(200).json({
         success: false,
-        error: `Payment failed on PhonePe gateway (${paymentCode})`
+        paymentStatus: 'Failed',
+        paymentCode: paymentCode,
+        error: `Payment was declined or cancelled on PhonePe (${paymentCode})`,
+        merchantTransactionId: merchantTransactionId,
+        programTitle: orderDetails.programTitle,
+        collegeName: orderDetails.collegeName,
+        amountPaid: orderDetails.amountPaid
       });
     }
   } catch (error) {

@@ -68,7 +68,7 @@ export const Payment = () => {
         institution: summitDetails?.college || formData.institution || '',
         collegeAddress: summitDetails?.address || formData.collegeAddress || '',
         totalAmount: totalAmount
-      });
+      }, summitDetails);
 
       if (result.success && result.redirectUrl) {
         window.location.href = result.redirectUrl;

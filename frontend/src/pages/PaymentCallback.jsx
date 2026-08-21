@@ -1,7 +1,18 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useSearchParams, useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { CheckCircle2, XCircle, RefreshCw, ShieldCheck, ArrowRight, Ticket } from 'lucide-react';
+import {
+  CheckCircle2,
+  XCircle,
+  RefreshCw,
+  ShieldCheck,
+  ArrowRight,
+  Ticket,
+  AlertTriangle,
+  RotateCcw,
+  ArrowLeft,
+  Home
+} from 'lucide-react';
 import { verifyPhonePeStatus } from '../services/paymentService';
 import { saveApplications, getApplications } from '../services/applicationService';
 import { saveStudents, getStudents } from '../services/studentService';
@@ -13,6 +24,7 @@ export const PaymentCallback = () => {
 
   const [loading, setLoading] = useState(true);
   const [statusResult, setStatusResult] = useState(null);
+  const [failedData, setFailedData] = useState(null);
   const [errorMsg, setErrorMsg] = useState('');
   const hasVerifiedRef = useRef(false);
 
@@ -32,6 +44,7 @@ export const PaymentCallback = () => {
   const verifyPayment = async () => {
     setLoading(true);
     setErrorMsg('');
+    setFailedData(null);
 
     let pendingData = null;
     try {
@@ -48,7 +61,7 @@ export const PaymentCallback = () => {
         const appData = result.data;
         setStatusResult(appData);
 
-        // Update local application state in localStorage without re-fetching/re-posting
+        // Update local application state in localStorage
         try {
           const currentApps = getApplications();
           if (!currentApps.some(a => a.transactionId === appData.transactionId || a.id === appData.id)) {
@@ -100,7 +113,8 @@ export const PaymentCallback = () => {
                 selfiePhotoUrl: appData.selfiePhotoUrl || pendingData?.selfiePhotoUrl,
                 tenthPercentage: appData.marksTenth || pendingData?.tenthPercentage,
                 twelfthPercentage: appData.marksTwelfth || pendingData?.twelfthPercentage,
-                appliedDate: appData.createdAt || new Date().toISOString()
+                appliedDate: appData.createdAt || new Date().toISOString(),
+                paymentStatus: 'Paid'
               },
               paymentId: appData.transactionId,
               passCode: appData.passCode
@@ -112,13 +126,63 @@ export const PaymentCallback = () => {
         const timer = setTimeout(navigateToPass, 1800);
         return () => clearTimeout(timer);
       } else {
-        setErrorMsg(result.error || 'Payment verification failed on PhonePe gateway');
+        // Payment is strictly FAILED
+        const reason = result.error || (result.paymentCode ? `Gateway status: ${result.paymentCode}` : 'Transaction Cancelled / Declined');
+        setErrorMsg(reason);
+        setFailedData({
+          ...pendingData,
+          transactionId: merchantTransactionId,
+          failureReason: reason,
+          amountPaid: result.amountPaid || pendingData?.totalAmount || pendingData?.amountPaid || 3539,
+          programTitle: result.programTitle || pendingData?.programInterest || 'AI Summit Workshop',
+          collegeName: result.collegeName || pendingData?.institution || 'Partner College'
+        });
       }
     } catch (err) {
       console.error('Callback error:', err);
-      setErrorMsg('Failed to verify payment with server');
+      setErrorMsg('Failed to communicate with payment verification server');
+      setFailedData(pendingData ? { ...pendingData, transactionId: merchantTransactionId } : null);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleRetryPayment = () => {
+    let pendingData = failedData;
+    if (!pendingData) {
+      try {
+        const stored = sessionStorage.getItem('vmanous_pending_payment');
+        if (stored) pendingData = JSON.parse(stored);
+      } catch (e) {}
+    }
+
+    if (pendingData) {
+      navigate('/payment', {
+        state: {
+          formData: pendingData,
+          summitDetails: pendingData.summitDetails || null
+        }
+      });
+    } else {
+      navigate('/enroll');
+    }
+  };
+
+  const handleEditApplication = () => {
+    let pendingData = failedData;
+    if (!pendingData) {
+      try {
+        const stored = sessionStorage.getItem('vmanous_pending_payment');
+        if (stored) pendingData = JSON.parse(stored);
+      } catch (e) {}
+    }
+
+    if (pendingData) {
+      navigate('/application', {
+        state: { formData: pendingData }
+      });
+    } else {
+      navigate('/enroll');
     }
   };
 
@@ -143,7 +207,8 @@ export const PaymentCallback = () => {
           selfiePhotoUrl: statusResult.selfiePhotoUrl,
           tenthPercentage: statusResult.marksTenth,
           twelfthPercentage: statusResult.marksTwelfth,
-          appliedDate: statusResult.createdAt || new Date().toISOString()
+          appliedDate: statusResult.createdAt || new Date().toISOString(),
+          paymentStatus: 'Paid'
         },
         paymentId: statusResult.transactionId,
         passCode: statusResult.passCode
@@ -156,7 +221,7 @@ export const PaymentCallback = () => {
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="bg-white max-w-md w-full rounded-2xl shadow-xl border border-gray-200 p-8 text-center"
+        className="bg-white max-w-md w-full rounded-2xl shadow-xl border border-gray-200 p-6 md:p-8 text-center"
       >
         {loading ? (
           <div className="space-y-5 py-6">
@@ -166,7 +231,7 @@ export const PaymentCallback = () => {
             </div>
             <div>
               <h2 className="text-xl font-bold text-slate-800 mb-1">Verifying PhonePe Payment</h2>
-              <p className="text-xs text-slate-500">Please wait while we confirm your transaction and generate your digital pass...</p>
+              <p className="text-xs text-slate-500">Please wait while we confirm your transaction status...</p>
             </div>
             <div className="pt-2 text-[11px] font-mono text-slate-400 bg-slate-50 py-2 px-3 rounded-lg border border-slate-100 truncate">
               Txn ID: {merchantTransactionId}
@@ -179,7 +244,7 @@ export const PaymentCallback = () => {
             </div>
             <h2 className="text-xl font-bold text-slate-900">Payment Successful!</h2>
             <p className="text-xs text-slate-600">
-              Your payment of <strong className="text-slate-900">₹{statusResult.amountPaid || '2,359'}</strong> has been confirmed.
+              Your payment of <strong className="text-slate-900">₹{statusResult.amountPaid ? Number(statusResult.amountPaid).toLocaleString('en-IN') : '3,539'}</strong> has been confirmed.
             </p>
 
             <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 text-left text-xs space-y-1">
@@ -202,32 +267,81 @@ export const PaymentCallback = () => {
             </div>
           </div>
         ) : (
-          <div className="space-y-4 py-4 animate-in fade-in duration-300">
+          /* Payment Failed State */
+          <div className="space-y-4 py-3 animate-in fade-in duration-300">
             <div className="w-16 h-16 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center mx-auto shadow-sm">
               <XCircle size={36} />
             </div>
-            <h2 className="text-xl font-bold text-slate-900">Payment Verification Issue</h2>
-            <p className="text-xs text-rose-600 font-semibold">{errorMsg}</p>
 
-            <div className="pt-4 flex flex-col gap-2">
+            <div>
+              <h2 className="text-xl font-bold text-slate-900">Payment Failed</h2>
+              <p className="text-xs text-slate-500 mt-1">
+                Your transaction was not completed. No workshop pass has been generated.
+              </p>
+            </div>
+
+            {/* Error Message & Details Card */}
+            <div className="bg-rose-50/70 border border-rose-200 rounded-xl p-4 text-left text-xs space-y-2">
+              <div className="flex items-start gap-2">
+                <AlertTriangle size={15} className="text-rose-600 shrink-0 mt-0.5" />
+                <p className="text-rose-800 font-semibold leading-tight">
+                  {errorMsg || 'The payment gateway reported a failed or cancelled transaction.'}
+                </p>
+              </div>
+
+              <div className="border-t border-rose-200/60 pt-2 space-y-1 text-[11px] text-slate-600">
+                <div className="flex justify-between">
+                  <span className="text-slate-400">Transaction ID:</span>
+                  <span className="font-mono font-bold text-slate-700 truncate max-w-[180px]">{merchantTransactionId}</span>
+                </div>
+                {failedData?.programTitle && (
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">Program:</span>
+                    <span className="font-semibold text-slate-700 truncate max-w-[180px]">{failedData.programTitle}</span>
+                  </div>
+                )}
+                <div className="flex justify-between">
+                  <span className="text-slate-400">Amount:</span>
+                  <span className="font-bold text-slate-800">₹{failedData?.amountPaid ? Number(failedData.amountPaid).toLocaleString('en-IN') : '3,539'}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-400">Status:</span>
+                  <span className="font-bold text-rose-600 uppercase">Not Registered / Failed</span>
+                </div>
+              </div>
+            </div>
+
+            <p className="text-[11px] text-slate-500 italic">
+              If money was debited from your bank account, it will be automatically refunded by PhonePe / your bank within 3-5 business days.
+            </p>
+
+            {/* Action CTAs */}
+            <div className="pt-2 flex flex-col gap-2.5">
               <button
                 type="button"
-                onClick={() => {
-                  hasVerifiedRef.current = false;
-                  verifyPayment();
-                }}
-                className="w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-sm"
+                onClick={handleRetryPayment}
+                className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-2 cursor-pointer shadow-sm hover:shadow active:scale-[0.99]"
               >
-                <RefreshCw size={14} />
-                <span>Retry Verification</span>
+                <RotateCcw size={15} />
+                <span>Retry Payment</span>
               </button>
+
               <button
                 type="button"
-                onClick={() => navigate('/application')}
+                onClick={handleEditApplication}
                 className="w-full py-2.5 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
               >
-                <span>Back to Registration</span>
+                <ArrowLeft size={14} />
+                <span>Edit Application Details</span>
               </button>
+
+              <Link
+                to="/"
+                className="text-xs text-slate-400 hover:text-slate-600 transition-colors pt-1 inline-flex items-center justify-center gap-1"
+              >
+                <Home size={13} />
+                <span>Return to Homepage</span>
+              </Link>
             </div>
           </div>
         )}
