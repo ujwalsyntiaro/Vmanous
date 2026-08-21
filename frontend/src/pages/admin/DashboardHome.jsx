@@ -419,31 +419,31 @@ const DashboardHome = () => {
           title="Total Students"
           value={students.length.toString()}
           icon={Users}
-          onClick={() => navigate('/admin/enrollments')}
+          onClick={() => navigate('/cpanel/enrollments')}
         />
         <StatCard
           title="Active Programs"
           value={summits.length.toString()}
           icon={BookOpen}
-          onClick={() => navigate('/admin/ai-summits')}
+          onClick={() => navigate('/cpanel/ai-summits')}
         />
         <StatCard
           title="Paid Registrations"
           value={revMetrics.totalPaidCount.toString()}
           icon={CheckCircle2}
-          onClick={() => navigate('/admin/applications')}
+          onClick={() => navigate('/cpanel/applications')}
         />
         <StatCard
           title="Failed Payments"
           value={revMetrics.failedCount.toString()}
           icon={AlertCircle}
-          onClick={() => navigate('/admin/applications')}
+          onClick={() => navigate('/cpanel/applications')}
         />
         <StatCard
           title="Pending Audits"
           value={revMetrics.pendingAuditCount.toString()}
           icon={FileText}
-          onClick={() => navigate('/admin/applications')}
+          onClick={() => navigate('/cpanel/applications')}
         />
       </div>
 

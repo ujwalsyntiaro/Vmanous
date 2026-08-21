@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import PublicLayout from './layouts/PublicLayout';
 import AdminLayout from './layouts/AdminLayout';
 
@@ -20,6 +20,13 @@ import Payment from './pages/Payment';
 import PaymentCallback from './pages/PaymentCallback';
 import Pass from './pages/Pass';
 import Application from './pages/Application';
+import ScrollToTop from './components/layout/ScrollToTop';
+
+// Legal Pages
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import TermsAndConditions from './pages/TermsAndConditions';
+import CancellationPolicy from './pages/CancellationPolicy';
+import RefundPolicy from './pages/RefundPolicy';
 
 // Admin Pages
 import AdminLogin from './pages/admin/AdminLogin';
@@ -38,6 +45,7 @@ import PlaceholderPage from './components/admin/PlaceholderPage';
 const App = () => {
   return (
     <Router>
+      <ScrollToTop />
       <Routes>
         {/* Public Routes wrapped in PublicLayout */}
         <Route element={<PublicLayout />}>
@@ -57,14 +65,22 @@ const App = () => {
           <Route path="/payment" element={<Payment />} />
           <Route path="/payment-callback" element={<PaymentCallback />} />
           <Route path="/pass" element={<Pass />} />
+
+          {/* Legal Routes */}
+          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+          <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
+          <Route path="/cancellation-policy" element={<CancellationPolicy />} />
+          <Route path="/refund-policy" element={<RefundPolicy />} />
         </Route>
 
-        {/* Admin Login Gateway (Public) */}
-        <Route path="/admin/login" element={<AdminLogin />} />
+        {/* Admin/CPanel Login Gateway (Public) */}
+        <Route path="/cpanel/login" element={<AdminLogin />} />
+        <Route path="/admin/login" element={<Navigate to="/cpanel/login" replace />} />
+        <Route path="/admin" element={<Navigate to="/cpanel" replace />} />
 
-        {/* Protected Admin Dashboard Routes */}
+        {/* Protected CPanel Dashboard Routes */}
         <Route element={<ProtectedAdminRoute />}>
-          <Route path="/admin" element={<AdminLayout />}>
+          <Route path="/cpanel" element={<AdminLayout />}>
             <Route index element={<DashboardHome />} />
 
             {/* Programs */}

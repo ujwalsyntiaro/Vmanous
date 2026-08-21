@@ -44,9 +44,9 @@ export const INITIAL_SUMMITS = [
     processingFeeType: 'Fixed',
     duration: '1-Day Live Workshop',
     time: '10:00 AM - 05:00 PM',
-    startDate: '2026-08-19',
-    endDate: '2026-08-19',
-    date: '19-08-2026',
+    startDate: '2026-08-30',
+    endDate: '2026-08-30',
+    date: '30-08-2026',
     seatCapacity: 100,
     status: 'Registration Open',
     features: ['Providing Certificate']
@@ -67,10 +67,11 @@ export const INITIAL_SUMMITS = [
     duration: '2-Day Live Workshop',
     time: '10:00 AM - 05:00 PM',
     startDate: '2026-08-20',
-    endDate: '2026-08-21',
+    endDate: '2026-08-20',
     date: '20-08-2026',
     seatCapacity: 10,
-    status: 'Filling Fast',
+    enrolledCount: 5,
+    status: 'Event Completed',
     features: ['Expert Mentorship']
   },
   {
@@ -138,6 +139,52 @@ export const INITIAL_SUMMITS = [
     seatCapacity: 100,
     status: 'Registration Open',
     features: ['Full Stack AI']
+  },
+  {
+    id: 101,
+    title: 'AI & Data Science Masterclass',
+    subtitle: 'Machine Learning & Python Analytics Bootcamp',
+    type: 'Campus Workshop',
+    college: 'COEP Technological University',
+    address: 'Pune Campus Auditorium',
+    price: 1999,
+    originalPrice: 4999,
+    taxRate: 18,
+    taxMode: 'Exclusive',
+    processingFee: 0,
+    processingFeeType: 'Fixed',
+    duration: '2-Day Workshop',
+    time: '09:30 AM - 04:30 PM',
+    startDate: '2026-07-10',
+    endDate: '2026-07-11',
+    date: '10-07-2026',
+    seatCapacity: 100,
+    enrolledCount: 78,
+    status: 'Event Completed',
+    features: ['Certificates Issued', 'Hands-on Labs']
+  },
+  {
+    id: 102,
+    title: 'Power BI Enterprise Summit',
+    subtitle: 'DAX Optimization & Corporate Dashboarding',
+    type: 'Flagship Event',
+    college: 'MIT World Peace University',
+    address: 'Kothrud Auditorium, Pune',
+    price: 2499,
+    originalPrice: 5999,
+    taxRate: 18,
+    taxMode: 'Exclusive',
+    processingFee: 0,
+    processingFeeType: 'Fixed',
+    duration: '2-Day Summit',
+    time: '10:00 AM - 05:00 PM',
+    startDate: '2026-06-15',
+    endDate: '2026-06-16',
+    date: '15-06-2026',
+    seatCapacity: 120,
+    enrolledCount: 112,
+    status: 'Event Completed',
+    features: ['Executive Certification', 'Case Studies']
   }
 ];
 
@@ -211,13 +258,22 @@ export const getSummits = () => {
   if (stored) {
     try {
       const parsed = JSON.parse(stored);
-      if (Array.isArray(parsed) && parsed.length >= INITIAL_SUMMITS.length) {
-        listToProcess = parsed;
-      } else if (Array.isArray(parsed) && parsed.length > 0) {
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        // Ensure id 1 & 2 dates and statuses are updated correctly
+        const updatedParsed = parsed.map(s => {
+          if (Number(s.id) === 1 && (s.startDate === '2026-08-19' || s.date === '19-08-2026')) {
+            return { ...s, startDate: '2026-08-30', endDate: '2026-08-30', date: '30-08-2026', status: 'Registration Open' };
+          }
+          if (Number(s.id) === 2) {
+            return { ...s, startDate: '2026-08-20', endDate: '2026-08-20', date: '20-08-2026', status: 'Event Completed' };
+          }
+          return s;
+        });
+
         // Merge missing summits from INITIAL_SUMMITS
-        const existingIds = new Set(parsed.map(p => Number(p.id)));
+        const existingIds = new Set(updatedParsed.map(p => Number(p.id)));
         const missing = INITIAL_SUMMITS.filter(init => !existingIds.has(Number(init.id)));
-        listToProcess = [...parsed, ...missing];
+        listToProcess = [...updatedParsed, ...missing];
       }
     } catch (e) {
       console.error('Error parsing stored summits:', e);
@@ -257,6 +313,11 @@ export const getSummits = () => {
 export const isSummitActive = (summit) => {
   if (!summit) return false;
 
+  // Explicit status check: if marked completed, return false
+  if (summit.status === 'Event Completed' || summit.status === 'Completed') {
+    return false;
+  }
+
   // 1. Seats Full Validation
   const enrolledCount = (summit.enrolledCount !== undefined && summit.enrolledCount !== null)
     ? Number(summit.enrolledCount)
@@ -277,13 +338,13 @@ export const isSummitActive = (summit) => {
     if (!dStr) return null;
     const str = String(dStr).trim();
 
-    // DD-MM-YYYY or DD/MM/YYYY (e.g. 19-08-2026)
+    // DD-MM-YYYY or DD/MM/YYYY (e.g. 19-08-2026 or 20-08-2026)
     if (/^\d{1,2}[-\/]\d{1,2}[-\/]\d{4}$/.test(str)) {
       const parts = str.split(/[-\/]/).map(Number);
       return new Date(parts[2], parts[1] - 1, parts[0]);
     }
 
-    // YYYY-MM-DD (e.g. 2026-08-19)
+    // YYYY-MM-DD (e.g. 2026-08-19 or 2026-08-20)
     if (/^\d{4}-\d{2}-\d{2}$/.test(str)) {
       const [y, m, d] = str.split('-').map(Number);
       return new Date(y, m - 1, d);
@@ -305,7 +366,7 @@ export const isSummitActive = (summit) => {
     return null;
   };
 
-  const eventDate = parseDateStr(summit.endDate) || parseDateStr(summit.date) || parseDateStr(summit.startDate);
+  const eventDate = parseDateStr(summit.date) || parseDateStr(summit.endDate) || parseDateStr(summit.startDate);
 
   if (eventDate) {
     eventDate.setHours(23, 59, 59, 999);

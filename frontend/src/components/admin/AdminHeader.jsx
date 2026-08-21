@@ -8,7 +8,7 @@ const AdminHeader = ({ setIsMobileOpen }) => {
 
   const handleLogout = () => {
     logoutAdmin();
-    navigate('/admin/login');
+    navigate('/cpanel/login');
   };
 
   return (
@@ -23,7 +23,7 @@ const AdminHeader = ({ setIsMobileOpen }) => {
 
         {/* Breadcrumb Placeholder */}
         <div className="hidden sm:flex items-center text-sm font-medium text-gray-500">
-          <span>Admin</span>
+          <span>CPanel</span>
           <span className="mx-2">/</span>
           <span className="text-vmanous-navy-dark">Dashboard</span>
         </div>

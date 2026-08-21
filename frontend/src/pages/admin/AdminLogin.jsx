@@ -22,7 +22,7 @@ const AdminLogin = () => {
       setIsLoading(false);
 
       if (res.success) {
-        navigate('/admin');
+        navigate('/cpanel');
       } else {
         setError(res.error || 'Invalid credentials');
       }
@@ -47,7 +47,7 @@ const AdminLogin = () => {
             <ShieldCheck size={30} />
           </div>
           <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-            VMANOUS Admin Gateway
+            VMANOUS CPanel Gateway
           </h2>
           <p className="text-slate-500 text-xs sm:text-sm mt-1.5 font-medium">
             Enter your credentials to access the management portal

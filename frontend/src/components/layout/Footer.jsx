@@ -64,10 +64,10 @@ const Footer = () => {
             <div>
               <h4 className="text-sm font-bold text-vmanous-navy-dark mb-3">Legal</h4>
               <ul className="space-y-2.5 text-xs">
-                <li><a href="#" className="text-gray-600 hover:text-vmanous-green transition-colors font-medium">Privacy Policy</a></li>
-                <li><a href="#" className="text-gray-600 hover:text-vmanous-green transition-colors font-medium">Terms of Service</a></li>
-                <li><a href="#" className="text-gray-600 hover:text-vmanous-green transition-colors cursor-pointer font-medium">Cookie Policy</a></li>
-                <li><a href="#" className="text-gray-600 hover:text-vmanous-green transition-colors font-medium">Disclaimer</a></li>
+                <li><Link to="/privacy-policy" className="text-gray-600 hover:text-vmanous-green transition-colors font-medium">Privacy Policy</Link></li>
+                <li><Link to="/terms-and-conditions" className="text-gray-600 hover:text-vmanous-green transition-colors font-medium">Terms & Conditions</Link></li>
+                <li><Link to="/cancellation-policy" className="text-gray-600 hover:text-vmanous-green transition-colors font-medium">Cancellation Policy</Link></li>
+                <li><Link to="/refund-policy" className="text-gray-600 hover:text-vmanous-green transition-colors font-medium">Refund Policy</Link></li>
               </ul>
             </div>
 

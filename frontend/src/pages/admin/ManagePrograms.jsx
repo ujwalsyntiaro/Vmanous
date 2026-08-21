@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Edit2, Trash2, Calendar, Clock, MapPin, CheckCircle2, Building2, LayoutGrid, List, Receipt, DollarSign } from 'lucide-react';
-import { getSummits, addSummit, updateSummit, deleteSummit, formatEventDates } from '../../services/summitService';
+import { Plus, Edit2, Trash2, Calendar, Clock, MapPin, CheckCircle2, Building2, LayoutGrid, List, Receipt, DollarSign, History, Users } from 'lucide-react';
+import { getSummits, addSummit, updateSummit, deleteSummit, formatEventDates, isSummitActive } from '../../services/summitService';
 import ProgramCard from '../../components/ui/ProgramCard';
 import DateInput from '../../components/ui/DateInput';
 
@@ -206,125 +206,254 @@ const ManagePrograms = () => {
         </div>
       </div>
 
-      {viewMode === 'grid' ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
-          {summits.map((summit, index) => (
-            <div key={summit.id} className="w-full">
-              <ProgramCard
-                summit={summit}
-                index={index}
-                isAdmin={true}
-                onEdit={openEditModal}
-                onDelete={handleDelete}
-              />
-            </div>
-          ))}
-          {summits.length === 0 && (
-            <div className="col-span-full py-12 text-center text-gray-500 bg-white rounded-xl border border-gray-100">
-              No workshops found. Create a new workshop.
-            </div>
-          )}
+      {/* 🟢 1. ACTIVE & UPCOMING WORKSHOPS */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between border-b border-gray-200 pb-2">
+          <h2 className="text-base font-bold text-vmanous-navy-dark flex items-center gap-2">
+            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+            Active & Upcoming Workshops ({summits.filter(s => isSummitActive(s) && s.status !== 'Event Completed' && s.status !== 'Completed').length})
+          </h2>
         </div>
-      ) : (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm text-gray-600">
-              <thead className="bg-gray-50 border-b border-gray-100 text-gray-700 text-xs uppercase font-semibold">
-                <tr>
-                  <th className="px-6 py-4">Program Info</th>
-                  <th className="px-6 py-4">College & Venue</th>
-                  <th className="px-6 py-4">Pricing & Tax</th>
-                  <th className="px-6 py-4">Schedule</th>
-                  <th className="px-6 py-4 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {summits.map((summit) => (
-                  <tr key={summit.id} className="hover:bg-gray-50/50 transition-colors">
-                    <td className="px-6 py-4">
-                      <div className="font-bold text-vmanous-navy-dark">{summit.title}</div>
-                      <div className="text-xs text-gray-500 mt-1">{summit.subtitle}</div>
-                      <div className="flex items-center gap-2 mt-2">
-                        <span className="inline-block px-2 py-0.5 bg-blue-50 text-blue-600 text-[10px] font-bold uppercase rounded-md">
-                          {summit.type}
-                        </span>
-                        {summit.status && (
-                          <span className="inline-block px-2 py-0.5 bg-emerald-50 text-emerald-700 text-[10px] font-bold uppercase rounded-md border border-emerald-200">
-                            {summit.status}
-                          </span>
-                        )}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 space-y-1">
-                      <div className="flex items-center gap-2">
-                        <Building2 size={16} className="text-gray-400" />
-                        <span className="font-medium">{summit.college}</span>
-                      </div>
-                      {summit.address && (
-                        <div className="flex items-center gap-2 text-xs text-gray-500">
-                          <MapPin size={14} className="text-emerald-600 shrink-0" />
-                          <span>{summit.address}</span>
-                        </div>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 space-y-1">
-                      <div className="font-bold text-emerald-600 text-sm">
-                        ₹{Number(summit.price || 0).toLocaleString('en-IN')}
-                        {summit.originalPrice && Number(summit.originalPrice) > Number(summit.price) && (
-                          <span className="text-xs text-gray-400 line-through font-normal ml-2">
-                            ₹{Number(summit.originalPrice).toLocaleString('en-IN')}
-                          </span>
-                        )}
-                      </div>
-                      <div className="text-xs text-gray-500 flex items-center gap-1">
-                        <Receipt size={13} className="text-gray-400" />
-                        <span>
-                          {summit.taxMode === 'Inclusive' ? 'Tax Included' : summit.taxRate ? `+${summit.taxRate}% GST (${summit.taxMode || 'Exclusive'})` : 'Free'}
-                        </span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 space-y-1">
-                      <div className="flex items-center gap-2">
-                        <Calendar size={14} className="text-gray-400" />
-                        <span className="font-medium text-gray-900">{summit.date}</span>
-                      </div>
-                      <div className="flex items-center gap-2 text-xs text-gray-500">
-                        <Clock size={14} className="text-emerald-600 shrink-0" />
-                        <span>{summit.duration} {summit.time ? `(${summit.time})` : ''}</span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex justify-end gap-3">
-                        <button
-                          onClick={() => openEditModal(summit)}
-                          className="text-gray-400 hover:text-blue-600 transition-colors p-1"
-                          title="Edit"
-                        >
-                          <Edit2 size={18} />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(summit.id)}
-                          className="text-gray-400 hover:text-red-600 transition-colors p-1"
-                          title="Delete"
-                        >
-                          <Trash2 size={18} />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-                {summits.length === 0 && (
+
+        {viewMode === 'grid' ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
+            {summits.filter(s => isSummitActive(s) && s.status !== 'Event Completed' && s.status !== 'Completed').map((summit, index) => (
+              <div key={summit.id} className="w-full">
+                <ProgramCard
+                  summit={summit}
+                  index={index}
+                  isAdmin={true}
+                  onEdit={openEditModal}
+                  onDelete={handleDelete}
+                />
+              </div>
+            ))}
+            {summits.filter(s => isSummitActive(s) && s.status !== 'Event Completed' && s.status !== 'Completed').length === 0 && (
+              <div className="col-span-full py-8 text-center text-gray-500 bg-white rounded-xl border border-gray-100 text-sm">
+                No active upcoming workshops right now.
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-sm text-gray-600">
+                <thead className="bg-gray-50 border-b border-gray-100 text-gray-700 text-xs uppercase font-semibold">
                   <tr>
-                    <td colSpan="5" className="px-6 py-8 text-center text-gray-500">
-                      No programs found. Add a new program to display on the enroll page.
-                    </td>
+                    <th className="px-6 py-4">Program Info</th>
+                    <th className="px-6 py-4">College & Venue</th>
+                    <th className="px-6 py-4">Pricing & Tax</th>
+                    <th className="px-6 py-4">Schedule & Date</th>
+                    <th className="px-6 py-4 text-right">Actions</th>
                   </tr>
-                )}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {summits.filter(s => isSummitActive(s) && s.status !== 'Event Completed' && s.status !== 'Completed').map((summit) => (
+                    <tr key={summit.id} className="hover:bg-gray-50/50 transition-colors">
+                      <td className="px-6 py-4">
+                        <div className="font-bold text-vmanous-navy-dark">{summit.title}</div>
+                        <div className="text-xs text-gray-500 mt-1">{summit.subtitle}</div>
+                        <div className="flex items-center gap-2 mt-2">
+                          <span className="inline-block px-2 py-0.5 bg-blue-50 text-blue-600 text-[10px] font-bold uppercase rounded-md">
+                            {summit.type}
+                          </span>
+                          {summit.status && (
+                            <span className="inline-block px-2 py-0.5 bg-emerald-50 text-emerald-700 text-[10px] font-bold uppercase rounded-md border border-emerald-200">
+                              {summit.status}
+                            </span>
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 space-y-1">
+                        <div className="flex items-center gap-2">
+                          <Building2 size={16} className="text-gray-400" />
+                          <span className="font-medium">{summit.college}</span>
+                        </div>
+                        {summit.address && (
+                          <div className="flex items-center gap-2 text-xs text-gray-500">
+                            <MapPin size={14} className="text-emerald-600 shrink-0" />
+                            <span>{summit.address}</span>
+                          </div>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 space-y-1">
+                        <div className="font-bold text-emerald-600 text-sm">
+                          ₹{Number(summit.price || 0).toLocaleString('en-IN')}
+                          {summit.originalPrice && Number(summit.originalPrice) > Number(summit.price) && (
+                            <span className="text-xs text-gray-400 line-through font-normal ml-2">
+                              ₹{Number(summit.originalPrice).toLocaleString('en-IN')}
+                            </span>
+                          )}
+                        </div>
+                        <div className="text-xs text-gray-500 flex items-center gap-1">
+                          <Receipt size={13} className="text-gray-400" />
+                          <span>
+                            {summit.taxMode === 'Inclusive' ? 'Tax Included' : summit.taxRate ? `+${summit.taxRate}% GST (${summit.taxMode || 'Exclusive'})` : 'Free'}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 space-y-1">
+                        <div className="flex items-center gap-2">
+                          <Calendar size={14} className="text-gray-400" />
+                          <span className="font-medium text-gray-900">{summit.date}</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-xs text-gray-500">
+                          <Clock size={14} className="text-emerald-600 shrink-0" />
+                          <span>{summit.duration} {summit.time ? `(${summit.time})` : ''}</span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex justify-end gap-3">
+                          <button
+                            onClick={() => openEditModal(summit)}
+                            className="text-gray-400 hover:text-blue-600 transition-colors p-1"
+                            title="Edit"
+                          >
+                            <Edit2 size={18} />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(summit.id)}
+                            className="text-gray-400 hover:text-red-600 transition-colors p-1"
+                            title="Delete"
+                          >
+                            <Trash2 size={18} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                  {summits.filter(s => isSummitActive(s) && s.status !== 'Event Completed' && s.status !== 'Completed').length === 0 && (
+                    <tr>
+                      <td colSpan="5" className="px-6 py-8 text-center text-gray-500">
+                        No active workshops found.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* 📜 2. WORKSHOP HISTORY & PAST RECORDS */}
+      <div className="space-y-4 pt-6 border-t border-gray-200 mt-8">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+          <div>
+            <h2 className="text-lg font-extrabold text-vmanous-navy-dark flex items-center gap-2">
+              <History size={20} className="text-amber-600" />
+              <span>Workshop History & Past Records</span>
+              <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-50 text-amber-700 border border-amber-200">
+                {summits.filter(s => !isSummitActive(s) || s.status === 'Event Completed' || s.status === 'Completed').length} Completed
+              </span>
+            </h2>
+            <p className="text-xs text-gray-500 mt-1">
+              Archive of past completed workshops, event dates, and enrolled student stats.
+            </p>
           </div>
         </div>
-      )}
+
+        {viewMode === 'grid' ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
+            {summits.filter(s => !isSummitActive(s) || s.status === 'Event Completed' || s.status === 'Completed').map((summit, index) => (
+              <div key={summit.id} className="w-full">
+                <ProgramCard
+                  summit={{
+                    ...summit,
+                    status: summit.status || 'Event Completed'
+                  }}
+                  index={index}
+                  isAdmin={true}
+                  isHistory={true}
+                  onEdit={null}
+                  onDelete={handleDelete}
+                />
+              </div>
+            ))}
+            {summits.filter(s => !isSummitActive(s) || s.status === 'Event Completed' || s.status === 'Completed').length === 0 && (
+              <div className="col-span-full py-8 text-center text-gray-500 bg-white rounded-xl border border-gray-100 text-sm">
+                No past workshop history available.
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-sm text-gray-600">
+                <thead className="bg-amber-50/50 border-b border-gray-200 text-gray-700 text-xs uppercase font-semibold">
+                  <tr>
+                    <th className="px-6 py-4">Past Program Info</th>
+                    <th className="px-6 py-4">College & Venue</th>
+                    <th className="px-6 py-4">Event Date (Kab Ka Tha)</th>
+                    <th className="px-6 py-4">Enrolled Students</th>
+                    <th className="px-6 py-4 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {summits.filter(s => !isSummitActive(s) || s.status === 'Event Completed' || s.status === 'Completed').map((summit) => (
+                    <tr key={summit.id} className="hover:bg-amber-50/20 transition-colors">
+                      <td className="px-6 py-4">
+                        <div className="font-bold text-vmanous-navy-dark">{summit.title}</div>
+                        <div className="text-xs text-gray-500 mt-1">{summit.subtitle}</div>
+                        <div className="flex items-center gap-2 mt-2">
+                          <span className="inline-block px-2 py-0.5 bg-amber-100 text-amber-800 text-[10px] font-bold uppercase rounded-md border border-amber-300">
+                            {summit.status || 'Event Completed'}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 space-y-1">
+                        <div className="flex items-center gap-2">
+                          <Building2 size={16} className="text-gray-400" />
+                          <span className="font-medium">{summit.college}</span>
+                        </div>
+                        {summit.address && (
+                          <div className="flex items-center gap-2 text-xs text-gray-500">
+                            <MapPin size={14} className="text-emerald-600 shrink-0" />
+                            <span>{summit.address}</span>
+                          </div>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 space-y-1">
+                        <div className="flex items-center gap-2">
+                          <Calendar size={15} className="text-amber-600 shrink-0" />
+                          <span className="font-bold text-gray-900">{summit.date}</span>
+                        </div>
+                        <div className="text-xs text-gray-500">
+                          {summit.duration}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200 font-bold text-xs">
+                          <Users size={14} className="text-emerald-600" />
+                          <span>{summit.enrolledCount !== undefined ? summit.enrolledCount : 0} Students Enrolled</span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex justify-end gap-3">
+                          <button
+                            onClick={() => handleDelete(summit.id)}
+                            className="text-gray-400 hover:text-red-600 transition-colors p-1"
+                            title="Delete History Record"
+                          >
+                            <Trash2 size={18} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                  {summits.filter(s => !isSummitActive(s) || s.status === 'Event Completed' || s.status === 'Completed').length === 0 && (
+                    <tr>
+                      <td colSpan="5" className="px-6 py-8 text-center text-gray-500">
+                        No history records available.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+      </div>
 
       {/* Add/Edit Modal (Structured Vertical Design) */}
       {isModalOpen && (

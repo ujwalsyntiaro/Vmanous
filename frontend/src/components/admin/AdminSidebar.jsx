@@ -25,17 +25,17 @@ const AdminSidebar = ({ isMobileOpen, setIsMobileOpen }) => {
 
   const handleLogout = () => {
     logoutAdmin();
-    navigate('/admin/login');
+    navigate('/cpanel/login');
   };
 
   const navigation = [
-    { name: 'Dashboard', path: '/admin', icon: LayoutDashboard, exact: true, hasDividerAfter: true },
-    { name: 'Onboard AI Summit', path: '/admin/ai-summits', icon: Calendar, hasDividerAfter: true },
-    { name: 'Applications / Reports', path: '/admin/applications', icon: FileText },
-    { name: 'Enrollments', path: '/admin/enrollments', icon: Users, hasDividerAfter: true },
-    { name: 'Manage Gallery', path: '/admin/gallery', icon: Image, hasDividerAfter: true },
-    { name: 'Manage Certificates', path: '/admin/certificates', icon: Award, hasDividerAfter: true },
-    { name: 'Settings', path: '/admin/settings', icon: Settings },
+    { name: 'Dashboard', path: '/cpanel', icon: LayoutDashboard, exact: true, hasDividerAfter: true },
+    { name: 'Onboard AI Summit', path: '/cpanel/ai-summits', icon: Calendar, hasDividerAfter: true },
+    { name: 'Applications / Reports', path: '/cpanel/applications', icon: FileText },
+    { name: 'Enrollments', path: '/cpanel/enrollments', icon: Users, hasDividerAfter: true },
+    { name: 'Manage Gallery', path: '/cpanel/gallery', icon: Image, hasDividerAfter: true },
+    { name: 'Manage Certificates', path: '/cpanel/certificates', icon: Award, hasDividerAfter: true },
+    { name: 'Settings', path: '/cpanel/settings', icon: Settings },
   ];
 
   const SidebarContent = () => (

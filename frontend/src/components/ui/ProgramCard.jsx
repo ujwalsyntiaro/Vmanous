@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { Building2, Calendar, CheckCircle2, ArrowRight, Edit2, Trash2, MapPin, Clock } from 'lucide-react';
 import { isSummitActive } from '../../services/summitService';
 
-const ProgramCard = ({ summit, index = 0, isAdmin = false, onRegister, onEdit, onDelete }) => {
+const ProgramCard = ({ summit, index = 0, isAdmin = false, isHistory = false, onRegister, onEdit, onDelete }) => {
   if (!isAdmin && !isSummitActive(summit)) {
     return null;
   }
@@ -14,6 +14,7 @@ const ProgramCard = ({ summit, index = 0, isAdmin = false, onRegister, onEdit, o
       ? summit.applications.filter(a => a.paymentStatus === 'Paid' || !a.paymentStatus).length
       : 0);
   const seatCapacity = summit.seatCapacity || 100;
+  const isCompleted = summit.status === 'Event Completed' || summit.status === 'Completed' || !isSummitActive(summit);
 
   return (
     <motion.div
@@ -34,7 +35,11 @@ const ProgramCard = ({ summit, index = 0, isAdmin = false, onRegister, onEdit, o
           </span>
           <div className="flex flex-col items-end gap-1">
             {summit.status && (
-              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wider uppercase bg-blue-50 text-blue-700 border border-blue-200/60">
+              <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wider uppercase ${
+                isCompleted
+                  ? 'bg-amber-100 text-amber-800 border border-amber-300'
+                  : 'bg-blue-50 text-blue-700 border border-blue-200/60'
+              }`}>
                 {summit.status}
               </span>
             )}
@@ -98,39 +103,43 @@ const ProgramCard = ({ summit, index = 0, isAdmin = false, onRegister, onEdit, o
         )}
 
         {/* Features List (rendered only if present) */}
-        {summit.features && summit.features.length > 0 && (
-          <div className="space-y-1 mb-2 pt-1.5 border-t border-slate-100 flex-1">
-            {summit.features.map((feature, i) => (
-              <div key={i} className="flex items-start gap-2">
-                <div className="p-0.5 rounded-full bg-emerald-50 border border-emerald-100 text-emerald-600 mt-0.5 flex-shrink-0">
-                  <CheckCircle2 size={13} />
-                </div>
-                <span className="text-xs font-medium text-slate-700 leading-tight">
-                  {feature}
-                </span>
+        {Array.isArray(summit.features) && summit.features.length > 0 && (
+          <div className="mt-auto pt-2 border-t border-slate-100 space-y-1 mb-3">
+            {summit.features.slice(0, 2).map((feat, fIdx) => (
+              <div key={fIdx} className="flex items-center gap-1.5 text-xs text-slate-600 font-medium">
+                <CheckCircle2 size={13} className="text-emerald-600 flex-shrink-0" />
+                <span className="truncate">{feat}</span>
               </div>
             ))}
           </div>
         )}
       </div>
 
-      {/* Card Footer Action */}
-      <div className="mt-auto pt-2 border-t border-slate-100 relative z-10 flex items-center justify-between gap-3">
+      {/* Card Footer: Admin Actions vs Student CTA */}
+      <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between gap-3 relative z-10">
         {isAdmin ? (
-          <div className="flex items-center gap-3 w-full">
-            <button
-              onClick={() => onEdit && onEdit(summit)}
-              className="flex-1 px-4 py-2 bg-blue-50 border border-blue-200 text-blue-600 font-semibold rounded-md hover:bg-blue-100 transition-colors flex items-center justify-center gap-2 text-xs cursor-pointer"
-            >
-              <Edit2 size={15} />
-              Edit
-            </button>
-            <button
-              onClick={() => onDelete && onDelete(summit.id)}
-              className="px-3.5 py-2 bg-red-50 border border-red-200 text-red-600 font-semibold rounded-md hover:bg-red-100 transition-colors flex items-center justify-center gap-2 text-xs cursor-pointer"
-            >
-              <Trash2 size={15} />
-            </button>
+          <div className="flex items-center justify-end gap-3 w-full">
+            {onEdit && !isHistory && (
+              <button
+                onClick={() => onEdit(summit)}
+                className="flex-1 px-4 py-2 bg-blue-50 border border-blue-200 text-blue-600 font-semibold rounded-md hover:bg-blue-100 transition-colors flex items-center justify-center gap-2 text-xs cursor-pointer"
+              >
+                <Edit2 size={15} />
+                Edit
+              </button>
+            )}
+            {onDelete && (
+              <button
+                onClick={() => onDelete(summit.id)}
+                className={`py-2 bg-red-50 border border-red-200 text-red-600 font-semibold rounded-md hover:bg-red-100 transition-colors flex items-center justify-center gap-2 text-xs cursor-pointer ${
+                  isHistory || !onEdit ? 'w-full px-4' : 'px-3.5'
+                }`}
+                title="Delete Record"
+              >
+                <Trash2 size={15} />
+                {isHistory ? 'Delete History Record' : ''}
+              </button>
+            )}
           </div>
         ) : (
           <>
