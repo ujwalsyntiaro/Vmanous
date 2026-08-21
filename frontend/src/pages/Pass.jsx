@@ -77,7 +77,7 @@ export const Pass = () => {
   const [isDownloading, setIsDownloading] = useState(false);
 
   useEffect(() => {
-    if (!formData) {
+    if (!formData || formData.paymentStatus === 'Failed') {
       navigate('/enroll');
     }
   }, [formData, navigate]);
