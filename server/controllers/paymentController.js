@@ -143,15 +143,11 @@ const verifyPaymentStatus = async (req, res) => {
     // Check if this payment was ALREADY verified and stored in database (Idempotency Check)
     const existingApp = await prisma.application.findFirst({
       where: {
-        OR: [
-          { transactionId: merchantTransactionId },
-          { transactionId: { startsWith: 'TXN_PHPE_' } }
-        ]
-      },
-      orderBy: { createdAt: 'desc' }
+        transactionId: merchantTransactionId
+      }
     });
 
-    if (existingApp && existingApp.paymentStatus === 'Paid' && existingApp.transactionId === merchantTransactionId) {
+    if (existingApp && existingApp.paymentStatus === 'Paid') {
       console.log(`[PhonePe Status Check] Transaction ${merchantTransactionId} already verified in DB.`);
       return res.status(200).json({
         success: true,
