@@ -80,13 +80,13 @@ const generatePassPDF = async (data) => {
       // Coordinates setup
       let curY = 20;
 
-      // 1. Fetch QR Code Buffer
+      // 1. Fetch QR Code Buffer and Student Photo Buffer in Parallel
       const qrDataText = `=== VMANOUS WORKSHOP PASS ===\nPass ID: ${passId}\nParticipant: ${studentName}\nEmail: ${data.email || 'N/A'}\nMobile: ${phone}\nCollege: ${collegeName}\nStatus: VERIFIED & PAID`;
-      const qrDataUrl = await QRCode.toDataURL(qrDataText, { width: 120, margin: 1 });
+      const [qrDataUrl, photoBuffer] = await Promise.all([
+        QRCode.toDataURL(qrDataText, { width: 120, margin: 1 }),
+        getPhotoBuffer(data.selfiePhotoUrl)
+      ]);
       const qrBuffer = Buffer.from(qrDataUrl.split(',')[1], 'base64');
-
-      // 2. Fetch Student Photo Buffer
-      const photoBuffer = await getPhotoBuffer(data.selfiePhotoUrl);
 
       // 3. Main Card Background & Plain Rectangle Border
       doc.save();

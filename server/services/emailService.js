@@ -1,35 +1,48 @@
 const nodemailer = require('nodemailer');
 const { generatePassPDF } = require('./pdfPassService');
 
-// Configure Email Transporter (SMTP / Webmail / Gmail)
-const createTransporter = () => {
+// Cached Persistent Transporter with Connection Pooling for Ultra-Fast Delivery
+let cachedTransporter = null;
+
+const getTransporter = () => {
+  if (cachedTransporter) return cachedTransporter;
+
   const host = process.env.EMAIL_HOST;
   const port = parseInt(process.env.EMAIL_PORT || '465', 10);
-  const user = process.env.EMAIL_USER || 'ujwal@syntiaro.com';
-  const pass = process.env.EMAIL_PASS || '';
+  const user = process.env.EMAIL_USER || 'vmanous.com@gmail.com';
+  const pass = (process.env.EMAIL_PASS || '').replace(/\s+/g, '');
 
   if (host) {
-    return nodemailer.createTransport({
+    cachedTransporter = nodemailer.createTransport({
+      pool: true,               // Connection pooling (keeps SMTP socket warm & open)
+      maxConnections: 5,        // Up to 5 parallel connections
+      maxMessages: 100,         // Reuse each connection for up to 100 emails
       host: host,
       port: port,
-      secure: port === 465, // true for 465 SSL
+      secure: port === 465,     // true for 465 SSL
       auth: { user, pass },
       tls: {
         rejectUnauthorized: false
-      }
+      },
+      connectionTimeout: 8000,
+      greetingTimeout: 4000,
+      socketTimeout: 12000
+    });
+  } else {
+    cachedTransporter = nodemailer.createTransport({
+      pool: true,
+      service: 'gmail',
+      auth: { user, pass }
     });
   }
 
-  return nodemailer.createTransport({
-    service: 'gmail',
-    auth: { user, pass }
-  });
+  return cachedTransporter;
 };
 
 // Function to send College AI Summit Request Notification Email
 const sendCollegeRequestEmail = async (data) => {
-  const transporter = createTransporter();
-  const senderEmail = process.env.EMAIL_USER || 'ujwal@syntiaro.com';
+  const transporter = getTransporter();
+  const senderEmail = process.env.EMAIL_USER || 'vmanous.com@gmail.com';
   const recipientEmail = process.env.EMAIL_TO || senderEmail;
 
   const mailOptions = {
@@ -103,8 +116,8 @@ const sendCollegeRequestEmail = async (data) => {
  * @param {Object} data - Application & Pass Data
  */
 const sendStudentPassEmail = async (data) => {
-  const transporter = createTransporter();
-  const senderEmail = process.env.EMAIL_USER || 'kiran@vedhaai.in';
+  const transporter = getTransporter();
+  const senderEmail = process.env.EMAIL_USER || 'vmanous.com@gmail.com';
   const recipientEmail = data.email;
 
   if (!recipientEmail) {
@@ -153,7 +166,7 @@ const sendStudentPassEmail = async (data) => {
           <p style="margin: 0 0 14px 0;">We are pleased to confirm your seat booking for ${eventTitle}, scheduled to be held at ${collegeName}.</p>
           <ul style="margin: 0 0 16px 0; padding-left: 20px; list-style-type: disc;">
             <li style="margin-bottom: 4px;">Booking Date & Time: ${bookingDateTime}</li>
-            <li style="margin-bottom: 4px;">Payment Received: ${totalAmount}</li>
+            <li style="margin-bottom: 4px;">Payment: ${totalAmount}</li>
           </ul>
 
           <p style="margin: 0 0 8px 0;"><strong>Event Details:</strong></p>
