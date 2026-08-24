@@ -245,197 +245,197 @@ Issued On: ${currentDate}
               <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 z-30 flex items-center justify-center pointer-events-none">
                 <div className="w-14 h-14 sm:w-16 sm:h-16 flex items-center justify-center">
                   <svg viewBox="0 0 100 100" className="w-14 h-14 sm:w-16 sm:h-16 block overflow-visible">
-                    {/* White Background Circle (Cleanly masks the horizontal line behind icon) */}
-                    <circle cx="50" cy="50" r="38" fill="#ffffff" stroke="none" />
-                    {/* Open Green Circle Arc with Gap at Top Right */}
-                    <path d="M 72 26 A 36 36 0 1 0 78 66" fill="none" stroke="#5cb85c" strokeWidth="7" strokeLinecap="round" strokeLinejoin="round" />
+                    {/* Mask only the 1px black horizontal line behind icon */}
+                    <rect x="10" y="47" width="80" height="6" fill="#ffffff" stroke="none" />
+                    {/* Clean Solid White Fill inside Circle Interior */}
+                    <circle cx="50" cy="50" r="35" fill="#ffffff" stroke="none" />
+                    {/* Open Green Circle Arc with Gap at Top Right (Extended further right to 84, 38) */}
+                    <path d="M 61 17 A 36 36 0 1 0 84 38" fill="none" stroke="#5cb85c" strokeWidth="4.8" strokeLinecap="round" strokeLinejoin="round" />
                     {/* Checkmark Extending Out of Circle in Top Right */}
-                    <path d="M 28 52 L 44 68 L 84 20" fill="none" stroke="#5cb85c" strokeWidth="7" strokeLinecap="round" strokeLinejoin="round" />
+                    <path d="M 30 52 L 44 66 L 76 20" fill="none" stroke="#5cb85c" strokeWidth="4.8" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                 </div>
               </div>
 
               {/* Top Pass Header (Payment Successful! Heading + College / Institution) */}
               <div className="bg-white pt-9 sm:pt-10 pb-1 px-4 text-center relative flex flex-col items-center z-20">
-              {/* Payment Successful! Heading (Sleek Semibold Font Weight) */}
-              <h1 className="text-xl sm:text-2xl font-semibold text-[#5cb85c] tracking-tight mb-2">
-                Payment Successful!
-              </h1>
+                {/* Payment Successful! Heading (Sleek Semibold Font Weight) */}
+                <h1 className="text-xl sm:text-2xl font-semibold text-[#5cb85c] tracking-tight mb-2">
+                  Payment Successful!
+                </h1>
 
-              {/* College / Institution Name & Address Header */}
-              <h2 className="text-base sm:text-lg font-black tracking-wider uppercase mb-0.5 break-words px-2 text-slate-800 leading-tight">
-                {formData.institution || 'NATIONAL INSTITUTE OF TECHNOLOGY'}
-              </h2>
-              {formData.collegeAddress && (
-                <p className="text-slate-500 text-xs font-semibold px-2 mb-0.5">
-                  {formData.collegeAddress}
-                </p>
-              )}
-              <p className="text-slate-400 text-[11px] font-bold tracking-widest mt-0.5">{passId}</p>
-            </div>
-
-            {/* Participant Profile & Info Section (Side-by-Side: Info on Left, Avatar on Right) */}
-            <div className="p-4 flex items-center justify-between gap-4 bg-white">
-              {/* Left Side: Program Badge, Name & Contact Details */}
-              <div className="flex-1 text-left space-y-1">
-                <span className="inline-block text-[10px] sm:text-[11px] font-semibold text-emerald-600 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-100 mb-0.5">
-                  {formData.programInterest || 'AI Summit Workshop 2026'}
-                </span>
-                <h3 className="text-base md:text-lg font-bold text-slate-900 leading-tight">{fullName}</h3>
-
-                {/* Mobile Number & Blood Group Info (Always Displayed) */}
-                <div className="flex items-center gap-4 pt-1.5 mt-1">
-                  <div>
-                    <span className="text-[10px] text-slate-400 font-bold block">Mobile Number</span>
-                    <span className="text-[11px] font-semibold text-slate-700 block">{formData.phone || 'N/A'}</span>
-                  </div>
-                  <div>
-                    <span className="text-[10px] text-slate-400 font-bold block">Blood Group</span>
-                    <span className="text-[11px] font-extrabold text-emerald-700 block">{formData.bloodGroup || 'N/A'}</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Right Side: Selfie / Avatar Photo (Slightly larger circle) */}
-              <div className="shrink-0 mr-1 sm:mr-2">
-                {formData.selfie || formData.selfiePhotoUrl ? (
-                  <img
-                    src={formData.selfie || formData.selfiePhotoUrl}
-                    alt={fullName}
-                    className="w-24 h-24 sm:w-28 sm:h-28 rounded-full object-cover border-2 border-slate-300 shadow-md bg-white"
-                  />
-                ) : (
-                  <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-slate-200 border-2 border-white shadow-md flex items-center justify-center overflow-hidden shrink-0">
-                    <svg
-                      width="100"
-                      height="100"
-                      viewBox="0 0 100 100"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="w-full h-full"
-                    >
-                      <circle cx="50" cy="50" r="50" fill="#F8FAFC" />
-                      <circle cx="50" cy="38" r="17" fill="#94A3B8" />
-                      <path d="M 16 92 A 36 36 0 0 1 84 92 Z" fill="#94A3B8" />
-                    </svg>
-                  </div>
+                {/* College / Institution Name & Address Header */}
+                <h2 className="text-base sm:text-lg font-black tracking-wider uppercase mb-0.5 break-words px-2 text-slate-800 leading-tight">
+                  {formData.institution || 'NATIONAL INSTITUTE OF TECHNOLOGY'}
+                </h2>
+                {formData.collegeAddress && (
+                  <p className="text-slate-500 text-xs font-semibold px-2 mb-0.5">
+                    {formData.collegeAddress}
+                  </p>
                 )}
-              </div>
-            </div>
-
-            {/* Unique Center Accent Divider Line */}
-            <div className="w-full flex items-center gap-3 py-1 px-4 bg-white">
-              <div className="flex-1 h-[1px] bg-gradient-to-r from-transparent via-slate-200 to-slate-200" />
-              <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-xs ring-4 ring-emerald-100/70" />
-              <div className="flex-1 h-[1px] bg-gradient-to-r from-slate-200 via-slate-200 to-transparent" />
-            </div>
-
-            {/* Main Participant Academic Grid */}
-            <div className="px-4 pt-1.5 pb-2.5 bg-white">
-              <div className="grid grid-cols-3 gap-2 text-center">
-                <div className="px-2 py-2.5 bg-white rounded-lg border border-slate-200 flex flex-col items-center justify-center min-h-[56px]">
-                  <span className="text-[10px] text-slate-400 font-bold block leading-tight">Degree</span>
-                  <span className="text-[11px] font-bold text-slate-800 block mt-1 leading-normal break-words max-w-full">
-                    {formData.degree || 'N/A'}
-                  </span>
-                </div>
-                <div className="px-2 py-2.5 bg-white rounded-lg border border-slate-200 flex flex-col items-center justify-center min-h-[56px]">
-                  <span className="text-[10px] text-slate-400 font-bold block leading-tight">Specialization</span>
-                  <span className="text-[11px] font-bold text-slate-800 block mt-1 leading-normal break-words max-w-full">
-                    {formData.branch || 'Computer Science'}
-                  </span>
-                </div>
-                <div className="px-2 py-2.5 bg-white rounded-lg border border-slate-200 flex flex-col items-center justify-center min-h-[56px]">
-                  <span className="text-[10px] text-slate-400 font-bold block leading-tight">Semester</span>
-                  <span className="text-[11px] font-bold text-slate-800 block mt-1 leading-normal break-words max-w-full">
-                    {formData.semester || formData.year || formData.yearOfStudy || 'N/A'}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* Ticket Cutout Line (Reduced 50% Height Sleek Curve Cuts) */}
-            <div className="relative flex items-center bg-white py-1 overflow-visible z-10">
-              {/* Left Side 180-Degree Curve Cutout */}
-              <div className="relative -ml-[1px] shrink-0 z-20">
-                <svg viewBox="0 0 16 24" className="w-2.5 h-4.5 sm:w-3 sm:h-5.5 block overflow-visible">
-                  {/* Mask out straight vertical card border line behind curve */}
-                  <rect x="-2" y="0" width="20" height="24" fill="#ffffff" stroke="none" />
-                  {/* Background Mask Fill for Notch Area */}
-                  <path d="M 0,0 A 16,12 0 0,1 0,24 Z" fill="#f8fafc" stroke="none" />
-                  {/* Curved Arc Stroke Only (Exact Uniform 1px Black Line) */}
-                  <path d="M 0,0 A 16,12 0 0,1 0,24" fill="none" stroke="#000000" strokeWidth="1" vectorEffect="non-scaling-stroke" />
-                </svg>
+                <p className="text-slate-400 text-[11px] font-bold tracking-widest mt-0.5">{passId}</p>
               </div>
 
-              {/* Center Darkened Dashed Tear Line */}
-              <div className="flex-1 border-b-2 border-dashed border-black/80 mx-2" />
-
-              {/* Right Side 180-Degree Curve Cutout */}
-              <div className="relative -mr-[1px] shrink-0 z-20">
-                <svg viewBox="0 0 16 24" className="w-2.5 h-4.5 sm:w-3 sm:h-5.5 block overflow-visible">
-                  {/* Mask out straight vertical card border line behind curve */}
-                  <rect x="-2" y="0" width="20" height="24" fill="#ffffff" stroke="none" />
-                  {/* Background Mask Fill for Notch Area */}
-                  <path d="M 16,0 A 16,12 0 0,0 16,24 Z" fill="#f8fafc" stroke="none" />
-                  {/* Curved Arc Stroke Only (Exact Uniform 1px Black Line) */}
-                  <path d="M 16,0 A 16,12 0 0,0 16,24" fill="none" stroke="#000000" strokeWidth="1" vectorEffect="non-scaling-stroke" />
-                </svg>
-              </div>
-            </div>
-
-            {/* Premium QR & Event Details Section (Compact Vertical Padding) */}
-            <div className="py-4 px-4 sm:px-5 bg-white flex items-start justify-between gap-4">
-              {/* Left Side: Date, Time & Official Status */}
-              <div className="space-y-2.5 flex-1 relative">
-
-                <div>
-                  <span className="flex items-center gap-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">
-                    <Calendar size={13} className="text-emerald-600 shrink-0" /> Event Date
+              {/* Participant Profile & Info Section (Side-by-Side: Info on Left, Avatar on Right) */}
+              <div className="p-4 flex items-center justify-between gap-4 bg-white">
+                {/* Left Side: Program Badge, Name & Contact Details */}
+                <div className="flex-1 text-left space-y-1">
+                  <span className="inline-block text-[10px] sm:text-[11px] font-semibold text-emerald-600 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-100 mb-0.5">
+                    {formData.programInterest || 'AI Summit Workshop 2026'}
                   </span>
-                  <p className="text-xs sm:text-sm font-extrabold text-slate-900">{currentDate}</p>
+                  <h3 className="text-base md:text-lg font-bold text-slate-900 leading-tight">{fullName}</h3>
+
+                  {/* Mobile Number & Blood Group Info (Always Displayed) */}
+                  <div className="flex items-center gap-4 pt-1.5 mt-1">
+                    <div>
+                      <span className="text-[10px] text-slate-400 font-bold block">Mobile Number</span>
+                      <span className="text-[11px] font-semibold text-slate-700 block">{formData.phone || 'N/A'}</span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] text-slate-400 font-bold block">Blood Group</span>
+                      <span className="text-[11px] font-extrabold text-slate-900 block">{formData.bloodGroup || 'N/A'}</span>
+                    </div>
+                  </div>
                 </div>
 
-                <div>
-                  <span className="flex items-center gap-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">
-                    <Clock size={13} className="text-emerald-600 shrink-0" /> Workshop Time
-                  </span>
-                  <p className="text-xs sm:text-sm font-extrabold text-slate-900">{workshopTiming}</p>
-                </div>
-
-                <div className="pt-0.5">
-                  <span className="inline-flex items-center gap-1 text-[9px] font-bold text-emerald-700 bg-emerald-100/80 px-2 py-0.5 rounded-full border border-emerald-200/80 uppercase tracking-wider">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" /> Official Pass
-                  </span>
+                {/* Right Side: Selfie / Avatar Photo (Slightly larger circle) */}
+                <div className="shrink-0 mr-1 sm:mr-2">
+                  {formData.selfie || formData.selfiePhotoUrl ? (
+                    <img
+                      src={formData.selfie || formData.selfiePhotoUrl}
+                      alt={fullName}
+                      className="w-24 h-24 sm:w-28 sm:h-28 rounded-full object-cover border-2 border-slate-300 shadow-md bg-white"
+                    />
+                  ) : (
+                    <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-slate-200 border-2 border-white shadow-md flex items-center justify-center overflow-hidden shrink-0">
+                      <svg
+                        width="100"
+                        height="100"
+                        viewBox="0 0 100 100"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="w-full h-full"
+                      >
+                        <circle cx="50" cy="50" r="50" fill="#F8FAFC" />
+                        <circle cx="50" cy="38" r="17" fill="#94A3B8" />
+                        <path d="M 16 92 A 36 36 0 0 1 84 92 Z" fill="#94A3B8" />
+                      </svg>
+                    </div>
+                  )}
                 </div>
               </div>
 
-              {/* Right Side: Clean Transparent QR Code with Thin Black Corner Brackets */}
-              <div className="flex flex-col items-center shrink-0">
-                <div className="relative p-1.5 bg-transparent flex items-center justify-center">
-                  {/* Top-Left Corner Bracket (┌) */}
-                  <div className="absolute top-0 left-0 w-3 h-3 border-t border-l border-black rounded-tl-xs" />
+              {/* Center Divider Line (Touches left & right borders edge-to-edge) */}
+              <div className="w-full py-1 px-0 bg-white">
+                <div className="w-full h-[1px] bg-slate-300" />
+              </div>
 
-                  {/* Top-Right Corner Bracket (┐) */}
-                  <div className="absolute top-0 right-0 w-3 h-3 border-t border-r border-black rounded-tr-xs" />
-
-                  {/* Bottom-Left Corner Bracket (└) */}
-                  <div className="absolute bottom-0 left-0 w-3 h-3 border-b border-l border-black rounded-bl-xs" />
-
-                  {/* Bottom-Right Corner Bracket (┘) */}
-                  <div className="absolute bottom-0 right-0 w-3 h-3 border-b border-r border-black rounded-br-xs" />
-
-                  <QRCodeSVG
-                    value={qrDataText}
-                    size={132}
-                    bgColor="transparent"
-                    fgColor="#0F172A"
-                    level="M"
-                    includeMargin={false}
-                  />
+              {/* Main Participant Academic Grid */}
+              <div className="px-4 pt-1.5 pb-2.5 bg-white">
+                <div className="grid grid-cols-3 gap-2 text-center">
+                  <div className="px-2 py-2.5 bg-white rounded-lg border border-slate-200 flex flex-col items-center justify-center min-h-[56px]">
+                    <span className="text-[10px] text-slate-400 font-bold block leading-tight">Degree</span>
+                    <span className="text-[11px] font-bold text-slate-800 block mt-1 leading-normal break-words max-w-full">
+                      {formData.degree || 'N/A'}
+                    </span>
+                  </div>
+                  <div className="px-2 py-2.5 bg-white rounded-lg border border-slate-200 flex flex-col items-center justify-center min-h-[56px]">
+                    <span className="text-[10px] text-slate-400 font-bold block leading-tight">Specialization</span>
+                    <span className="text-[11px] font-bold text-slate-800 block mt-1 leading-normal break-words max-w-full">
+                      {formData.branch || 'Computer Science'}
+                    </span>
+                  </div>
+                  <div className="px-2 py-2.5 bg-white rounded-lg border border-slate-200 flex flex-col items-center justify-center min-h-[56px]">
+                    <span className="text-[10px] text-slate-400 font-bold block leading-tight">Semester</span>
+                    <span className="text-[11px] font-bold text-slate-800 block mt-1 leading-normal break-words max-w-full">
+                      {formData.semester || formData.year || formData.yearOfStudy || 'N/A'}
+                    </span>
+                  </div>
                 </div>
               </div>
-            </div>
+
+              {/* Ticket Cutout Line (Sleek Triangular Wedge Cuts < and >) */}
+              <div className="relative flex items-center bg-white py-1 overflow-visible z-10">
+                {/* Left Side Wedge Cutout (<) */}
+                <div className="relative -ml-[1px] shrink-0 z-20">
+                  <svg viewBox="0 0 16 24" className="w-2.5 h-4.5 sm:w-3 sm:h-5.5 block overflow-visible">
+                    {/* Mask out straight vertical card border line behind wedge */}
+                    <rect x="-2" y="0" width="20" height="24" fill="#ffffff" stroke="none" />
+                    {/* Background Mask Fill for Notch Area */}
+                    <path d="M 0,0 L 12,12 L 0,24 Z" fill="#f8fafc" stroke="none" />
+                    {/* Triangular Wedge Stroke (< shape) */}
+                    <path d="M 0,0 L 12,12 L 0,24" fill="none" stroke="#000000" strokeWidth="1" vectorEffect="non-scaling-stroke" />
+                  </svg>
+                </div>
+
+                {/* Center Darkened Dashed Tear Line (Touches notch tips directly) */}
+                <div className="flex-1 border-b-2 border-dashed border-black/80 mx-0" />
+
+                {/* Right Side Wedge Cutout (>) */}
+                <div className="relative -mr-[1px] shrink-0 z-20">
+                  <svg viewBox="0 0 16 24" className="w-2.5 h-4.5 sm:w-3 sm:h-5.5 block overflow-visible">
+                    {/* Mask out straight vertical card border line behind wedge */}
+                    <rect x="-2" y="0" width="20" height="24" fill="#ffffff" stroke="none" />
+                    {/* Background Mask Fill for Notch Area */}
+                    <path d="M 16,0 L 4,12 L 16,24 Z" fill="#f8fafc" stroke="none" />
+                    {/* Triangular Wedge Stroke (> shape) */}
+                    <path d="M 16,0 L 4,12 L 16,24" fill="none" stroke="#000000" strokeWidth="1" vectorEffect="non-scaling-stroke" />
+                  </svg>
+                </div>
+              </div>
+
+              {/* Premium QR & Event Details Section (Compact Vertical Padding) */}
+              <div className="py-4 px-4 sm:px-5 bg-white flex items-start justify-between gap-4">
+                {/* Left Side: Date, Time & Official Status */}
+                <div className="space-y-2.5 flex-1 relative">
+
+                  <div>
+                    <span className="flex items-center gap-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">
+                      <Calendar size={13} className="text-emerald-600 shrink-0" /> Event Date
+                    </span>
+                    <p className="text-xs sm:text-sm font-extrabold text-slate-900">{currentDate}</p>
+                  </div>
+
+                  <div>
+                    <span className="flex items-center gap-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">
+                      <Clock size={13} className="text-emerald-600 shrink-0" /> Workshop Time
+                    </span>
+                    <p className="text-xs sm:text-sm font-extrabold text-slate-900">{workshopTiming}</p>
+                  </div>
+
+                  <div className="pt-0.5">
+                    <span className="inline-flex items-center gap-1 text-[9px] font-bold text-emerald-700 bg-emerald-100/80 px-2 py-0.5 rounded-full border border-emerald-200/80 uppercase tracking-wider">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" /> Official Pass
+                    </span>
+                  </div>
+                </div>
+
+                {/* Right Side: Clean Transparent QR Code with Thin Black Corner Brackets */}
+                <div className="flex flex-col items-center shrink-0">
+                  <div className="relative p-1.5 bg-transparent flex items-center justify-center">
+                    {/* Top-Left Corner Bracket (┌) */}
+                    <div className="absolute top-0 left-0 w-3 h-3 border-t border-l border-black rounded-tl-xs" />
+
+                    {/* Top-Right Corner Bracket (┐) */}
+                    <div className="absolute top-0 right-0 w-3 h-3 border-t border-r border-black rounded-tr-xs" />
+
+                    {/* Bottom-Left Corner Bracket (└) */}
+                    <div className="absolute bottom-0 left-0 w-3 h-3 border-b border-l border-black rounded-bl-xs" />
+
+                    {/* Bottom-Right Corner Bracket (┘) */}
+                    <div className="absolute bottom-0 right-0 w-3 h-3 border-b border-r border-black rounded-br-xs" />
+
+                    <QRCodeSVG
+                      value={qrDataText}
+                      size={132}
+                      bgColor="transparent"
+                      fgColor="#0F172A"
+                      level="M"
+                      includeMargin={false}
+                    />
+                  </div>
+                </div>
+              </div>
             </div>
           </motion.div>
 

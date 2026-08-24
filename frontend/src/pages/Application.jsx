@@ -634,7 +634,7 @@ export const Application = () => {
                             type="text"
                             name="firstName"
                             required
-                            placeholder="First name"
+                            placeholder="First Name"
                             value={formData.firstName}
                             onChange={handleChange}
                             className={`w-full px-4 py-1.5 rounded-lg bg-white border text-slate-800 text-sm font-medium focus:ring-2 outline-none transition-all duration-200 placeholder:text-slate-400 ${errors.firstName
@@ -657,7 +657,7 @@ export const Application = () => {
                           <input
                             type="text"
                             name="middleName"
-                            placeholder="Middle name"
+                            placeholder="Middle Name"
                             value={formData.middleName}
                             onChange={handleChange}
                             className={`w-full px-4 py-1.5 rounded-lg bg-white border text-slate-800 text-sm font-medium focus:ring-2 outline-none transition-all duration-200 placeholder:text-slate-400 ${errors.middleName
@@ -684,7 +684,7 @@ export const Application = () => {
                             type="text"
                             name="lastName"
                             required
-                            placeholder="Last name"
+                            placeholder="Last Name"
                             value={formData.lastName}
                             onChange={handleChange}
                             className={`w-full px-4 py-1.5 rounded-lg bg-white border text-slate-800 text-sm font-medium focus:ring-2 outline-none transition-all duration-200 placeholder:text-slate-400 ${errors.lastName
@@ -714,7 +714,7 @@ export const Application = () => {
                             name="phone"
                             required
                             maxLength={10}
-                            placeholder="10-digit phone number"
+                            placeholder="Phone Number"
                             value={formData.phone}
                             onChange={handleChange}
                             className={`w-full px-4 py-1.5 rounded-lg bg-white border text-slate-800 text-sm font-medium focus:ring-2 outline-none transition-all duration-200 placeholder:text-slate-400 ${errors.phone
@@ -738,7 +738,7 @@ export const Application = () => {
                             type="tel"
                             name="alternatePhone"
                             maxLength={10}
-                            placeholder="Alternate number"
+                            placeholder="Alternate Number"
                             value={formData.alternatePhone}
                             onChange={handleChange}
                             className={`w-full px-4 py-1.5 rounded-lg bg-white border text-slate-800 text-sm font-medium focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/15 outline-none transition-all duration-200 placeholder:text-slate-400 ${errors.alternatePhone
@@ -765,7 +765,7 @@ export const Application = () => {
                             type="email"
                             name="email"
                             required
-                            placeholder="Email address"
+                            placeholder="Email Address"
                             value={formData.email}
                             onChange={handleChange}
                             className={`w-full px-4 py-1.5 rounded-lg bg-white border text-slate-800 text-sm font-medium focus:ring-2 outline-none transition-all duration-200 placeholder:text-slate-400 ${errors.email
@@ -796,8 +796,8 @@ export const Application = () => {
                               value={formData.dob}
                               onChange={handleDobChange}
                               className={`w-full px-3 py-1.5 rounded-lg bg-white border text-slate-800 text-xs font-medium focus:ring-2 outline-none transition-all duration-200 placeholder:text-slate-400 ${errors.dob
-                                  ? 'border-red-500 focus:border-red-500 focus:ring-red-500/15'
-                                  : 'border-slate-400 focus:border-emerald-600 focus:ring-emerald-600/15'
+                                ? 'border-red-500 focus:border-red-500 focus:ring-red-500/15'
+                                : 'border-slate-400 focus:border-emerald-600 focus:ring-emerald-600/15'
                                 }`}
                             />
                             {errors.dob && (
@@ -850,9 +850,6 @@ export const Application = () => {
 
                     {/* Selfie Upload - Circular Design Without Square Background */}
                     <div className="lg:col-span-1 flex flex-col items-center justify-center">
-                      <label className="block text-xs font-bold text-slate-700 mb-2 text-center w-full">
-                        Selfie Photo <span className="text-red-500">*</span>
-                      </label>
                       <div className="w-full flex-1 flex flex-col items-center justify-center py-2">
                         {formData.selfie ? (
                           <div className="flex flex-col items-center gap-3">
@@ -910,22 +907,19 @@ export const Application = () => {
                                 <Camera size={16} className="text-slate-800" />
                               </button>
                               <div className="w-[1px] bg-slate-700 shrink-0" />
-                              <div className="relative overflow-hidden flex items-center justify-center">
-                                <button
-                                  type="button"
-                                  title="Upload Photo"
-                                  aria-label="Upload Photo"
-                                  className="px-3 py-1 text-slate-800 hover:bg-slate-100 transition-colors cursor-pointer flex items-center justify-center"
-                                >
-                                  <Upload size={16} className="text-slate-800" />
-                                </button>
+                              <label
+                                title="Upload Photo"
+                                aria-label="Upload Photo"
+                                className="px-3 py-1 text-slate-800 hover:bg-slate-100 transition-colors cursor-pointer flex items-center justify-center"
+                              >
+                                <Upload size={16} className="text-slate-800" />
                                 <input
                                   type="file"
                                   accept="image/*"
                                   onChange={handleImageUpload}
-                                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                  className="hidden"
                                 />
-                              </div>
+                              </label>
                             </div>
                           </div>
                         )}
@@ -951,7 +945,7 @@ export const Application = () => {
                           min="0"
                           max="100"
                           step="0.01"
-                          placeholder="10th percentage"
+                          placeholder="10th Percentage"
                           value={formData.tenthPercentage}
                           onChange={handleChange}
                           className={`w-full px-4 py-1.5 pr-8 rounded-lg bg-white border text-slate-800 text-sm font-medium focus:ring-2 outline-none transition-all duration-200 placeholder:text-slate-400 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${errors.tenthPercentage
@@ -981,7 +975,7 @@ export const Application = () => {
                           min="0"
                           max="100"
                           step="0.01"
-                          placeholder="12th percentage"
+                          placeholder="12th Percentage"
                           value={formData.twelfthPercentage}
                           onChange={handleChange}
                           className={`w-full px-4 py-1.5 pr-8 rounded-lg bg-white border text-slate-800 text-sm font-medium focus:ring-2 outline-none transition-all duration-200 placeholder:text-slate-400 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${errors.twelfthPercentage
@@ -1007,7 +1001,7 @@ export const Application = () => {
                         <input
                           type="text"
                           name="diplomaPercentage"
-                          placeholder="Diploma percentage or N/A"
+                          placeholder="Diploma Percentage or N/A"
                           value={formData.diplomaPercentage}
                           onChange={handleChange}
                           className={`w-full px-4 py-1.5 ${formData.diplomaPercentage && formData.diplomaPercentage.toString().toUpperCase() !== 'N/A' ? 'pr-8' : 'pr-4'

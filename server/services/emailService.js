@@ -143,35 +143,37 @@ const sendStudentPassEmail = async (data) => {
     const mailOptions = {
       from: `"VMANOUS Team" <${senderEmail}>`,
       to: recipientEmail,
-      subject: `Seat Booking Confirmed - ${eventTitle} at ${collegeName}`,
+      subject: `Registration Successful | ${eventTitle} – ${collegeName}`,
       html: `
-        <div style="font-family: Arial, sans-serif; color: #222222; line-height: 1.5; font-size: 14px; max-width: 600px; padding: 10px;">
+        <div style="font-family: Arial, sans-serif; color: #222222; line-height: 1.6; font-size: 14px; max-width: 600px; padding: 10px;">
           <p style="margin: 0 0 14px 0;">Dear ${studentName},</p>
 
           <p style="margin: 0 0 14px 0;">Greetings from the VMANOUS Team!</p>
 
           <p style="margin: 0 0 14px 0;">We are pleased to confirm your seat booking for ${eventTitle}, scheduled to be held at ${collegeName}.</p>
+          <ul style="margin: 0 0 16px 0; padding-left: 20px; list-style-type: disc;">
+            <li style="margin-bottom: 4px;">Booking Date & Time: ${bookingDateTime}</li>
+            <li style="margin-bottom: 4px;">Payment Received: ${totalAmount}</li>
+          </ul>
 
-          <p style="margin: 0 0 14px 0;">Event Details:</p>
-
-          <p style="margin: 0 0 4px 0;">Participant Name: ${studentName}</p>
-          <p style="margin: 0 0 4px 0;">College/Institute: ${collegeName}</p>
-          <p style="margin: 0 0 14px 0;">Event: ${eventTitle}</p>
-
-          <p style="margin: 0 0 4px 0;">Date: ${eventDate}</p>
-          <p style="margin: 0 0 4px 0;">Time: ${eventTime}</p>
-          <p style="margin: 0 0 4px 0;">Payment Received: ${totalAmount}</p>
-          <p style="margin: 0 0 14px 0;">Booking Date & Time: ${bookingDateTime}</p>
+          <p style="margin: 0 0 8px 0;"><strong>Event Details:</strong></p>
+          <ul style="margin: 0 0 16px 0; padding-left: 20px; list-style-type: disc;">
+            <li style="margin-bottom: 4px;">Participant Name: ${studentName}</li>
+            <li style="margin-bottom: 4px;">College/Institute: ${collegeName}</li>
+            <li style="margin-bottom: 4px;">Event: ${eventTitle}</li>
+            <li style="margin-bottom: 4px;">Event Date: ${eventDate}</li>
+            <li style="margin-bottom: 4px;">Event Time: ${eventTime}</li>
+          </ul>
 
           <p style="margin: 0 0 14px 0;">Your payment of ${totalAmount} has been successfully received, and your seat has been reserved for the event.</p>
 
-          <p style="margin: 0 0 14px 0;">Please make sure to carry your registration/booking confirmation Pass on the day of the event.</p>
+          <p style="margin: 0 0 14px 0;">Please make sure to carry your registration/booking confirmation  Pass on the day of the event.</p>
 
           <p style="margin: 0 0 14px 0;">We look forward to welcoming you to ${eventTitle} at ${collegeName} and hope you have an insightful and rewarding experience.</p>
 
-          <p style="margin: 20px 0 4px 0;">Best Regards,</p>
-          <p style="margin: 0 0 2px 0;">${eventTitle} Team</p>
-          <p style="margin: 0;">VMANOUS</p>
+          <p style="margin: 20px 0 4px 0;">Best Regards,<br>
+          ${eventTitle} Team<br>
+          VMANOUS</p>
         </div>
       `,
       attachments: [
