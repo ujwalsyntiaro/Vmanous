@@ -13,7 +13,7 @@ import {
   ArrowLeft,
   Home
 } from 'lucide-react';
-import { verifyPhonePeStatus } from '../services/paymentService';
+import { verifyCashfreeStatus } from '../services/paymentService';
 import { saveApplications, getApplications } from '../services/applicationService';
 import { saveStudents, getStudents } from '../services/studentService';
 import { broadcastSummitUpdate } from '../services/summitService';
@@ -21,7 +21,7 @@ import { broadcastSummitUpdate } from '../services/summitService';
 export const PaymentCallback = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const merchantTransactionId = searchParams.get('merchantTransactionId');
+  const orderId = searchParams.get('order_id') || searchParams.get('orderId') || searchParams.get('merchantTransactionId');
 
   const [loading, setLoading] = useState(true);
   const [statusResult, setStatusResult] = useState(null);
@@ -30,8 +30,8 @@ export const PaymentCallback = () => {
   const hasVerifiedRef = useRef(false);
 
   useEffect(() => {
-    if (!merchantTransactionId) {
-      setErrorMsg('No Transaction ID found in payment callback URL');
+    if (!orderId) {
+      setErrorMsg('No Order / Transaction ID found in payment callback URL');
       setLoading(false);
       return;
     }
@@ -40,7 +40,7 @@ export const PaymentCallback = () => {
     hasVerifiedRef.current = true;
 
     verifyPayment();
-  }, [merchantTransactionId]);
+  }, [orderId]);
 
   const verifyPayment = async () => {
     setLoading(true);
@@ -56,7 +56,7 @@ export const PaymentCallback = () => {
     }
 
     try {
-      const result = await verifyPhonePeStatus(merchantTransactionId, pendingData);
+      const result = await verifyCashfreeStatus(orderId, pendingData);
 
       if (result.success && result.data) {
         const appData = result.data;
@@ -233,11 +233,11 @@ export const PaymentCallback = () => {
               <ShieldCheck className="text-emerald-600" size={28} />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-slate-800 mb-1">Verifying PhonePe Payment</h2>
-              <p className="text-xs text-slate-500">Please wait while we confirm your transaction status...</p>
+              <h2 className="text-xl font-bold text-slate-800 mb-1">Verifying Payment Status</h2>
+              <p className="text-xs text-slate-500">Please wait while we confirm your Cashfree transaction status...</p>
             </div>
             <div className="pt-2 text-[11px] font-mono text-slate-400 bg-slate-50 py-2 px-3 rounded-lg border border-slate-100 truncate">
-              Txn ID: {merchantTransactionId}
+              Order ID: {orderId}
             </div>
           </div>
         ) : statusResult ? (
@@ -295,7 +295,7 @@ export const PaymentCallback = () => {
               <div className="border-t border-rose-200/60 pt-2 space-y-1 text-[11px] text-slate-600">
                 <div className="flex justify-between">
                   <span className="text-slate-400">Transaction ID:</span>
-                  <span className="font-mono font-bold text-slate-700 truncate max-w-[180px]">{merchantTransactionId}</span>
+                  <span className="font-mono font-bold text-slate-700 truncate max-w-[180px]">{orderId}</span>
                 </div>
                 {failedData?.programTitle && (
                   <div className="flex justify-between">
@@ -315,7 +315,7 @@ export const PaymentCallback = () => {
             </div>
 
             <p className="text-[11px] text-slate-500 italic">
-              If money was debited from your bank account, it will be automatically refunded by PhonePe / your bank within 3-5 business days.
+              If money was debited from your bank account, it will be automatically refunded by Cashfree / your bank within 3-5 business days.
             </p>
 
             {/* Action CTAs */}

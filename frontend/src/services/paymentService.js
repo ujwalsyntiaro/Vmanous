@@ -1,18 +1,21 @@
+import { load } from "@cashfreepayments/cashfree-js";
+
 const API_BASE_URL = "/api/v1/payments";
 
 /**
- * 1. Initiate PhonePe Payment Session
+ * 1. Initiate Cashfree Live Payment Order
  */
-export const initiatePhonePePayment = async (formData, summitDetails = null) => {
+export const initiateCashfreePayment = async (formData, summitDetails = null) => {
   try {
     const payload = {
       studentName:
         `${formData.firstName || ""} ${formData.middleName ? formData.middleName + " " : ""}${formData.lastName || ""}`.trim() ||
+        formData.studentName ||
         "Student Applicant",
       email: formData.email,
-      phone: formData.phone,
-      collegeName: formData.institution,
-      venueLocation: formData.collegeAddress,
+      phone: formData.phone || formData.mobileNumber,
+      collegeName: formData.institution || formData.collegeName,
+      venueLocation: formData.collegeAddress || formData.venueLocation,
       branch: formData.branch || formData.specialization,
       year: formData.semester || formData.year || formData.yearOfStudy,
       bloodGroup: formData.bloodGroup,
@@ -24,7 +27,7 @@ export const initiatePhonePePayment = async (formData, summitDetails = null) => 
         formData.selfiePhotoUrl ||
         formData.photoPreview ||
         "https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=300",
-      programTitle: formData.programInterest || "AI Summit Workshop 2026",
+      programTitle: formData.programInterest || formData.programTitle || "AI Summit Workshop 2026",
       summitId: formData.summitId ? Number(formData.summitId) : (summitDetails?.id ? Number(summitDetails.id) : null),
       baseAmount: formData.baseAmount !== undefined ? Number(formData.baseAmount) : null,
       gstAmount: formData.gstAmount !== undefined ? Number(formData.gstAmount) : null,
@@ -49,7 +52,7 @@ export const initiatePhonePePayment = async (formData, summitDetails = null) => 
     }
 
     console.log(
-      "[Frontend Payment Service] Sending order payload to backend:",
+      "[Cashfree Payment Service] Creating order on server:",
       payload,
     );
 
@@ -65,7 +68,7 @@ export const initiatePhonePePayment = async (formData, summitDetails = null) => 
     try {
       result = await response.json();
     } catch (parseErr) {
-      console.error("[Frontend Payment Service] Response JSON parse error:", parseErr);
+      console.error("[Cashfree Payment Service] Response JSON parse error:", parseErr);
       return {
         success: false,
         error: `Server responded with status ${response.status} (${response.statusText || 'Non-JSON response'})`,
@@ -74,7 +77,7 @@ export const initiatePhonePePayment = async (formData, summitDetails = null) => 
 
     return result;
   } catch (error) {
-    console.error("Error initiating PhonePe payment:", error);
+    console.error("Error initiating Cashfree payment:", error);
     return {
       success: false,
       error: error.message || "Network / Server Error initiating payment",
@@ -83,10 +86,36 @@ export const initiatePhonePePayment = async (formData, summitDetails = null) => 
 };
 
 /**
- * 2. Verify PhonePe Payment Status after Callback
+ * 2. Launch Cashfree Live Checkout UI
  */
-export const verifyPhonePeStatus = async (
-  merchantTransactionId,
+export const openCashfreeCheckout = async (paymentSessionId, orderId = null, mode = "production") => {
+  try {
+    const cashfree = await load({
+      mode: mode === "sandbox" ? "sandbox" : "production"
+    });
+
+    return cashfree.checkout({
+      paymentSessionId: paymentSessionId,
+      redirectTarget: "_modal"
+    }).then((result) => {
+      console.log("[Cashfree Checkout Result]:", result);
+      if (result && result.paymentDetails) {
+        const targetOrderId = orderId || result.paymentDetails.orderId;
+        window.location.href = `/payment-callback?order_id=${targetOrderId}`;
+      }
+      return result;
+    });
+  } catch (error) {
+    console.error("Error opening Cashfree checkout:", error);
+    throw error;
+  }
+};
+
+/**
+ * 3. Verify Cashfree Payment Status after Callback
+ */
+export const verifyCashfreeStatus = async (
+  orderId,
   extraFormData = null,
 ) => {
   try {
@@ -106,7 +135,8 @@ export const verifyPhonePeStatus = async (
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        merchantTransactionId,
+        orderId: orderId,
+        merchantTransactionId: orderId,
         formData: cachedFormData,
       }),
     });
@@ -115,7 +145,7 @@ export const verifyPhonePeStatus = async (
     try {
       result = await response.json();
     } catch (parseErr) {
-      console.error("[Frontend Payment Service] Verify status JSON parse error:", parseErr);
+      console.error("[Cashfree Payment Service] Verify status JSON parse error:", parseErr);
       return {
         success: false,
         error: `Server status ${response.status} verifying payment`,
@@ -124,10 +154,15 @@ export const verifyPhonePeStatus = async (
 
     return result;
   } catch (error) {
-    console.error("Error verifying PhonePe payment status:", error);
+    console.error("Error verifying Cashfree payment status:", error);
     return {
       success: false,
       error: error.message || "Failed to verify payment status with server",
     };
   }
 };
+
+// Aliases for compatibility
+export const initiatePhonePePayment = initiateCashfreePayment;
+export const verifyPhonePeStatus = verifyCashfreeStatus;
+

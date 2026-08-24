@@ -19,6 +19,7 @@
     "vite": "^8.2.0"
   },
   "dependencies": {
+    "@cashfreepayments/cashfree-js": "^1.0.7",
     "axios": "^1.19.0",
     "framer-motion": "^13.0.0",
     "html2pdf.js": "^0.14.0",

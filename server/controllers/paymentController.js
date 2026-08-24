@@ -1,4 +1,3 @@
-const crypto = require('crypto');
 const axios = require('axios');
 const prisma = require('../config/prisma');
 const { sendStudentPassEmail } = require('../services/emailService');
@@ -7,7 +6,30 @@ const { sendStudentPassEmail } = require('../services/emailService');
 const pendingOrders = new Map();
 
 /**
- * 1. Initiate PhonePe Payment Order
+ * Get Cashfree PG Base API URL based on Environment
+ */
+const getCashfreeBaseUrl = () => {
+  const env = (process.env.CASHFREE_ENV || 'PRODUCTION').toUpperCase();
+  return env === 'SANDBOX'
+    ? 'https://sandbox.cashfree.com/pg'
+    : 'https://api.cashfree.com/pg';
+};
+
+/**
+ * Get standard Cashfree API headers
+ */
+const getCashfreeHeaders = () => {
+  return {
+    'Content-Type': 'application/json',
+    'x-client-id': process.env.CASHFREE_APP_ID || '',
+    'x-client-secret': process.env.CASHFREE_SECRET_KEY || '',
+    'x-api-version': process.env.CASHFREE_API_VERSION || '2023-08-01',
+    'accept': 'application/json'
+  };
+};
+
+/**
+ * 1. Initiate Cashfree Live Payment Order
  * Route: POST /api/v1/payments/create-order
  */
 const createPaymentOrder = async (req, res) => {
@@ -27,128 +49,139 @@ const createPaymentOrder = async (req, res) => {
       selfiePhotoUrl,
       programTitle,
       summitId,
+      baseAmount,
+      gstAmount,
+      platformFee,
       amountPaid
     } = req.body;
 
     const totalAmountInINR = Number(amountPaid) || 2358.82;
-    const amountInPaise = Math.round(totalAmountInINR * 100);
-
-    const merchantId = process.env.PHONEPE_CLIENT_ID || 'PGTESTPAYUAT86';
-    const saltKey = process.env.PHONEPE_CLIENT_SECRET || '96434309-7796-489d-8924-ab56988a6076';
-    const saltIndex = process.env.PHONEPE_CLIENT_VERSION || '1';
-    const hostUrl = process.env.PHONEPE_HOST || 'https://api-preprod.phonepe.com/apis/pg-sandbox';
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+    const baseUrl = getCashfreeBaseUrl();
+    const headers = getCashfreeHeaders();
 
-    // Unique Merchant Transaction ID for PhonePe
-    const merchantTransactionId = `TXN_PHPE_${Date.now()}_${Math.floor(1000 + Math.random() * 9000)}`;
+    // Unique Order ID for Cashfree (Alphanumeric, max 45 chars)
+    const orderId = `order_vm_${Date.now()}_${Math.floor(1000 + Math.random() * 9000)}`;
+
+    // Sanitize customer details for Cashfree
+    const cleanPhone = phone ? String(phone).replace(/\D/g, '').slice(-10) : '9876543210';
+    const validPhone = cleanPhone.length === 10 ? cleanPhone : '9876543210';
+    const cleanEmail = (email && email.includes('@')) ? email.trim() : 'student@vmanous.com';
+    const cleanName = (studentName || 'Student Participant').trim().slice(0, 50);
+    const customerId = `cust_${cleanEmail.replace(/[^a-zA-Z0-9]/g, '').slice(0, 18)}_${Date.now().toString().slice(-4)}`;
 
     // Store pending order details
     const orderDetails = {
-      merchantTransactionId,
-      studentName,
-      email,
-      phone,
-      collegeName,
-      venueLocation,
-      branch,
-      year,
-      bloodGroup,
-      degree,
-      marksTenth,
-      marksTwelfth,
-      selfiePhotoUrl,
-      programTitle,
+      orderId,
+      studentName: cleanName,
+      email: cleanEmail,
+      phone: validPhone,
+      collegeName: collegeName || '',
+      venueLocation: venueLocation || '',
+      branch: branch || '',
+      year: year || '',
+      bloodGroup: bloodGroup || null,
+      degree: degree || '',
+      marksTenth: marksTenth || '',
+      marksTwelfth: marksTwelfth || '',
+      selfiePhotoUrl: selfiePhotoUrl || '',
+      programTitle: programTitle || 'AI Summit Workshop',
       summitId: summitId ? Number(summitId) : null,
+      baseAmount: baseAmount !== undefined ? Number(baseAmount) : null,
+      gstAmount: gstAmount !== undefined ? Number(gstAmount) : null,
+      platformFee: platformFee !== undefined ? Number(platformFee) : null,
       amountPaid: totalAmountInINR,
       createdAt: new Date()
     };
-    pendingOrders.set(merchantTransactionId, orderDetails);
+    pendingOrders.set(orderId, orderDetails);
 
-    // PhonePe Payload Format
-    const payload = {
-      merchantId: merchantId,
-      merchantTransactionId: merchantTransactionId,
-      merchantUserId: `MUID_${(email || 'USER').replace(/[^a-zA-Z0-9]/g, '').slice(0, 15)}_${Date.now().toString().slice(-4)}`,
-      amount: amountInPaise,
-      redirectUrl: `${frontendUrl}/payment-callback?merchantTransactionId=${merchantTransactionId}`,
-      redirectMode: 'REDIRECT',
-      callbackUrl: `${frontendUrl}/payment-callback?merchantTransactionId=${merchantTransactionId}`,
-      mobileNumber: phone ? String(phone).replace(/\D/g, '').slice(-10) : '9876543210',
-      paymentInstrument: {
-        type: 'PAY_PAGE'
-      }
+    // Ensure Cashfree Live return_url strictly uses HTTPS
+    let safeReturnUrlBase = frontendUrl.trim();
+    if (!safeReturnUrlBase.startsWith('https://')) {
+      safeReturnUrlBase = safeReturnUrlBase.replace(/^http:\/\//i, 'https://');
+    }
+    const returnUrl = `${safeReturnUrlBase}/payment-callback?order_id={order_id}`;
+
+    // Cashfree PG Order Payload (v2023-08-01)
+    const orderPayload = {
+      order_id: orderId,
+      order_amount: Number(totalAmountInINR.toFixed(2)),
+      order_currency: 'INR',
+      customer_details: {
+        customer_id: customerId,
+        customer_name: cleanName,
+        customer_email: cleanEmail,
+        customer_phone: validPhone
+      },
+      order_meta: {
+        return_url: returnUrl
+      },
+      order_note: `Workshop: ${(programTitle || 'Vmanous AI').slice(0, 50)}`
     };
 
-    const base64Payload = Buffer.from(JSON.stringify(payload)).toString('base64');
-    const apiEndpoint = '/pg/v1/pay';
+    console.log(`[Cashfree Init] Creating Live Order ${orderId} for ₹${totalAmountInINR} at ${baseUrl}/orders`);
 
-    // X-VERIFY checksum calculation: SHA256(Base64_Payload + Endpoint + SaltKey) + "###" + SaltIndex
-    const stringToHash = base64Payload + apiEndpoint + saltKey;
-    const sha256 = crypto.createHash('sha256').update(stringToHash).digest('hex');
-    const xVerifyHeader = `${sha256}###${saltIndex}`;
-
-    console.log(`[PhonePe Init] Calling PhonePe Pay API for Txn: ${merchantTransactionId}, Amount: ₹${totalAmountInINR}`);
-
-    // Call PhonePe UAT Sandbox / Production API
     const response = await axios.post(
-      `${hostUrl}${apiEndpoint}`,
-      { request: base64Payload },
-      {
-        headers: {
-          'Content-Type': 'application/json',
-          'X-VERIFY': xVerifyHeader,
-          'accept': 'application/json'
-        }
-      }
+      `${baseUrl}/orders`,
+      orderPayload,
+      { headers, timeout: 15000 }
     );
 
-    if (response.data && response.data.success) {
-      const redirectUrl = response.data.data?.instrumentResponse?.redirectInfo?.url;
-      console.log(`[PhonePe Success] PhonePe Redirect URL generated: ${redirectUrl}`);
+    if (response.data && response.data.payment_session_id) {
+      const paymentSessionId = response.data.payment_session_id;
+      const cfOrderId = response.data.cf_order_id;
+      const isProduction = (process.env.CASHFREE_ENV || 'PRODUCTION').toUpperCase() !== 'SANDBOX';
+
+      console.log(`[Cashfree Success] Live Session Created: ${paymentSessionId}, CF Order ID: ${cfOrderId}`);
+
       return res.status(200).json({
         success: true,
-        redirectUrl: redirectUrl,
-        merchantTransactionId: merchantTransactionId
+        orderId: orderId,
+        paymentSessionId: paymentSessionId,
+        cfOrderId: cfOrderId,
+        environment: isProduction ? 'production' : 'sandbox'
       });
     } else {
-      console.error('[PhonePe Init Error] Response:', response.data);
+      console.error('[Cashfree Init Error] Unexpected Response:', response.data);
       return res.status(400).json({
         success: false,
-        error: response.data?.message || 'PhonePe Payment Initialization Failed'
+        error: response.data?.message || 'Cashfree Order Initialization Failed'
       });
     }
   } catch (error) {
-    console.error('[PhonePe Controller Error]', error.response?.data || error.message);
+    console.error('[Cashfree Controller Error]', error.response?.data || error.message);
+    const msg = error.response?.data?.message || error.message || 'Failed to communicate with Cashfree Payment Server';
     return res.status(500).json({
       success: false,
-      error: error.response?.data?.message || 'Failed to communicate with PhonePe Payment Server'
+      error: msg
     });
   }
 };
 
 /**
- * 2. Verify PhonePe Payment Status & Record in Database
+ * 2. Verify Cashfree Payment Status & Record in Database
  * Route: POST /api/v1/payments/verify-status
  */
 const verifyPaymentStatus = async (req, res) => {
   try {
-    const { merchantTransactionId, formData } = req.body;
+    const { orderId, merchantTransactionId, formData } = req.body;
+    const targetOrderId = orderId || merchantTransactionId;
 
-    if (!merchantTransactionId) {
-      return res.status(400).json({ success: false, error: 'Merchant Transaction ID is required' });
+    if (!targetOrderId) {
+      return res.status(400).json({ success: false, error: 'Order ID is required for verification' });
     }
 
-    console.log(`[PhonePe Status Check] Initiating verification for Txn: ${merchantTransactionId}`);
+    console.log(`[Cashfree Status Check] Initiating verification for Order: ${targetOrderId}`);
 
     // Check if this payment was ALREADY verified and stored in database (Idempotency Check)
     const existingApp = await prisma.application.findFirst({
       where: {
-        transactionId: merchantTransactionId
+        transactionId: targetOrderId
       }
     });
 
     if (existingApp && existingApp.paymentStatus === 'Paid') {
-      console.log(`[PhonePe Status Check] Transaction ${merchantTransactionId} already verified in DB.`);
+      console.log(`[Cashfree Status Check] Order ${targetOrderId} already verified in DB.`);
       return res.status(200).json({
         success: true,
         message: 'Payment already verified successfully',
@@ -157,7 +190,7 @@ const verifyPaymentStatus = async (req, res) => {
     }
 
     // Merge in-memory pending order data with frontend cached formData as fallback
-    const pendingOrderData = pendingOrders.get(merchantTransactionId) || {};
+    const pendingOrderData = pendingOrders.get(targetOrderId) || {};
     const orderDetails = {
       ...formData,
       ...pendingOrderData,
@@ -178,53 +211,50 @@ const verifyPaymentStatus = async (req, res) => {
       amountPaid: Number(pendingOrderData.amountPaid || formData?.totalAmount || formData?.amountPaid || 2358.82)
     };
 
-    const merchantId = process.env.PHONEPE_CLIENT_ID || 'PGTESTPAYUAT86';
-    const saltKey = process.env.PHONEPE_CLIENT_SECRET || '96434309-7796-489d-8924-ab56988a6076';
-    const saltIndex = process.env.PHONEPE_CLIENT_VERSION || '1';
-    const hostUrl = process.env.PHONEPE_HOST || 'https://api-preprod.phonepe.com/apis/pg-sandbox';
-    const isSandbox = (process.env.PHONEPE_ENV || 'SANDBOX').toUpperCase() === 'SANDBOX';
-
-    const statusEndpoint = `/pg/v1/status/${merchantId}/${merchantTransactionId}`;
-    const stringToHash = statusEndpoint + saltKey;
-    const sha256 = crypto.createHash('sha256').update(stringToHash).digest('hex');
-    const xVerifyHeader = `${sha256}###${saltIndex}`;
+    const baseUrl = getCashfreeBaseUrl();
+    const headers = getCashfreeHeaders();
 
     let isSuccess = false;
-    let paymentCode = 'PENDING';
-    let phonePeTxnId = merchantTransactionId;
+    let orderStatus = 'PENDING';
+    let paymentMethod = 'Cashfree PG (UPI/Cards/NetBanking)';
+    let cfPaymentId = null;
 
     try {
-      const response = await axios.get(`${hostUrl}${statusEndpoint}`, {
-        headers: {
-          'Content-Type': 'application/json',
-          'X-VERIFY': xVerifyHeader,
-          'X-MERCHANT-ID': merchantId,
-          'accept': 'application/json'
-        },
-        timeout: 10000
-      });
+      // 1. Fetch Order Status from Cashfree
+      const orderResponse = await axios.get(
+        `${baseUrl}/orders/${targetOrderId}`,
+        { headers, timeout: 15000 }
+      );
 
-      console.log(`[PhonePe Status API Response]`, response.data);
+      console.log(`[Cashfree Order Status API Response]:`, orderResponse.data);
 
-      const code = response.data?.code;
-      const state = response.data?.data?.state;
-      const responseCode = response.data?.data?.responseCode;
-
-      if (
-        response.data?.success &&
-        (code === 'PAYMENT_SUCCESS' || code === 'SUCCESS' || state === 'COMPLETED' || responseCode === 'SUCCESS')
-      ) {
+      orderStatus = orderResponse.data?.order_status;
+      if (orderStatus === 'PAID') {
         isSuccess = true;
-        paymentCode = 'PAYMENT_SUCCESS';
-        phonePeTxnId = response.data.data?.transactionId || merchantTransactionId;
-      } else {
-        isSuccess = false;
-        paymentCode = code || responseCode || state || 'PAYMENT_FAILED';
+      }
+
+      // 2. Fetch specific payment attempt details if available
+      try {
+        const paymentsResponse = await axios.get(
+          `${baseUrl}/orders/${targetOrderId}/payments`,
+          { headers, timeout: 10000 }
+        );
+        if (Array.isArray(paymentsResponse.data) && paymentsResponse.data.length > 0) {
+          const successfulPayment = paymentsResponse.data.find(p => p.payment_status === 'SUCCESS') || paymentsResponse.data[0];
+          if (successfulPayment) {
+            cfPaymentId = successfulPayment.cf_payment_id;
+            if (successfulPayment.payment_group) {
+              paymentMethod = `Cashfree (${successfulPayment.payment_group.toUpperCase()})`;
+            }
+          }
+        }
+      } catch (payDetailsErr) {
+        console.log('[Cashfree Payments Details Notice]:', payDetailsErr.message);
       }
     } catch (apiErr) {
-      console.warn('[PhonePe Status API Error]:', apiErr.response?.data || apiErr.message);
+      console.warn('[Cashfree Status API Error]:', apiErr.response?.data || apiErr.message);
       isSuccess = false;
-      paymentCode = apiErr.response?.data?.code || apiErr.response?.data?.message || 'STATUS_CHECK_FAILED';
+      orderStatus = apiErr.response?.data?.order_status || apiErr.response?.data?.code || 'STATUS_CHECK_FAILED';
     }
 
     const totalPaid = Number(orderDetails.amountPaid || 2358.82);
@@ -274,9 +304,9 @@ const verifyPaymentStatus = async (req, res) => {
     const photoUrl = orderDetails.selfiePhotoUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=300';
 
     if (isSuccess) {
-      // 1. Check if application or transaction was already created in a concurrent request
+      // 1. Check if application was already created in a concurrent request
       let app = await prisma.application.findFirst({
-        where: { transactionId: phonePeTxnId }
+        where: { transactionId: targetOrderId }
       });
 
       if (!app) {
@@ -297,7 +327,7 @@ const verifyPaymentStatus = async (req, res) => {
             summitId: orderDetails.summitId ? Number(orderDetails.summitId) : null,
             paymentStatus: 'Paid',
             verificationStatus: 'Verified',
-            transactionId: phonePeTxnId,
+            transactionId: targetOrderId,
             amountPaid: totalPaid,
             baseAmount,
             gstAmount,
@@ -309,14 +339,14 @@ const verifyPaymentStatus = async (req, res) => {
       // 2. Safely create or find PaymentTransaction record
       try {
         const existingTxn = await prisma.paymentTransaction.findUnique({
-          where: { transactionId: phonePeTxnId }
+          where: { transactionId: targetOrderId }
         });
 
         if (!existingTxn) {
           await prisma.paymentTransaction.create({
             data: {
               applicationId: app.id,
-              transactionId: phonePeTxnId,
+              transactionId: targetOrderId,
               studentName: app.studentName,
               email: app.email,
               phone: app.phone,
@@ -326,7 +356,7 @@ const verifyPaymentStatus = async (req, res) => {
               baseAmount,
               gstAmount,
               paymentStatus: 'Paid',
-              paymentMethod: 'PhonePe Gateway (UPI/QR/Cards)',
+              paymentMethod: paymentMethod,
               passCode: app.passCode || passCode
             }
           });
@@ -374,7 +404,7 @@ const verifyPaymentStatus = async (req, res) => {
         console.error('[PDF Pass Email Dispatch Error]:', err.message)
       );
 
-      pendingOrders.delete(merchantTransactionId);
+      pendingOrders.delete(targetOrderId);
 
       return res.status(200).json({
         success: true,
@@ -382,25 +412,25 @@ const verifyPaymentStatus = async (req, res) => {
         data: emailPayload
       });
     } else {
-      console.log(`[PhonePe Status Check] Transaction ${merchantTransactionId} failed/cancelled (${paymentCode}). Skipping DB record creation.`);
-      pendingOrders.delete(merchantTransactionId);
+      console.log(`[Cashfree Status Check] Order ${targetOrderId} failed/incomplete (${orderStatus}).`);
+      pendingOrders.delete(targetOrderId);
 
       return res.status(200).json({
         success: false,
         paymentStatus: 'Failed',
-        paymentCode: paymentCode,
-        error: `Payment was declined or cancelled on PhonePe (${paymentCode})`,
-        merchantTransactionId: merchantTransactionId,
+        paymentCode: orderStatus,
+        error: `Payment was not completed (${orderStatus})`,
+        orderId: targetOrderId,
         programTitle: orderDetails.programTitle,
         collegeName: orderDetails.collegeName,
         amountPaid: orderDetails.amountPaid
       });
     }
   } catch (error) {
-    console.error('[PhonePe Status Verification Error]', error);
+    console.error('[Cashfree Status Verification Error]', error);
     return res.status(500).json({
       success: false,
-      error: 'Failed to verify PhonePe payment status'
+      error: 'Failed to verify Cashfree payment status'
     });
   }
 };
@@ -409,3 +439,4 @@ module.exports = {
   createPaymentOrder,
   verifyPaymentStatus
 };
+

@@ -19,7 +19,7 @@ import {
   BookOpen
 } from 'lucide-react';
 import Container from '../components/ui/Container';
-import { initiatePhonePePayment } from '../services/paymentService';
+import { initiateCashfreePayment, openCashfreeCheckout } from '../services/paymentService';
 import { addApplication } from '../services/applicationService';
 import { addStudent } from '../services/studentService';
 import { fetchSummitsAsync } from '../services/summitService';
@@ -39,14 +39,11 @@ export const Payment = () => {
     }
     setFormData(location.state.formData);
 
-    // Fetch latest summit details from DB to guarantee 100% fresh fees from cPanel
+    // Fetch fresh summit from server
     fetchSummitsAsync().then(summits => {
-      if (summits && summits.length > 0) {
-        const progTitle = location.state?.summitDetails?.title || location.state?.formData?.programInterest;
-        const match = summits.find(s => s.id === location.state?.summitDetails?.id) || summits.find(s => s.title === progTitle) || summits[0];
-        if (match) {
-          setActiveSummit(match);
-        }
+      if (Array.isArray(summits) && summits.length > 0) {
+        const found = summits.find(s => s.title === location.state?.formData?.programInterest || s.id === location.state?.formData?.summitId);
+        if (found) setActiveSummit(found);
       }
     }).catch(err => console.error("Error fetching summit details for payment:", err));
   }, [location, navigate]);
@@ -75,7 +72,7 @@ export const Payment = () => {
     setIsProcessing(true);
 
     try {
-      const result = await initiatePhonePePayment({
+      const result = await initiateCashfreePayment({
         ...formData,
         programInterest: summitDetails?.title || formData.programInterest || '',
         institution: summitDetails?.college || formData.institution || '',
@@ -87,15 +84,18 @@ export const Payment = () => {
         summitId: summitDetails?.id || formData.summitId || null,
       }, summitDetails);
 
-      if (result.success && result.redirectUrl) {
+      if (result.success && result.paymentSessionId) {
+        // Launch Cashfree Live Checkout Modal
+        await openCashfreeCheckout(result.paymentSessionId, result.orderId, result.environment || 'production');
+      } else if (result.success && result.redirectUrl) {
         window.location.href = result.redirectUrl;
       } else {
-        alert(result.error || 'Could not initiate PhonePe Payment. Please try again.');
+        alert(result.error || 'Could not initiate Cashfree Payment. Please try again.');
         setIsProcessing(false);
       }
     } catch (err) {
-      console.error('PhonePe initiation error:', err);
-      alert('Network error connecting to PhonePe server.');
+      console.error('Cashfree initiation error:', err);
+      alert('Error connecting to Cashfree Payment Gateway. Please try again.');
       setIsProcessing(false);
     }
   };
