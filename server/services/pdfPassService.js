@@ -88,28 +88,13 @@ const generatePassPDF = async (data) => {
       // 2. Fetch Student Photo Buffer
       const photoBuffer = await getPhotoBuffer(data.selfiePhotoUrl);
 
-      // 3. Main Card Background & Left/Right Side Borders Only (No Straight Top/Bottom Lines)
+      // 3. Main Card Background & Plain Rectangle Border
       doc.save();
-      // White Background Fill
-      doc.rect(10, 10, 340, totalCardHeight - 20).fill('#ffffff');
-      // Left & Right Vertical Side Border Lines Only
-      doc.lineWidth(1).strokeColor('#000000');
-      doc.moveTo(10, 10).lineTo(10, totalCardHeight - 10).stroke();
-      doc.moveTo(350, 10).lineTo(350, totalCardHeight - 10).stroke();
-      doc.restore();
-
-      // 4. Top Sawtooth (Zig-Zag) Cutouts
-      doc.save();
-      doc.lineWidth(1).strokeColor('#000000');
-      const toothW = 8;
-      const toothH = 3.5;
-      let toothX = 10;
-      doc.moveTo(10, 10);
-      for (let i = 0; i < 42.5; i++) {
-        doc.lineTo(toothX + toothW / 2, 10 + toothH).lineTo(toothX + toothW, 10);
-        toothX += toothW;
-      }
-      doc.stroke();
+      // White Background Fill with Plain 1px Black Border
+      doc.rect(10, 10, 340, totalCardHeight - 20)
+         .lineWidth(1)
+         .strokeColor('#000000')
+         .fillAndStroke('#ffffff', '#000000');
       doc.restore();
 
       // 5. Top Center Checkmark Symbol (Overlapping Zig-Zag cleanly like Web Pass Image 2)
@@ -258,19 +243,19 @@ const generatePassPDF = async (data) => {
       doc.font('Helvetica-Bold').fontSize(9.5).fillColor('#0f172a').text(semester, 240, boxY + 22, { width: boxW - 6, align: 'center' });
       doc.restore();
 
-      // 13. Dotted Ticket Tear Line & 180° Side Notch Cuts
+      // 13. Dotted Ticket Tear Line & 180° Side Notch Cuts (50% reduced height)
       const dotY = boxY + boxH + 16;
       doc.save();
       // Left side notch mask
-      doc.rect(8, dotY - 14, 4, 28).fill('#ffffff');
-      doc.path(`M 10,${dotY - 14} A 12,14 0 0,1 10,${dotY + 14}`)
+      doc.rect(8, dotY - 7, 4, 14).fill('#ffffff');
+      doc.path(`M 10,${dotY - 7} A 10,7 0 0,1 10,${dotY + 7}`)
          .lineWidth(1)
          .strokeColor('#000000')
          .stroke();
 
       // Right side notch mask
-      doc.rect(348, dotY - 14, 4, 28).fill('#ffffff');
-      doc.path(`M 350,${dotY - 14} A 12,14 0 0,0 350,${dotY + 14}`)
+      doc.rect(348, dotY - 7, 4, 14).fill('#ffffff');
+      doc.path(`M 350,${dotY - 7} A 10,7 0 0,0 350,${dotY + 7}`)
          .lineWidth(1)
          .strokeColor('#000000')
          .stroke();
@@ -323,18 +308,7 @@ const generatePassPDF = async (data) => {
       doc.image(qrBuffer, qrX, qrY, { width: qrSize, height: qrSize });
       doc.restore();
 
-      // 16. Bottom Sawtooth (Zig-Zag) Cutouts
-      doc.save();
-      doc.lineWidth(1).strokeColor('#000000');
-      const bY = totalCardHeight - 10;
-      let bX = 10;
-      doc.moveTo(10, bY);
-      for (let i = 0; i < 42.5; i++) {
-        doc.lineTo(bX + toothW / 2, bY - toothH).lineTo(bX + toothW, bY);
-        bX += toothW;
-      }
-      doc.stroke();
-      doc.restore();
+
 
       // 17. Footer Text Line
       doc.save();

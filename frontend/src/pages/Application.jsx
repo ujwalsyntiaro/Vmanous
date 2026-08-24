@@ -899,23 +899,23 @@ export const Application = () => {
                               </svg>
                             </div>
                             {cameraError && <p className="text-[11px] text-red-500 font-medium text-center max-w-[180px]">{cameraError}</p>}
-                            <div className="inline-flex items-center bg-white border border-slate-700 rounded-md p-0.5 shadow-xs mt-3">
+                            <div className="inline-flex items-stretch bg-white border border-slate-700 rounded-md overflow-hidden shadow-xs mt-3">
                               <button
                                 type="button"
                                 onClick={startCamera}
                                 title="Capture Photo"
                                 aria-label="Capture Photo"
-                                className="px-3 py-0.5 text-slate-800 hover:bg-slate-100 rounded-sm transition-colors cursor-pointer flex items-center justify-center"
+                                className="px-3 py-1 text-slate-800 hover:bg-slate-100 transition-colors cursor-pointer flex items-center justify-center"
                               >
                                 <Camera size={16} className="text-slate-800" />
                               </button>
-                              <span className="shrink-0" style={{ width: '1px', height: '14px', backgroundColor: '#334155', display: 'inline-block' }} />
-                              <div className="relative overflow-hidden">
+                              <div className="w-[1px] bg-slate-700 shrink-0" />
+                              <div className="relative overflow-hidden flex items-center justify-center">
                                 <button
                                   type="button"
                                   title="Upload Photo"
                                   aria-label="Upload Photo"
-                                  className="px-3 py-0.5 text-slate-800 hover:bg-slate-100 rounded-sm transition-colors cursor-pointer flex items-center justify-center"
+                                  className="px-3 py-1 text-slate-800 hover:bg-slate-100 transition-colors cursor-pointer flex items-center justify-center"
                                 >
                                   <Upload size={16} className="text-slate-800" />
                                 </button>

@@ -209,11 +209,26 @@ export const getSummits = () => {
   };
 
   const updated = listToProcess.map((s) => {
-    let dur = s.duration;
+    let dur = s.duration || "2-Day Live Workshop";
+    let totalHours = (s.totalHours !== undefined && s.totalHours !== null) ? String(s.totalHours).trim() : "";
+    if (!totalHours && dur) {
+      const hMatch = String(dur).match(/(\d+)\s*(?:hrs|hours)/i);
+      if (hMatch) {
+        totalHours = hMatch[1];
+      }
+    }
+
     if (!dur || dur === "1" || dur === "2" || !isNaN(dur)) {
       const num = parseInt(dur) || 2;
       dur = `${num}-Day Live Workshop`;
+    } else if (dur.includes("Live Workshop")) {
+      // Normalize duration text
+      const dMatch = String(dur).match(/(\d+)\s*[- ]*day/i);
+      if (dMatch) {
+        dur = `${dMatch[1]}-Day Live Workshop`;
+      }
     }
+
     const computed = computeCountForSummit(s);
     const finalEnrolledCount = computed;
 
@@ -228,6 +243,7 @@ export const getSummits = () => {
     return {
       ...s,
       duration: dur,
+      totalHours: totalHours,
       address: s.address || "",
       time: s.time || "",
       status: finalStatus,

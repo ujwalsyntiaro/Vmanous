@@ -260,7 +260,7 @@ const ManageColleges = () => {
                   name="name"
                   value={formData.name}
                   onChange={handleInputChange}
-                  placeholder="e.g. G H Raisoni College of Engineering"
+                  placeholder="College Name"
                   className="w-full px-3 py-2 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-[#2D73B4]/20 focus:border-[#2D73B4]"
                 />
               </div>
@@ -273,7 +273,7 @@ const ManageColleges = () => {
                     name="shortCode"
                     value={formData.shortCode}
                     onChange={handleInputChange}
-                    placeholder="e.g. GHRCEM"
+                    placeholder="Short Code"
                     className="w-full px-3 py-2 border border-gray-200 rounded-lg outline-none uppercase font-bold"
                   />
                 </div>
@@ -285,7 +285,7 @@ const ManageColleges = () => {
                     name="totalSeatLimit"
                     value={formData.totalSeatLimit}
                     onChange={handleInputChange}
-                    placeholder="100"
+                    placeholder="Total Seat Limit"
                     className="w-full px-3 py-2 border border-gray-200 rounded-lg outline-none font-bold"
                   />
                 </div>
@@ -298,7 +298,7 @@ const ManageColleges = () => {
                   name="address"
                   value={formData.address}
                   onChange={handleInputChange}
-                  placeholder="e.g. Hingna Road, Digdoh Hills, Nagpur"
+                  placeholder="Campus Address"
                   className="w-full px-3 py-2 border border-gray-200 rounded-lg outline-none"
                 />
               </div>
@@ -310,7 +310,7 @@ const ManageColleges = () => {
                     name="contactPerson"
                     value={formData.contactPerson}
                     onChange={handleInputChange}
-                    placeholder="e.g. Dr. Rajesh Kumar"
+                    placeholder="Contact Person Name"
                     className="w-full px-3 py-2 border border-gray-200 rounded-lg outline-none"
                   />
                 </div>

@@ -45,6 +45,7 @@ const ManagePrograms = () => {
   const [formData, setFormData] = useState({
     title: "",
     subtitle: "",
+    totalHours: "",
     durationDays: 2,
     startTime: "10:00",
     startAmPm: "AM",
@@ -218,6 +219,7 @@ const ManagePrograms = () => {
     setFormData({
       title: "",
       subtitle: "",
+      totalHours: "",
       durationDays: 2,
       startTime: "10:00",
       startAmPm: "AM",
@@ -246,9 +248,15 @@ const ManagePrograms = () => {
     setEditingId(summit.id);
     const parsedDays = parseInt(summit.duration) || 2;
     const timeParsed = parseTimeStr(summit.time);
+    let parsedHours = (summit.totalHours !== undefined && summit.totalHours !== null) ? String(summit.totalHours) : "";
+    if (!parsedHours && summit.duration) {
+      const hMatch = String(summit.duration).match(/(\d+)\s*(?:hrs|hours)/i);
+      if (hMatch) parsedHours = hMatch[1];
+    }
     setFormData({
       title: summit.title || "",
       subtitle: summit.subtitle || "",
+      totalHours: parsedHours,
       durationDays: parsedDays,
       startTime: timeParsed.startTime,
       startAmPm: timeParsed.startAmPm,
@@ -317,6 +325,7 @@ const ManagePrograms = () => {
     const featStr = typeof formData.features === 'string' ? formData.features : '';
     const summitData = {
       ...formData,
+      totalHours: formData.totalHours ? String(formData.totalHours).trim() : "",
       duration: duration,
       time: timeStr,
       date: formattedDate,
@@ -633,163 +642,174 @@ const ManagePrograms = () => {
         )}
       </div>
 
-      {/* Add/Edit Modal (Structured Vertical Design) */}
+      {/* Add/Edit Modal (Professional SaaS Layout) */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-lg shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4 overflow-y-auto">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-3xl my-8 flex flex-col overflow-hidden animate-in zoom-in-95 duration-200 border border-slate-200">
             {/* Modal Header */}
-            <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/80 shrink-0">
-              <h2 className="text-base sm:text-lg font-bold text-vmanous-navy-dark">
-                {editingId ? "Edit Program" : "Create New"}
-              </h2>
+            <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/80 shrink-0">
+              <div>
+                <h2 className="text-lg font-bold text-slate-900">
+                  {editingId ? "Edit Workshop Program" : "Create New Workshop"}
+                </h2>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Configure program schedule, venue, pricing, and capacity
+                </p>
+              </div>
               <button
                 type="button"
                 onClick={() => setIsModalOpen(false)}
-                className="text-gray-400 hover:text-gray-600 transition-colors text-2xl leading-none px-1 cursor-pointer"
+                className="text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 p-1.5 rounded-lg transition-colors cursor-pointer"
               >
-                &times;
+                <X size={18} />
               </button>
             </div>
 
-            {/* Modal Form Body (Vertical Stacked Layout) */}
-            <div className="p-5 sm:p-6 overflow-y-auto flex-1 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
+            {/* Modal Form Body */}
+            <div className="p-6 overflow-y-auto max-h-[calc(85vh-120px)] scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent">
               <form
                 id="programForm"
                 onSubmit={handleSubmit}
-                className="space-y-4"
+                className="space-y-5"
               >
                 {/* Section 1: Basic Information */}
-                <div className="space-y-3">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                <div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-xs font-semibold text-gray-700 mb-1">
-                        Title *
+                      <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                        Title <span className="text-rose-500">*</span>
                       </label>
                       <input
                         required
                         name="title"
                         value={formData.title}
                         onChange={handleInputChange}
-                        className="w-full h-9 px-3 border border-gray-200 rounded-md focus:ring-2 focus:ring-[#2D73B4]/20 focus:border-[#2D73B4] outline-none text-xs font-medium"
-                        placeholder="e.g., AI Summit Workshop 2026"
+                        className="w-full h-10 px-3 bg-white border border-slate-200 rounded-md focus:border-[#2D73B4] focus:ring-2 focus:ring-[#2D73B4]/15 outline-none text-xs font-medium text-slate-800 placeholder:text-slate-400 transition-all shadow-2xs"
+                        placeholder="Title"
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-semibold text-gray-700 mb-1">
-                        Program Type *
+                      <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                        Program Type <span className="text-rose-500">*</span>
                       </label>
                       <input
                         required
                         name="type"
                         value={formData.type}
                         onChange={handleInputChange}
-                        className="w-full h-9 px-3 border border-gray-200 rounded-md focus:ring-2 focus:ring-[#2D73B4]/20 focus:border-[#2D73B4] outline-none text-xs"
-                        placeholder="e.g., Flagship Event"
+                        className="w-full h-10 px-3 bg-white border border-slate-200 rounded-md focus:border-[#2D73B4] focus:ring-2 focus:ring-[#2D73B4]/15 outline-none text-xs font-medium text-slate-800 placeholder:text-slate-400 transition-all shadow-2xs"
+                        placeholder="Program Type"
                       />
                     </div>
                   </div>
 
-                  <div>
-                    <label className="block text-xs font-semibold text-gray-700 mb-1">
-                      Subtitle *
+                  <div className="mt-3.5">
+                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                      Subtitle <span className="text-rose-500">*</span>
                     </label>
                     <input
                       required
                       name="subtitle"
                       value={formData.subtitle}
                       onChange={handleInputChange}
-                      className="w-full h-9 px-3 border border-gray-200 rounded-md focus:ring-2 focus:ring-[#2D73B4]/20 focus:border-[#2D73B4] outline-none text-xs"
-                      placeholder="e.g., Generative AI, Prompt Engineering & Agentic LLMs"
+                      className="w-full h-10 px-3 bg-white border border-slate-200 rounded-md focus:border-[#2D73B4] focus:ring-2 focus:ring-[#2D73B4]/15 outline-none text-xs font-medium text-slate-800 placeholder:text-slate-400 transition-all shadow-2xs"
+                      placeholder="Subtitle"
                     />
                   </div>
                 </div>
 
                 {/* Section 2: College & Location */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 pt-1">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-semibold text-gray-700 mb-1">
-                      College / Institution *
+                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                      College / Institution <span className="text-rose-500">*</span>
                     </label>
                     <input
                       required
                       name="college"
                       value={formData.college}
                       onChange={handleInputChange}
-                      className="w-full h-9 px-3 border border-gray-200 rounded-md focus:ring-2 focus:ring-[#2D73B4]/20 focus:border-[#2D73B4] outline-none text-xs font-medium"
-                      placeholder="e.g., National Institute of Technology"
+                      className="w-full h-10 px-3 bg-white border border-slate-200 rounded-md focus:border-[#2D73B4] focus:ring-2 focus:ring-[#2D73B4]/15 outline-none text-xs font-medium text-slate-800 placeholder:text-slate-400 transition-all shadow-2xs"
+                      placeholder="College / Institution"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-gray-700 mb-1">
+                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">
                       Venue Location
                     </label>
                     <input
                       name="address"
                       value={formData.address}
                       onChange={handleInputChange}
-                      className="w-full h-9 px-3 border border-gray-200 rounded-md focus:ring-2 focus:ring-[#2D73B4]/20 focus:border-[#2D73B4] outline-none text-xs"
-                      placeholder="e.g., Main Auditorium, NIT Campus"
+                      className="w-full h-10 px-3 bg-white border border-slate-200 rounded-md focus:border-[#2D73B4] focus:ring-2 focus:ring-[#2D73B4]/15 outline-none text-xs font-medium text-slate-800 placeholder:text-slate-400 transition-all shadow-2xs"
+                      placeholder="Venue Location"
                     />
                   </div>
                 </div>
 
-                {/* Section 3: Pricing & Tax Management */}
-                <div className="bg-slate-50 p-3.5 rounded-md border border-slate-200/80 space-y-3">
-                  <div className="flex items-center gap-1.5 border-b border-slate-200 pb-1.5">
+                {/* Section 3: Pricing & Tax Management Card */}
+                <div className="bg-slate-50/70 p-4 rounded-xl border border-slate-200 space-y-3.5">
+                  <div className="flex items-center gap-2 border-b border-slate-200 pb-2">
                     <Receipt className="w-4 h-4 text-[#2D73B4]" />
                     <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
                       Pricing & Tax Management
                     </h3>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
                     <div>
-                      <label className="block text-xs font-semibold text-gray-700 mb-1">
+                      <label className="block text-xs font-semibold text-slate-700 mb-1.5">
                         Enrollment Fee (₹)
                       </label>
-                      <input
-                        type="number"
-                        name="price"
-                        value={formData.price}
-                        onChange={handleInputChange}
-                        className="w-full h-9 px-3 border border-gray-200 rounded-md focus:ring-2 focus:ring-[#2D73B4]/20 focus:border-[#2D73B4] outline-none text-xs font-bold text-slate-800 bg-white"
-                        placeholder="1999"
-                      />
+                      <div className="relative flex items-center">
+                        <span className="absolute left-3 text-xs font-bold text-slate-400 select-none">₹</span>
+                        <input
+                          type="number"
+                          name="price"
+                          value={formData.price}
+                          onChange={handleInputChange}
+                          className="w-full h-10 pl-7 pr-3 bg-white border border-slate-200 rounded-md focus:border-[#2D73B4] focus:ring-2 focus:ring-[#2D73B4]/15 outline-none text-xs font-bold text-slate-800 placeholder:text-slate-400 transition-all shadow-2xs"
+                          placeholder="Enrollment Fee"
+                        />
+                      </div>
                     </div>
 
                     <div>
-                      <label className="block text-xs font-semibold text-gray-700 mb-1">
+                      <label className="block text-xs font-semibold text-slate-700 mb-1.5">
                         GST (%)
                       </label>
-                      <input
-                        type="number"
-                        name="taxRate"
-                        value={formData.taxRate}
-                        onChange={handleInputChange}
-                        className="w-full h-9 px-3 border border-gray-200 rounded-md focus:ring-2 focus:ring-[#2D73B4]/20 focus:border-[#2D73B4] outline-none text-xs bg-white"
-                        placeholder="18"
-                      />
+                      <div className="relative flex items-center">
+                        <input
+                          type="number"
+                          name="taxRate"
+                          value={formData.taxRate}
+                          onChange={handleInputChange}
+                          className="w-full h-10 px-3 pr-7 bg-white border border-slate-200 rounded-md focus:border-[#2D73B4] focus:ring-2 focus:ring-[#2D73B4]/15 outline-none text-xs font-semibold text-slate-800 placeholder:text-slate-400 transition-all shadow-2xs"
+                          placeholder="GST (%)"
+                        />
+                        <span className="absolute right-3 text-xs font-bold text-slate-400 select-none">%</span>
+                      </div>
                     </div>
 
                     <div>
-                      <label className="block text-xs font-semibold text-gray-700 mb-1">
-                        Gateway
+                      <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                        Gateway Fee
                       </label>
-                      <div className="flex items-center w-full h-9 border border-gray-200 rounded-md bg-white overflow-hidden focus-within:ring-2 focus-within:ring-[#2D73B4]/20 focus-within:border-[#2D73B4]">
+                      <div className="flex items-center w-full h-10 border border-slate-200 rounded-md bg-white overflow-hidden focus-within:border-[#2D73B4] focus-within:ring-2 focus-within:ring-[#2D73B4]/15 transition-all shadow-2xs">
                         <input
                           type="number"
                           name="processingFee"
                           value={formData.processingFee}
                           onChange={handleInputChange}
-                          className="w-full h-full px-2.5 text-xs font-semibold outline-none bg-transparent text-slate-800 min-w-0"
-                          placeholder="0"
+                          className="w-full h-full px-3 text-xs font-semibold outline-none bg-transparent text-slate-800 min-w-0 placeholder:text-slate-400"
+                          placeholder="Gateway Fee"
                         />
-                        <div className="relative h-full border-l border-gray-200 flex items-center bg-slate-50 hover:bg-slate-100 transition-colors">
+                        <div className="relative h-full border-l border-slate-200 flex items-center bg-slate-50 hover:bg-slate-100 transition-colors">
                           <select
                             name="processingFeeType"
                             value={formData.processingFeeType || "Percentage"}
                             onChange={handleInputChange}
-                            className="h-full pl-2 pr-6 text-xs bg-transparent font-bold outline-none text-slate-700 cursor-pointer appearance-none"
+                            className="h-full pl-2.5 pr-6 text-xs bg-transparent font-bold outline-none text-slate-700 cursor-pointer appearance-none"
                           >
                             <option value="Fixed">₹</option>
                             <option value="Percentage">%</option>
@@ -801,7 +821,7 @@ const ManagePrograms = () => {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-gray-700 mb-1">
+                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">
                       Tax Mode
                     </label>
                     <div className="relative">
@@ -809,7 +829,7 @@ const ManagePrograms = () => {
                         name="taxMode"
                         value={formData.taxMode}
                         onChange={handleInputChange}
-                        className="w-full h-9 pl-3 pr-8 border border-gray-200 rounded-md focus:ring-2 focus:ring-[#2D73B4]/20 focus:border-[#2D73B4] outline-none text-xs bg-white font-medium appearance-none cursor-pointer"
+                        className="w-full h-10 pl-3 pr-8 border border-slate-200 rounded-md focus:border-[#2D73B4] focus:ring-2 focus:ring-[#2D73B4]/15 outline-none text-xs bg-white font-medium text-slate-800 appearance-none cursor-pointer transition-all shadow-2xs"
                       >
                         <option value="Exclusive">
                           Exclusive (Add GST % extra at checkout)
@@ -819,20 +839,19 @@ const ManagePrograms = () => {
                         </option>
                         <option value="Free">Free / No Charge</option>
                       </select>
-                      <ChevronDown className="w-4 h-4 text-slate-500 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                      <ChevronDown className="w-4 h-4 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                     </div>
                   </div>
                 </div>
 
-                {/* Section 4: Schedule, Dates & Seats */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                {/* Section 4: Schedule, Timings & Capacity */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-semibold text-gray-700 mb-1">
+                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">
                       Total Hours & Duration
                     </label>
-                    <div className="flex items-center gap-2">
-                      {/* Hours Input (Left Side) */}
-                      <div className="flex items-center w-1/2 h-9 border border-gray-200 rounded-md bg-white overflow-hidden focus-within:ring-2 focus-within:ring-[#2D73B4]/20 focus-within:border-[#2D73B4]">
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="flex items-center h-10 border border-slate-200 rounded-md bg-white overflow-hidden focus-within:border-[#2D73B4] focus-within:ring-2 focus-within:ring-[#2D73B4]/15 transition-all shadow-2xs">
                         <input
                           type="number"
                           min="1"
@@ -840,16 +859,15 @@ const ManagePrograms = () => {
                           name="totalHours"
                           value={formData.totalHours || ''}
                           onChange={handleInputChange}
-                          className="w-12 h-full px-1.5 text-center text-xs font-bold outline-none bg-transparent text-slate-800"
-                          placeholder="10"
+                          className="w-full h-full px-2.5 text-center text-xs font-semibold outline-none bg-transparent text-slate-800 placeholder:text-slate-400"
+                          placeholder="Hours"
                         />
-                        <div className="h-full border-l border-gray-200 flex items-center flex-1 px-2 bg-slate-50 text-[11px] font-semibold text-slate-700 select-none">
+                        <span className="h-full border-l border-slate-200 flex items-center px-2.5 bg-slate-50 text-[11px] font-semibold text-slate-500 select-none shrink-0">
                           Hrs
-                        </div>
+                        </span>
                       </div>
 
-                      {/* Days Input (Right Side) */}
-                      <div className="flex items-center w-1/2 h-9 border border-gray-200 rounded-md bg-white overflow-hidden focus-within:ring-2 focus-within:ring-[#2D73B4]/20 focus-within:border-[#2D73B4]">
+                      <div className="flex items-center h-10 border border-slate-200 rounded-md bg-white overflow-hidden focus-within:border-[#2D73B4] focus-within:ring-2 focus-within:ring-[#2D73B4]/15 transition-all shadow-2xs">
                         <input
                           type="number"
                           min="1"
@@ -858,104 +876,108 @@ const ManagePrograms = () => {
                           name="durationDays"
                           value={formData.durationDays}
                           onChange={handleInputChange}
-                          className="w-10 h-full px-1 text-center text-xs font-bold outline-none bg-transparent text-slate-800"
-                          placeholder="2"
+                          className="w-full h-full px-2.5 text-center text-xs font-semibold outline-none bg-transparent text-slate-800 placeholder:text-slate-400"
+                          placeholder="Days"
                         />
-                        <div className="h-full border-l border-gray-200 flex items-center flex-1 px-2 bg-slate-50 text-[11px] font-semibold text-slate-700 select-none">
+                        <span className="h-full border-l border-slate-200 flex items-center px-2 bg-slate-50 text-[11px] font-semibold text-slate-500 select-none shrink-0">
                           -Day Workshop
-                        </div>
+                        </span>
                       </div>
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-gray-700 mb-1">
+                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">
                       Workshop Timing
                     </label>
-                    <div className="flex items-center gap-1.5">
-                      <div className="flex items-center flex-1 h-9 border border-gray-200 rounded-md bg-white overflow-hidden min-w-0">
+                    <div className="flex items-center gap-2">
+                      <div className="flex items-center flex-1 h-10 border border-slate-200 rounded-md bg-white overflow-hidden focus-within:border-[#2D73B4] focus-within:ring-2 focus-within:ring-[#2D73B4]/15 transition-all shadow-2xs">
                         <input
                           type="text"
                           required
                           name="startTime"
                           value={formData.startTime}
                           onChange={handleInputChange}
-                          className="w-full h-full px-2 text-xs font-semibold outline-none bg-transparent text-slate-800 min-w-0"
+                          className="w-full h-full px-2.5 text-xs font-semibold outline-none bg-transparent text-slate-800 placeholder:text-slate-400 min-w-0"
                           placeholder="10:00"
                         />
-                        <div className="relative h-full border-l border-gray-200 flex items-center bg-slate-50 hover:bg-slate-100 transition-colors">
+                        <div className="relative h-full border-l border-slate-200 flex items-center bg-slate-50 hover:bg-slate-100 transition-colors">
                           <select
                             name="startAmPm"
                             value={formData.startAmPm}
                             onChange={handleInputChange}
-                            className="h-full pl-2 pr-6 text-xs bg-transparent font-bold outline-none text-slate-700 cursor-pointer appearance-none"
+                            className="h-full pl-2 pr-5 text-xs bg-transparent font-bold outline-none text-slate-700 cursor-pointer appearance-none"
                           >
                             <option value="AM">AM</option>
                             <option value="PM">PM</option>
                           </select>
-                          <ChevronDown className="w-3 h-3 text-slate-500 absolute right-1.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                          <ChevronDown className="w-3 h-3 text-slate-500 absolute right-1 top-1/2 -translate-y-1/2 pointer-events-none" />
                         </div>
                       </div>
-                      <span className="text-gray-400 font-bold text-xs shrink-0">
+
+                      <span className="text-slate-400 font-semibold text-xs shrink-0">
                         to
                       </span>
-                      <div className="flex items-center flex-1 h-9 border border-gray-200 rounded-lg bg-white overflow-hidden min-w-0">
+
+                      <div className="flex items-center flex-1 h-10 border border-slate-200 rounded-md bg-white overflow-hidden focus-within:border-[#2D73B4] focus-within:ring-2 focus-within:ring-[#2D73B4]/15 transition-all shadow-2xs">
                         <input
                           type="text"
                           required
                           name="endTime"
                           value={formData.endTime}
                           onChange={handleInputChange}
-                          className="w-full h-full px-2 text-xs font-semibold outline-none bg-transparent text-slate-800 min-w-0"
+                          className="w-full h-full px-2.5 text-xs font-semibold outline-none bg-transparent text-slate-800 placeholder:text-slate-400 min-w-0"
                           placeholder="05:00"
                         />
-                        <div className="relative h-full border-l border-gray-200 flex items-center bg-slate-50 hover:bg-slate-100 transition-colors">
+                        <div className="relative h-full border-l border-slate-200 flex items-center bg-slate-50 hover:bg-slate-100 transition-colors">
                           <select
                             name="endAmPm"
                             value={formData.endAmPm}
                             onChange={handleInputChange}
-                            className="h-full pl-2 pr-6 text-xs bg-transparent font-bold outline-none text-slate-700 cursor-pointer appearance-none"
+                            className="h-full pl-2 pr-5 text-xs bg-transparent font-bold outline-none text-slate-700 cursor-pointer appearance-none"
                           >
                             <option value="AM">AM</option>
                             <option value="PM">PM</option>
                           </select>
-                          <ChevronDown className="w-3 h-3 text-slate-500 absolute right-1.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                          <ChevronDown className="w-3 h-3 text-slate-500 absolute right-1 top-1/2 -translate-y-1/2 pointer-events-none" />
                         </div>
                       </div>
                     </div>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-semibold text-gray-700 mb-1">
-                      Start Date *
+                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                      Start Date <span className="text-rose-500">*</span>
                     </label>
                     <DateInput
                       required
                       name="startDate"
                       value={formData.startDate}
                       onChange={handleInputChange}
-                      className="w-full h-9 px-3 border border-gray-200 rounded-md focus:ring-2 focus:ring-[#2D73B4]/20 focus:border-[#2D73B4] outline-none text-xs font-semibold text-slate-800 bg-white"
+                      className="w-full h-10 px-3 border border-slate-200 rounded-md focus:border-[#2D73B4] focus:ring-2 focus:ring-[#2D73B4]/15 outline-none text-xs font-medium text-slate-800 bg-white placeholder:text-slate-400 transition-all shadow-2xs"
+                      placeholder="DD/MM/YYYY"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-gray-700 mb-1">
+                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">
                       End Date (Optional)
                     </label>
                     <DateInput
                       name="endDate"
                       value={formData.endDate}
                       onChange={handleInputChange}
-                      className="w-full h-9 px-3 border border-gray-200 rounded-md focus:ring-2 focus:ring-[#2D73B4]/20 focus:border-[#2D73B4] outline-none text-xs font-semibold text-slate-800 bg-white"
+                      className="w-full h-10 px-3 border border-slate-200 rounded-md focus:border-[#2D73B4] focus:ring-2 focus:ring-[#2D73B4]/15 outline-none text-xs font-medium text-slate-800 bg-white placeholder:text-slate-400 transition-all shadow-2xs"
+                      placeholder="DD/MM/YYYY"
                     />
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-semibold text-gray-700 mb-1">
-                      Seats Limit / Capacity *
+                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                      Seats Limit / Capacity <span className="text-rose-500">*</span>
                     </label>
                     <input
                       type="number"
@@ -964,27 +986,34 @@ const ManagePrograms = () => {
                       name="seatCapacity"
                       value={formData.seatCapacity}
                       onChange={handleInputChange}
-                      className="w-full h-9 px-3 border border-gray-200 rounded-md focus:ring-2 focus:ring-[#2D73B4]/20 focus:border-[#2D73B4] outline-none text-xs font-bold text-slate-800"
-                      placeholder="e.g., 100 or 20"
+                      className="w-full h-10 px-3 border border-slate-200 rounded-md focus:border-[#2D73B4] focus:ring-2 focus:ring-[#2D73B4]/15 outline-none text-xs font-semibold text-slate-800 placeholder:text-slate-400 transition-all shadow-2xs"
+                      placeholder="Seats Limit"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-gray-700 mb-1">
-                      Event Status / Badge
+                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                      Event Status
                     </label>
-                    <input
-                      name="status"
-                      value={formData.status}
-                      onChange={handleInputChange}
-                      className="w-full h-9 px-3 border border-gray-200 rounded-md focus:ring-2 focus:ring-[#2D73B4]/20 focus:border-[#2D73B4] outline-none text-xs"
-                      placeholder="e.g., Registration Open, Live Now, Upcoming"
-                    />
+                    <div className="relative">
+                      <select
+                        name="status"
+                        value={formData.status}
+                        onChange={handleInputChange}
+                        className="w-full h-10 pl-3 pr-8 border border-slate-200 rounded-md focus:border-[#2D73B4] focus:ring-2 focus:ring-[#2D73B4]/15 outline-none text-xs font-medium text-slate-800 bg-white appearance-none cursor-pointer transition-all shadow-2xs"
+                      >
+                        <option value="Registration Open">Registration Open</option>
+                        <option value="Filling Fast">Filling Fast</option>
+                        <option value="Registration Closed">Registration Closed</option>
+                        <option value="Event Completed">Event Completed</option>
+                      </select>
+                      <ChevronDown className="w-4 h-4 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                    </div>
                   </div>
                 </div>
 
                 {/* Section 5: Features List */}
                 <div>
-                  <label className="block text-xs font-semibold text-gray-700 mb-1">
+                  <label className="block text-xs font-semibold text-slate-700 mb-1.5">
                     Features (One per line)
                   </label>
                   <textarea
@@ -992,26 +1021,26 @@ const ManagePrograms = () => {
                     value={formData.features}
                     onChange={handleInputChange}
                     rows="3"
-                    className="w-full px-3 py-2 border border-gray-200 rounded-md focus:ring-2 focus:ring-[#2D73B4]/20 focus:border-[#2D73B4] outline-none text-xs resize-none"
-                    placeholder="Weekend Classes&#10;No Coding Required&#10;Perfect for Non-Techies"
+                    className="w-full p-3 border border-slate-200 rounded-md focus:border-[#2D73B4] focus:ring-2 focus:ring-[#2D73B4]/15 outline-none text-xs font-medium text-slate-800 placeholder:text-slate-400 transition-all resize-none shadow-2xs"
+                    placeholder="Features (One per line)"
                   />
                 </div>
               </form>
             </div>
 
             {/* Modal Footer */}
-            <div className="px-6 py-3.5 border-t border-gray-100 flex justify-end gap-3 bg-gray-50/80 shrink-0">
+            <div className="px-6 py-3.5 border-t border-slate-100 flex justify-end gap-3 bg-slate-50/80 shrink-0">
               <button
                 type="button"
                 onClick={() => setIsModalOpen(false)}
-                className="px-4 py-2 text-gray-600 text-xs font-bold hover:bg-gray-200/60 rounded-md transition-colors cursor-pointer"
+                className="px-4 py-2 text-slate-600 text-xs font-semibold hover:bg-slate-200/60 rounded-md transition-colors cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 form="programForm"
-                className="px-5 py-2 bg-[#2D73B4] text-white text-xs font-bold rounded-md hover:bg-blue-700 transition-colors shadow-sm cursor-pointer"
+                className="px-5 py-2 bg-[#2D73B4] text-white text-xs font-bold rounded-md hover:bg-[#235b8f] transition-all shadow-xs cursor-pointer"
               >
                 {editingId ? "Save Changes" : "Create Workshop"}
               </button>

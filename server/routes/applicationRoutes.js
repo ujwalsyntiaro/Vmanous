@@ -5,12 +5,20 @@ const {
   createApplication,
   getPaymentTransactions,
   updateVerificationStatus,
-  deleteApplication
+  deleteApplication,
+  deleteAllApplications
 } = require('../controllers/applicationController');
 
 router.route('/')
   .get(getApplications)
-  .post(createApplication);
+  .post(createApplication)
+  .delete(deleteAllApplications);
+
+router.route('/all')
+  .delete(deleteAllApplications);
+
+router.route('/clear')
+  .delete(deleteAllApplications);
 
 router.route('/transactions')
   .get(getPaymentTransactions);

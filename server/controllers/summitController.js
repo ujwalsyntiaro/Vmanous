@@ -92,8 +92,15 @@ const getSummits = async (req, res) => {
         ? summit.status
         : (isClosed ? 'Registration Closed' : (summit.status === 'Filling Fast' ? 'Filling Fast' : 'Registration Open'));
 
+      let totalHours = '';
+      if (summit.duration) {
+        const hMatch = String(summit.duration).match(/(\d+)\s*(?:hrs|hours)/i);
+        if (hMatch) totalHours = hMatch[1];
+      }
+
       return {
         ...summit,
+        totalHours: totalHours,
         status: dynamicStatus,
         seatCapacity: seatCapacity,
         enrolledCount: matched.length,
@@ -122,6 +129,11 @@ const createSummit = async (req, res) => {
       ...validData
     } = req.body;
 
+    const baseDuration = validData.duration || "1-Day Live Workshop";
+    const durationWithHours = validData.totalHours
+      ? `${baseDuration.replace(/\s*\(\d+\s*(?:hrs|hours)\)/i, '')} (${validData.totalHours} Hrs)`
+      : baseDuration;
+
     const newSummit = await prisma.summit.create({
       data: {
         title: validData.title || "New Workshop",
@@ -135,7 +147,7 @@ const createSummit = async (req, res) => {
         taxMode: validData.taxMode || "Exclusive",
         processingFee: validData.processingFee !== undefined && validData.processingFee !== null ? Number(validData.processingFee) : 0,
         processingFeeType: validData.processingFeeType || "Percentage",
-        duration: validData.duration || "1-Day Live Workshop",
+        duration: durationWithHours,
         time: validData.time || "10:00 AM - 05:00 PM",
         startDate: validData.startDate || "",
         endDate: validData.endDate || "",
@@ -145,7 +157,7 @@ const createSummit = async (req, res) => {
         features: Array.isArray(validData.features) ? validData.features : []
       }
     });
-    res.status(201).json({ success: true, data: newSummit });
+    res.status(201).json({ success: true, data: { ...newSummit, totalHours: validData.totalHours || '' } });
   } catch (error) {
     console.error('Error creating summit:', error);
     res.status(500).json({ success: false, error: 'Create failed' });
@@ -167,6 +179,11 @@ const updateSummit = async (req, res) => {
       ...validData
     } = req.body;
 
+    const baseDuration = validData.duration || "1-Day Live Workshop";
+    const durationWithHours = validData.totalHours
+      ? `${baseDuration.replace(/\s*\(\d+\s*(?:hrs|hours)\)/i, '')} (${validData.totalHours} Hrs)`
+      : baseDuration;
+
     const updated = await prisma.summit.update({
       where: { id: Number(id) },
       data: {
@@ -181,7 +198,7 @@ const updateSummit = async (req, res) => {
         taxMode: validData.taxMode,
         processingFee: Number(validData.processingFee),
         processingFeeType: validData.processingFeeType,
-        duration: validData.duration,
+        duration: durationWithHours,
         time: validData.time,
         startDate: validData.startDate,
         endDate: validData.endDate,
@@ -191,7 +208,7 @@ const updateSummit = async (req, res) => {
         features: Array.isArray(validData.features) ? validData.features : []
       }
     });
-    res.json({ success: true, data: updated });
+    res.json({ success: true, data: { ...updated, totalHours: validData.totalHours || '' } });
   } catch (error) {
     console.error('Error updating summit:', error);
     res.status(500).json({ success: false, error: 'Update failed' });

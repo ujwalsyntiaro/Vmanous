@@ -486,7 +486,7 @@ export const ManageGallery = () => {
                   <input
                     type="text"
                     required
-                    placeholder="e.g. AI Summit Keynote & Hackathon"
+                    placeholder="Card Title"
                     value={formData.title}
                     onChange={e => setFormData({ ...formData, title: e.target.value })}
                     className="w-full h-10 px-3 bg-gray-50 border border-gray-200 rounded-lg text-xs sm:text-sm font-medium focus:bg-white focus:outline-none focus:border-slate-800 focus:ring-2 focus:ring-slate-800/10"
@@ -514,7 +514,7 @@ export const ManageGallery = () => {
                     <label className="block text-xs font-bold text-gray-700 mb-1">Date</label>
                     <input
                       type="text"
-                      placeholder="e.g. July 2026"
+                      placeholder="Date"
                       value={formData.date}
                       onChange={e => setFormData({ ...formData, date: e.target.value })}
                       className="w-full h-10 px-3 bg-gray-50 border border-gray-200 rounded-lg text-xs sm:text-sm font-medium focus:bg-white focus:outline-none focus:border-slate-800 focus:ring-2 focus:ring-slate-800/10"
@@ -528,7 +528,7 @@ export const ManageGallery = () => {
                     <label className="block text-xs font-bold text-gray-700 mb-1">Location</label>
                     <input
                       type="text"
-                      placeholder="e.g. Main Auditorium"
+                      placeholder="Location"
                       value={formData.location}
                       onChange={e => setFormData({ ...formData, location: e.target.value })}
                       className="w-full h-10 px-3 bg-gray-50 border border-gray-200 rounded-lg text-xs sm:text-sm font-medium focus:bg-white focus:outline-none focus:border-slate-800 focus:ring-2 focus:ring-slate-800/10"

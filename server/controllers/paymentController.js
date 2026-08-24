@@ -228,8 +228,48 @@ const verifyPaymentStatus = async (req, res) => {
     }
 
     const totalPaid = Number(orderDetails.amountPaid || 2358.82);
-    const baseAmount = Number((totalPaid / 1.18).toFixed(2));
-    const gstAmount = Number((totalPaid - baseAmount).toFixed(2));
+
+    // Lookup summit to calculate dynamic GST and base amounts
+    let dynamicBase = 0;
+    let dynamicGst = 0;
+
+    let matchedSummit = null;
+    if (orderDetails.summitId) {
+      matchedSummit = await prisma.summit.findUnique({ where: { id: Number(orderDetails.summitId) } });
+    }
+    if (!matchedSummit && orderDetails.programTitle) {
+      matchedSummit = await prisma.summit.findFirst({
+        where: { title: orderDetails.programTitle }
+      });
+    }
+
+    if (matchedSummit) {
+      const basePrice = matchedSummit.price !== undefined ? Number(matchedSummit.price) : 1999;
+      const taxRate = matchedSummit.taxRate !== undefined ? Number(matchedSummit.taxRate) : 18;
+      const taxMode = matchedSummit.taxMode || 'Exclusive';
+
+      if (basePrice === 0 || taxMode === 'Free') {
+        dynamicBase = 0;
+        dynamicGst = 0;
+      } else if (taxMode === 'Inclusive') {
+        dynamicGst = Number(((basePrice * taxRate) / (100 + taxRate)).toFixed(2));
+        dynamicBase = Number((basePrice - dynamicGst).toFixed(2));
+      } else {
+        dynamicBase = Number(basePrice.toFixed(2));
+        dynamicGst = Number(((basePrice * taxRate) / 100).toFixed(2));
+      }
+    } else {
+      dynamicBase = Number((totalPaid / 1.18).toFixed(2));
+      dynamicGst = Number((totalPaid - dynamicBase).toFixed(2));
+    }
+
+    const baseAmount = orderDetails.baseAmount !== undefined && orderDetails.baseAmount !== null
+      ? Number(orderDetails.baseAmount)
+      : dynamicBase;
+    const gstAmount = orderDetails.gstAmount !== undefined && orderDetails.gstAmount !== null
+      ? Number(orderDetails.gstAmount)
+      : dynamicGst;
+
     const passCode = `PASS-${(orderDetails.collegeName || 'VM').replace(/[^a-zA-Z0-9]/g, '').slice(0, 4).toUpperCase()}-${Math.floor(1000 + Math.random() * 9000)}`;
     const photoUrl = orderDetails.selfiePhotoUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=300';
 

@@ -44,6 +44,7 @@ const ManageWorkshops = () => {
   const [formData, setFormData] = useState({
     title: '',
     subtitle: '',
+    totalHours: '',
     durationDays: 1,
     startTime: '10:00',
     startAmPm: 'AM',
@@ -95,6 +96,7 @@ const ManageWorkshops = () => {
     setFormData({
       title: '',
       subtitle: '',
+      totalHours: '',
       durationDays: 1,
       startTime: '10:00',
       startAmPm: 'AM',
@@ -123,9 +125,15 @@ const ManageWorkshops = () => {
     setEditingId(item.id);
     const parsedDays = parseInt(item.duration) || 1;
     const timeParsed = parseTimeStr(item.time);
+    let parsedHours = (item.totalHours !== undefined && item.totalHours !== null) ? String(item.totalHours) : "";
+    if (!parsedHours && item.duration) {
+      const hMatch = String(item.duration).match(/(\d+)\s*(?:hrs|hours)/i);
+      if (hMatch) parsedHours = hMatch[1];
+    }
     setFormData({
       title: item.title || '',
       subtitle: item.subtitle || '',
+      totalHours: parsedHours,
       durationDays: parsedDays,
       startTime: timeParsed.startTime,
       startAmPm: timeParsed.startAmPm,
@@ -193,6 +201,7 @@ const ManageWorkshops = () => {
     const featStr = typeof formData.features === 'string' ? formData.features : '';
     const workshopData = {
       ...formData,
+      totalHours: formData.totalHours ? String(formData.totalHours).trim() : "",
       duration: duration,
       time: timeStr,
       date: formattedDate,
@@ -271,7 +280,7 @@ const ManageWorkshops = () => {
                     name="title"
                     value={formData.title}
                     onChange={handleInputChange}
-                    placeholder="e.g. AI WORKSHOP 2026"
+                    placeholder="Workshop Title"
                     className="w-full px-3 py-2 border border-gray-200 rounded-lg outline-none font-bold"
                   />
                 </div>
@@ -281,7 +290,7 @@ const ManageWorkshops = () => {
                     name="subtitle"
                     value={formData.subtitle}
                     onChange={handleInputChange}
-                    placeholder="e.g. Hands-on Machine Learning"
+                    placeholder="Subtitle / Track"
                     className="w-full px-3 py-2 border border-gray-200 rounded-lg outline-none"
                   />
                 </div>
@@ -295,7 +304,7 @@ const ManageWorkshops = () => {
                     name="college"
                     value={formData.college}
                     onChange={handleInputChange}
-                    placeholder="e.g. G H Raisoni College"
+                    placeholder="College Institution"
                     className="w-full px-3 py-2 border border-gray-200 rounded-lg outline-none"
                   />
                 </div>
@@ -306,7 +315,7 @@ const ManageWorkshops = () => {
                     name="address"
                     value={formData.address}
                     onChange={handleInputChange}
-                    placeholder="e.g. Main Auditorium, Campus"
+                    placeholder="Venue Location"
                     className="w-full px-3 py-2 border border-gray-200 rounded-lg outline-none"
                   />
                 </div>
@@ -437,7 +446,7 @@ const ManageWorkshops = () => {
                     name="seatCapacity"
                     value={formData.seatCapacity}
                     onChange={handleInputChange}
-                    placeholder="e.g. 100 or 20"
+                    placeholder="Seats Limit"
                     className="w-full px-3 py-2 border border-gray-200 rounded-lg outline-none font-bold"
                   />
                 </div>

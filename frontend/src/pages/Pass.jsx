@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { useLocation, useNavigate, useSearchParams, Link } from 'react-router-dom';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   CheckCircle2,
   Calendar,
   User,
   Download,
-  Home,
   QrCode,
   Clock,
   Loader2,
@@ -164,46 +163,54 @@ Status: VERIFIED & PAID
 Issued On: ${currentDate}
 =============================`;
 
-  const handleDownloadPDF = () => {
+  const handleDownloadPDF = async () => {
     const element = document.getElementById('workshop-pass-card');
     if (!element) return;
 
     setIsDownloading(true);
 
-    const rect = element.getBoundingClientRect();
-    const widthInMm = rect.width * 0.264583;
-    const heightInMm = rect.height * 0.264583;
+    try {
+      const rect = element.getBoundingClientRect();
+      const widthInMm = rect.width * 0.264583;
+      const heightInMm = rect.height * 0.264583;
 
-    const opt = {
-      margin: 4,
-      filename: `Vmanous_Workshop_Pass_${passId}.pdf`,
-      image: { type: 'jpeg', quality: 1.0 },
-      html2canvas: {
-        scale: 3,
-        useCORS: true,
-        logging: false,
-        backgroundColor: '#ffffff',
-        letterRendering: true,
-        scrollY: 0,
-        scrollX: 0,
-        windowWidth: document.documentElement.offsetWidth
-      },
-      jsPDF: { unit: 'mm', format: [widthInMm + 8, heightInMm + 8], orientation: 'portrait' },
-      pagebreak: { mode: ['avoid-all'] }
-    };
+      const opt = {
+        margin: [0, 0, 0, 0],
+        filename: `Vmanous_Workshop_Pass_${passId}.pdf`,
+        image: { type: 'jpeg', quality: 1.0 },
+        html2canvas: {
+          scale: 3,
+          useCORS: true,
+          logging: false,
+          backgroundColor: '#ffffff',
+          scrollY: 0,
+          scrollX: 0
+        },
+        jsPDF: {
+          unit: 'mm',
+          format: [widthInMm, heightInMm + 1.5],
+          orientation: 'portrait'
+        },
+        pagebreak: { mode: [] }
+      };
 
-    html2pdf()
-      .set(opt)
-      .from(element)
-      .save()
-      .then(() => {
-        setIsDownloading(false);
-      })
-      .catch((err) => {
-        console.error("PDF generation failed:", err);
-        window.print();
-        setIsDownloading(false);
-      });
+      await html2pdf()
+        .from(element)
+        .set(opt)
+        .toPdf()
+        .get('pdf')
+        .then((pdf) => {
+          while (pdf.internal.getNumberOfPages() > 1) {
+            pdf.deletePage(pdf.internal.getNumberOfPages());
+          }
+        })
+        .save();
+
+      setIsDownloading(false);
+    } catch (err) {
+      console.error("PDF generation failed:", err);
+      setIsDownloading(false);
+    }
   };
 
   return (
@@ -212,7 +219,7 @@ Issued On: ${currentDate}
         <div className="max-w-md mx-auto">
 
           {/* Header Success Message */}
-          <div className="text-center mb-4">
+          <div className="text-center mb-4 sm:mb-6">
             <motion.div
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
@@ -225,55 +232,31 @@ Issued On: ${currentDate}
             <p className="text-slate-500 text-xs">Your digital workshop pass has been generated.</p>
           </div>
 
-          {/* Vertical Ticket / Pass Badge UI (Receipt Ticket Shape with Flat Crisp Borders) */}
           <motion.div
             id="workshop-pass-card"
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.2 }}
-            className="bg-transparent border-x border-black relative pt-0 pb-0"
+            className="bg-transparent pt-7 px-1 pb-1 relative"
           >
-            {/* Top Sawtooth (Zig-Zag) Ticket Edge Cut - Shorter Cleaner Height */}
-            <div className="w-full overflow-hidden leading-none select-none pointer-events-none -mt-[1px] relative z-10">
-              <svg viewBox="0 0 1200 16" preserveAspectRatio="none" className="w-full h-3 sm:h-3.5 block">
-                {/* Page Background Fill for Notches Outside Card (Above Teeth) */}
-                <path
-                  d="M0,0 L20,12 L40,0 L60,12 L80,0 L100,12 L120,0 L140,12 L160,0 L180,12 L200,0 L220,12 L240,0 L260,12 L280,0 L300,12 L320,0 L340,12 L360,0 L380,12 L400,0 L420,12 L440,0 L460,12 L480,0 L500,12 L520,0 L540,12 L560,0 L580,12 L600,0 L620,12 L640,0 L660,12 L680,0 L700,12 L720,0 L740,12 L760,0 L780,12 L800,0 L820,12 L840,0 L860,12 L880,0 L900,12 L920,0 L940,12 L960,0 L980,12 L1000,0 L1020,12 L1040,0 L1060,12 L1080,0 L1100,12 L1120,0 L1140,12 L1160,0 L1180,12 L1200,0 L1200,-5 L0,-5 Z"
-                  fill="#f8fafc"
-                  stroke="none"
-                />
-                {/* White Fill Background Inside Card Body (Below Teeth) */}
-                <path
-                  d="M0,0 L20,12 L40,0 L60,12 L80,0 L100,12 L120,0 L140,12 L160,0 L180,12 L200,0 L220,12 L240,0 L260,12 L280,0 L300,12 L320,0 L340,12 L360,0 L380,12 L400,0 L420,12 L440,0 L460,12 L480,0 L500,12 L520,0 L540,12 L560,0 L580,12 L600,0 L620,12 L640,0 L660,12 L680,0 L700,12 L720,0 L740,12 L760,0 L780,12 L800,0 L820,12 L840,0 L860,12 L880,0 L900,12 L920,0 L940,12 L960,0 L980,12 L1000,0 L1020,12 L1040,0 L1060,12 L1080,0 L1100,12 L1120,0 L1140,12 L1160,0 L1180,12 L1200,0 L1200,16 L0,16 Z"
-                  fill="#ffffff"
-                  stroke="none"
-                />
-                {/* Sawtooth Teeth V-Line Stroke Only (Exact Uniform 1px Black Line) */}
-                <path
-                  d="M0,0 L20,12 L40,0 L60,12 L80,0 L100,12 L120,0 L140,12 L160,0 L180,12 L200,0 L220,12 L240,0 L260,12 L280,0 L300,12 L320,0 L340,12 L360,0 L380,12 L400,0 L420,12 L440,0 L460,12 L480,0 L500,12 L520,0 L540,12 L560,0 L580,12 L600,0 L620,12 L640,0 L660,12 L680,0 L700,12 L720,0 L740,12 L760,0 L780,12 L800,0 L820,12 L840,0 L860,12 L880,0 L900,12 L920,0 L940,12 L960,0 L980,12 L1000,0 L1020,12 L1040,0 L1060,12 L1080,0 L1100,12 L1120,0 L1140,12 L1160,0 L1180,12 L1200,0"
-                  fill="none"
-                  stroke="#000000"
-                  strokeWidth="1"
-                  vectorEffect="non-scaling-stroke"
-                  strokeLinejoin="miter"
-                />
-              </svg>
-            </div>
-
-            {/* Top Pass Header (Image 2 Style: Checkmark Badge Overlapping Top Edge + Payment Successful!) */}
-            <div className="bg-white pt-2 pb-1 px-4 text-center relative flex flex-col items-center z-20">
-              {/* Green Checkmark Circle Symbol - Pure SVG Icon with White Circle Background */}
-              <div className="w-14 h-14 sm:w-16 sm:h-16 flex items-center justify-center -mt-10 mb-1 shrink-0 z-30 relative">
-                <svg viewBox="0 0 100 100" className="w-14 h-14 sm:w-16 sm:h-16">
-                  {/* White Background Circle (Hides zig-zag lines behind icon) */}
-                  <circle cx="50" cy="50" r="36" fill="#ffffff" stroke="none" />
-                  {/* Open Green Circle Arc with Gap at Top Right */}
-                  <path d="M 72 26 A 36 36 0 1 0 78 66" fill="none" stroke="#5cb85c" strokeWidth="7" strokeLinecap="round" strokeLinejoin="round" />
-                  {/* Checkmark Extending Out of Circle in Top Right */}
-                  <path d="M 28 52 L 44 68 L 84 20" fill="none" stroke="#5cb85c" strokeWidth="7" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
+            {/* Main Pass Card Box */}
+            <div className="bg-white border border-black relative pt-0 pb-0 shadow-sm">
+              {/* Green Checkmark Circle Symbol - Exactly Centered on the Top Horizontal Line */}
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 z-30 flex items-center justify-center pointer-events-none">
+                <div className="w-14 h-14 sm:w-16 sm:h-16 flex items-center justify-center">
+                  <svg viewBox="0 0 100 100" className="w-14 h-14 sm:w-16 sm:h-16 block overflow-visible">
+                    {/* White Background Circle (Cleanly masks the horizontal line behind icon) */}
+                    <circle cx="50" cy="50" r="38" fill="#ffffff" stroke="none" />
+                    {/* Open Green Circle Arc with Gap at Top Right */}
+                    <path d="M 72 26 A 36 36 0 1 0 78 66" fill="none" stroke="#5cb85c" strokeWidth="7" strokeLinecap="round" strokeLinejoin="round" />
+                    {/* Checkmark Extending Out of Circle in Top Right */}
+                    <path d="M 28 52 L 44 68 L 84 20" fill="none" stroke="#5cb85c" strokeWidth="7" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </div>
               </div>
 
+              {/* Top Pass Header (Payment Successful! Heading + College / Institution) */}
+              <div className="bg-white pt-9 sm:pt-10 pb-1 px-4 text-center relative flex flex-col items-center z-20">
               {/* Payment Successful! Heading (Sleek Semibold Font Weight) */}
               <h1 className="text-xl sm:text-2xl font-semibold text-[#5cb85c] tracking-tight mb-2">
                 Payment Successful!
@@ -371,17 +354,17 @@ Issued On: ${currentDate}
               </div>
             </div>
 
-            {/* Ticket Cutout Line (Sleek Thinner 180-Degree Curve Cuts - Masked Vertical Card Border) */}
+            {/* Ticket Cutout Line (Reduced 50% Height Sleek Curve Cuts) */}
             <div className="relative flex items-center bg-white py-1 overflow-visible z-10">
               {/* Left Side 180-Degree Curve Cutout */}
               <div className="relative -ml-[1px] shrink-0 z-20">
-                <svg viewBox="0 0 16 48" className="w-3.5 h-9 sm:w-4 sm:h-11 block overflow-visible">
+                <svg viewBox="0 0 16 24" className="w-2.5 h-4.5 sm:w-3 sm:h-5.5 block overflow-visible">
                   {/* Mask out straight vertical card border line behind curve */}
-                  <rect x="-2" y="0" width="20" height="48" fill="#ffffff" stroke="none" />
+                  <rect x="-2" y="0" width="20" height="24" fill="#ffffff" stroke="none" />
                   {/* Background Mask Fill for Notch Area */}
-                  <path d="M 0,0 A 16,24 0 0,1 0,48 Z" fill="#f8fafc" stroke="none" />
+                  <path d="M 0,0 A 16,12 0 0,1 0,24 Z" fill="#f8fafc" stroke="none" />
                   {/* Curved Arc Stroke Only (Exact Uniform 1px Black Line) */}
-                  <path d="M 0,0 A 16,24 0 0,1 0,48" fill="none" stroke="#000000" strokeWidth="1" vectorEffect="non-scaling-stroke" />
+                  <path d="M 0,0 A 16,12 0 0,1 0,24" fill="none" stroke="#000000" strokeWidth="1" vectorEffect="non-scaling-stroke" />
                 </svg>
               </div>
 
@@ -390,19 +373,19 @@ Issued On: ${currentDate}
 
               {/* Right Side 180-Degree Curve Cutout */}
               <div className="relative -mr-[1px] shrink-0 z-20">
-                <svg viewBox="0 0 16 48" className="w-3.5 h-9 sm:w-4 sm:h-11 block overflow-visible">
+                <svg viewBox="0 0 16 24" className="w-2.5 h-4.5 sm:w-3 sm:h-5.5 block overflow-visible">
                   {/* Mask out straight vertical card border line behind curve */}
-                  <rect x="-2" y="0" width="20" height="48" fill="#ffffff" stroke="none" />
+                  <rect x="-2" y="0" width="20" height="24" fill="#ffffff" stroke="none" />
                   {/* Background Mask Fill for Notch Area */}
-                  <path d="M 16,0 A 16,24 0 0,0 16,48 Z" fill="#f8fafc" stroke="none" />
+                  <path d="M 16,0 A 16,12 0 0,0 16,24 Z" fill="#f8fafc" stroke="none" />
                   {/* Curved Arc Stroke Only (Exact Uniform 1px Black Line) */}
-                  <path d="M 16,0 A 16,24 0 0,0 16,48" fill="none" stroke="#000000" strokeWidth="1" vectorEffect="non-scaling-stroke" />
+                  <path d="M 16,0 A 16,12 0 0,0 16,24" fill="none" stroke="#000000" strokeWidth="1" vectorEffect="non-scaling-stroke" />
                 </svg>
               </div>
             </div>
 
             {/* Premium QR & Event Details Section (Compact Vertical Padding) */}
-            <div className="py-3 sm:py-3.5 px-4 sm:px-5 bg-white flex items-start justify-between gap-4">
+            <div className="py-4 px-4 sm:px-5 bg-white flex items-start justify-between gap-4">
               {/* Left Side: Date, Time & Official Status */}
               <div className="space-y-2.5 flex-1 relative">
 
@@ -429,18 +412,18 @@ Issued On: ${currentDate}
 
               {/* Right Side: Clean Transparent QR Code with Thin Black Corner Brackets */}
               <div className="flex flex-col items-center shrink-0">
-                <div className="relative p-2 bg-transparent flex items-center justify-center">
+                <div className="relative p-1.5 bg-transparent flex items-center justify-center">
                   {/* Top-Left Corner Bracket (┌) */}
-                  <div className="absolute top-0 left-0 w-3.5 h-3.5 border-t border-l border-black rounded-tl-xs" />
+                  <div className="absolute top-0 left-0 w-3 h-3 border-t border-l border-black rounded-tl-xs" />
 
                   {/* Top-Right Corner Bracket (┐) */}
-                  <div className="absolute top-0 right-0 w-3.5 h-3.5 border-t border-r border-black rounded-tr-xs" />
+                  <div className="absolute top-0 right-0 w-3 h-3 border-t border-r border-black rounded-tr-xs" />
 
                   {/* Bottom-Left Corner Bracket (└) */}
-                  <div className="absolute bottom-0 left-0 w-3.5 h-3.5 border-b border-l border-black rounded-bl-xs" />
+                  <div className="absolute bottom-0 left-0 w-3 h-3 border-b border-l border-black rounded-bl-xs" />
 
                   {/* Bottom-Right Corner Bracket (┘) */}
-                  <div className="absolute bottom-0 right-0 w-3.5 h-3.5 border-b border-r border-black rounded-br-xs" />
+                  <div className="absolute bottom-0 right-0 w-3 h-3 border-b border-r border-black rounded-br-xs" />
 
                   <QRCodeSVG
                     value={qrDataText}
@@ -453,31 +436,6 @@ Issued On: ${currentDate}
                 </div>
               </div>
             </div>
-                    {/* Bottom Sawtooth (Zig-Zag) Ticket Edge Cut - Shorter Cleaner Height */}
-            <div className="w-full overflow-hidden leading-none select-none pointer-events-none -mb-[1px] relative z-10">
-              <svg viewBox="0 0 1200 16" preserveAspectRatio="none" className="w-full h-3 sm:h-3.5 block">
-                {/* White Fill Background Inside Card Body (Above Teeth) */}
-                <path
-                  d="M0,16 L20,4 L40,16 L60,4 L80,16 L100,4 L120,16 L140,4 L160,16 L180,4 L200,16 L220,4 L240,16 L260,4 L280,16 L300,4 L320,16 L340,4 L360,16 L380,4 L400,16 L420,4 L440,16 L460,4 L480,16 L500,4 L520,16 L540,4 L560,16 L580,4 L600,16 L620,4 L640,16 L660,4 L680,16 L700,4 L720,16 L740,4 L760,16 L780,4 L800,16 L820,4 L840,16 L860,4 L880,16 L900,16 L920,4 L940,16 L960,4 L980,16 L1000,4 L1020,16 L1040,4 L1060,16 L1080,4 L1100,16 L1120,4 L1140,16 L1160,4 L1180,16 L1200,4 L1200,0 L0,0 Z"
-                  fill="#ffffff"
-                  stroke="none"
-                />
-                {/* Page Background Fill for Notches Outside Card (Below Teeth) */}
-                <path
-                  d="M0,16 L20,4 L40,16 L60,4 L80,16 L100,4 L120,16 L140,4 L160,16 L180,4 L200,16 L220,4 L240,16 L260,4 L280,16 L300,4 L320,16 L340,4 L360,16 L380,4 L400,16 L420,4 L440,16 L460,4 L480,16 L500,4 L520,16 L540,4 L560,16 L580,4 L600,16 L620,4 L640,16 L660,4 L680,16 L700,4 L720,16 L740,4 L760,16 L780,4 L800,16 L820,4 L840,16 L860,4 L880,16 L900,16 L920,4 L940,16 L960,4 L980,16 L1000,4 L1020,16 L1040,4 L1060,16 L1080,4 L1100,16 L1120,4 L1140,16 L1160,4 L1180,16 L1200,4 L1200,20 L0,20 Z"
-                  fill="#f8fafc"
-                  stroke="none"
-                />
-                {/* Sawtooth Teeth V-Line Stroke Only (Exact Uniform 1px Black Line) */}
-                <path
-                  d="M0,16 L20,4 L40,16 L60,4 L80,16 L100,4 L120,16 L140,4 L160,16 L180,4 L200,16 L220,4 L240,16 L260,4 L280,16 L300,4 L320,16 L340,4 L360,16 L380,4 L400,16 L420,4 L440,16 L460,4 L480,16 L500,4 L520,16 L540,4 L560,16 L580,4 L600,16 L620,4 L640,16 L660,4 L680,16 L700,4 L720,16 L740,4 L760,16 L780,4 L800,16 L820,4 L840,16 L860,4 L880,16 L900,16 L920,4 L940,16 L960,4 L980,16 L1000,4 L1020,16 L1040,4 L1060,16 L1080,4 L1100,16 L1120,4 L1140,16 L1160,4 L1180,16 L1200,4"
-                  fill="none"
-                  stroke="#000000"
-                  strokeWidth="1"
-                  vectorEffect="non-scaling-stroke"
-                  strokeLinejoin="miter"
-                />
-              </svg>
             </div>
           </motion.div>
 
@@ -486,7 +444,7 @@ Issued On: ${currentDate}
             <button
               type="button"
               onClick={() => setIsReceiptOpen(true)}
-              className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg transition-all flex items-center justify-center gap-2 text-xs shadow-md cursor-pointer"
+              className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg transition-all flex items-center justify-center gap-2 text-xs shadow-md cursor-pointer"
             >
               <Receipt size={16} />
               <span>View Payment Receipt</span>
@@ -495,7 +453,7 @@ Issued On: ${currentDate}
               type="button"
               onClick={handleDownloadPDF}
               disabled={isDownloading}
-              className="px-4 py-2.5 bg-white border border-slate-300 hover:border-slate-400 text-slate-700 font-bold rounded-lg transition-all flex items-center justify-center gap-2 text-xs shadow-xs cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+              className="px-5 py-2.5 bg-white border border-slate-300 hover:border-slate-400 text-slate-700 font-bold rounded-lg transition-all flex items-center justify-center gap-2 text-xs shadow-xs cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
             >
               {isDownloading ? (
                 <>
@@ -509,10 +467,6 @@ Issued On: ${currentDate}
                 </>
               )}
             </button>
-            <Link to="/" className="px-4 py-2.5 bg-white border border-slate-300 text-slate-700 font-bold rounded-lg hover:bg-slate-50 transition-all flex items-center justify-center gap-2 text-xs cursor-pointer">
-              <Home size={16} />
-              <span>Return Home</span>
-            </Link>
           </div>
 
         </div>

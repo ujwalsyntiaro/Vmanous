@@ -201,10 +201,14 @@ const updateVerificationStatus = async (req, res) => {
   }
 };
 
-// Delete application
+// Delete single application
 const deleteApplication = async (req, res) => {
   try {
     const { id } = req.params;
+    const app = await prisma.application.findUnique({ where: { id } });
+    if (app && app.transactionId) {
+      await prisma.paymentTransaction.deleteMany({ where: { transactionId: app.transactionId } });
+    }
     await prisma.application.delete({ where: { id } });
     res.json({ success: true, message: 'Application deleted successfully' });
   } catch (error) {
@@ -213,10 +217,27 @@ const deleteApplication = async (req, res) => {
   }
 };
 
+// Delete all applications, transactions, and student records
+const deleteAllApplications = async (req, res) => {
+  try {
+    await prisma.paymentTransaction.deleteMany({});
+    await prisma.application.deleteMany({});
+    await prisma.student.deleteMany({});
+    res.json({
+      success: true,
+      message: 'All applications, payment transactions, and student records deleted successfully'
+    });
+  } catch (error) {
+    console.error('Error deleting all applications:', error);
+    res.status(500).json({ success: false, error: 'Failed to delete all applications' });
+  }
+};
+
 module.exports = {
   getApplications,
   createApplication,
   getPaymentTransactions,
   updateVerificationStatus,
-  deleteApplication
+  deleteApplication,
+  deleteAllApplications
 };

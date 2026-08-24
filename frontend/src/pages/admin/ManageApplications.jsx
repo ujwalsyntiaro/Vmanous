@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
-
   FileText,
   Search,
   Filter,
@@ -19,17 +18,19 @@ import {
   MapPin,
   RefreshCw,
   X,
-  ChevronDown
+  ChevronDown,
+  Trash2
 } from 'lucide-react';
 import {
   getApplications,
+  saveApplications,
   updateVerificationStatus,
   deleteApplication,
+  clearAllApplications,
   exportApplicationsToCSV
 } from '../../services/applicationService';
 import { getSummits } from '../../services/summitService';
 import DateInput from '../../components/ui/DateInput';
-
 
 const ManageApplications = () => {
   const [applications, setApplications] = useState([]);
@@ -39,6 +40,7 @@ const ManageApplications = () => {
   const [selectedDateRange, setSelectedDateRange] = useState('All'); // All, 7days, 30days, today
   const [activeTab, setActiveTab] = useState('All'); // All, Paid, Failed, Pending Audit
   const [selectedApp, setSelectedApp] = useState(null); // For Inspect Drawer / Modal
+  const [isLoading, setIsLoading] = useState(false);
 
   // Contextual Dynamic Styling for Status Dropdown
   const getStatusStyles = (tab) => {
@@ -100,17 +102,41 @@ const ManageApplications = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-
   const [summits, setSummits] = useState([]);
 
-  useEffect(() => {
-    setApplications(getApplications());
+  const loadData = async () => {
+    setIsLoading(true);
+    let currentApps = getApplications();
+    try {
+      const res = await fetch('/api/v1/applications');
+      const json = await res.json();
+      if (json.success && Array.isArray(json.data)) {
+        currentApps = json.data;
+        saveApplications(json.data);
+      }
+    } catch (err) {
+      console.log('MySQL API fetch notice for applications');
+    }
+    setApplications(currentApps);
     setSummits(getSummits());
+    setIsLoading(false);
+  };
+
+  useEffect(() => {
+    loadData();
+
+    const handleUpdate = () => loadData();
+    window.addEventListener('applications_updated', handleUpdate);
+    window.addEventListener('summits_updated', handleUpdate);
+
+    return () => {
+      window.removeEventListener('applications_updated', handleUpdate);
+      window.removeEventListener('summits_updated', handleUpdate);
+    };
   }, []);
 
   const handleRefresh = () => {
-    setApplications(getApplications());
-    setSummits(getSummits());
+    loadData();
   };
 
   const handleStatusChange = (id, newStatus) => {
@@ -128,6 +154,16 @@ const ManageApplications = () => {
       if (selectedApp && selectedApp.id === id) {
         setSelectedApp(null);
       }
+    }
+  };
+
+  const handleClearAll = async () => {
+    if (window.confirm("⚠️ DANGER: Are you sure you want to permanently delete ALL student applications, reports, and payment transactions from the MySQL database?\n\nThis will completely erase all student data.")) {
+      setIsLoading(true);
+      await clearAllApplications();
+      setApplications([]);
+      setSelectedApp(null);
+      setIsLoading(false);
     }
   };
 
@@ -212,7 +248,24 @@ const ManageApplications = () => {
             Audit student submissions, verify registrations, and follow up on failed payments.
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
+          <button
+            onClick={handleRefresh}
+            className="p-2 bg-gray-100 text-slate-700 rounded-lg text-sm hover:bg-gray-200 transition-colors flex items-center gap-1 cursor-pointer"
+            title="Refresh Data"
+          >
+            <RefreshCw size={16} className={isLoading ? "animate-spin" : ""} />
+          </button>
+          {applications.length > 0 && (
+            <button
+              onClick={handleClearAll}
+              className="px-3.5 py-2 bg-rose-50 border border-rose-200 text-rose-700 rounded-lg text-sm font-semibold hover:bg-rose-100 hover:text-rose-800 transition-colors flex items-center gap-2 cursor-pointer shadow-xs"
+              title="Delete all applications and transactions from database"
+            >
+              <Trash2 size={16} className="text-rose-600" />
+              Delete All Data
+            </button>
+          )}
           <button
             onClick={() => exportApplicationsToCSV(filteredApps)}
             className="px-4 py-2 bg-[#2D73B4] text-white rounded-lg text-sm font-semibold hover:bg-[#235b8f] transition-colors flex items-center gap-2 shadow-md shadow-[#2D73B4]/20 cursor-pointer"
@@ -538,6 +591,13 @@ const ManageApplications = () => {
                         >
                           <Eye size={14} />
                           Inspect
+                        </button>
+                        <button
+                          onClick={() => handleDelete(app.id)}
+                          className="p-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg text-xs transition-colors cursor-pointer"
+                          title="Delete application"
+                        >
+                          <Trash2 size={14} />
                         </button>
                       </div>
                     </td>

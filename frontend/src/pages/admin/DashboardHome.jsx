@@ -204,8 +204,11 @@ const DashboardHome = () => {
     });
   });
 
-  // Calculate dynamic financial metrics for Active Paid Enrollments
-  const revMetrics = getFinancialMetrics(activePaidApps.length > 0 ? activePaidApps : dateFilteredApps);
+  // Calculate dynamic financial metrics for Active Paid Enrollments (dynamic per workshop)
+  const revMetrics = getFinancialMetrics(
+    activePaidApps.length > 0 ? activePaidApps : dateFilteredApps,
+    summits,
+  );
 
   // 2. TABLE FILTERING LOGIC (Filters dateFilteredApps further by College, Status, Search)
   const filteredApps = dateFilteredApps.filter((app) => {
@@ -445,7 +448,7 @@ const DashboardHome = () => {
 
           {/* Export Report Button */}
           <button
-            onClick={() => exportGSTFinancialReportToCSV(dateFilteredApps)}
+            onClick={() => exportGSTFinancialReportToCSV(dateFilteredApps, summits)}
             className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-md transition-all shadow-xs cursor-pointer"
           >
             <Download size={13} />
@@ -454,7 +457,7 @@ const DashboardHome = () => {
         </div>
       </div>
 
-      {/* 4 Key Financial Metrics (Calculated dynamically for selected Master Date Range) */}
+      {/* 4 Key Financial Metrics (Calculated dynamically per workshop for selected Master Date Range) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
         {/* Card 1: Gross Revenue */}
         <div className="bg-white p-3 rounded-lg border border-gray-200/90 shadow-2xs">
@@ -497,11 +500,11 @@ const DashboardHome = () => {
           </div>
         </div>
 
-        {/* Card 3: GST Liability */}
+        {/* Card 3: GST Liability (Dynamic per workshop tax rate) */}
         <div className="bg-white p-3 rounded-lg border border-gray-200/90 shadow-2xs">
           <div className="flex justify-between items-start mb-1">
             <span className="text-xs font-bold text-slate-500">
-              GST Collected (18%)
+              GST Collected
             </span>
             <span className="p-1 bg-amber-50 text-amber-600 rounded-md">
               <Receipt size={15} />
@@ -515,7 +518,7 @@ const DashboardHome = () => {
           </div>
         </div>
 
-        {/* Card 4: Platform Fee */}
+        {/* Card 4: Platform Fee (Dynamic per workshop processing fee) */}
         <div className="bg-white p-3 rounded-lg border border-gray-200/90 shadow-2xs">
           <div className="flex justify-between items-start mb-1">
             <span className="text-xs font-bold text-slate-500">
@@ -548,7 +551,7 @@ const DashboardHome = () => {
               title="Total Students"
               value={displayTotalStudents.toString()}
               icon={Users}
-              onClick={() => navigate('/cpanel/enrollments')}
+              onClick={() => navigate('/cpanel/applications')}
             />
             <StatCard
               title="Active Programs"

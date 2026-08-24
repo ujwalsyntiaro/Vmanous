@@ -21,6 +21,10 @@ const ProgramCard = ({ summit, index = 0, isAdmin = false, isHistory = false, on
     ? summit.status
     : (isClosed ? 'Registration Closed' : (summit.status === 'Filling Fast' ? 'Filling Fast' : 'Registration Open'));
 
+  const totalHours = (summit.totalHours !== undefined && summit.totalHours !== null)
+    ? String(summit.totalHours).trim()
+    : (summit.duration && String(summit.duration).match(/(\d+)\s*(?:hrs|hours)/i)?.[1] || '');
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 15 }}
@@ -81,13 +85,18 @@ const ProgramCard = ({ summit, index = 0, isAdmin = false, isHistory = false, on
         </div>
 
         {/* Schedule & Timing Box */}
-        <div className="p-2 rounded-md bg-slate-50 border border-slate-200/60 mb-2 space-y-1 shadow-2xs">
+        <div className="p-2 rounded-md bg-slate-50 border border-slate-200/60 mb-2 space-y-1.5 shadow-2xs">
           <div className="flex items-center justify-between gap-2 flex-wrap">
-            <div className="flex items-center gap-1.5">
-              <div className="p-1 rounded-md bg-emerald-600 text-white shadow-2xs">
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <div className="p-1 rounded-md bg-emerald-600 text-white shadow-2xs shrink-0">
                 <Calendar size={13} />
               </div>
               <span className="text-xs font-extrabold text-slate-900 tracking-tight">{summit.duration}</span>
+              {totalHours && (
+                <span className="inline-flex items-center text-[10px] font-extrabold text-emerald-800 bg-emerald-100/90 px-1.5 py-0.5 rounded border border-emerald-200/80 shadow-2xs">
+                  {totalHours} Hrs
+                </span>
+              )}
             </div>
             <div className="flex items-center gap-1.5">
               <span className="text-xs font-extrabold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200/80 shadow-2xs">
@@ -96,10 +105,19 @@ const ProgramCard = ({ summit, index = 0, isAdmin = false, isHistory = false, on
             </div>
           </div>
 
-          {summit.time && (
-            <div className="flex items-center gap-1.5 pt-1.5 border-t border-slate-200/50 text-[11px] font-semibold text-slate-600">
-              <Clock size={12} className="text-emerald-600 flex-shrink-0" />
-              <span>{summit.time}</span>
+          {(summit.time || totalHours) && (
+            <div className="flex items-center justify-between gap-1.5 pt-1.5 border-t border-slate-200/50 text-[11px] font-semibold text-slate-600">
+              {summit.time && (
+                <div className="flex items-center gap-1.5">
+                  <Clock size={12} className="text-emerald-600 flex-shrink-0" />
+                  <span>{summit.time}</span>
+                </div>
+              )}
+              {totalHours && (
+                <span className="text-[10px] font-bold text-slate-500 ml-auto">
+                  {totalHours} Hours Total
+                </span>
+              )}
             </div>
           )}
         </div>

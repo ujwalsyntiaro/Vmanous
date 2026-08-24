@@ -80,7 +80,11 @@ export const Payment = () => {
         programInterest: summitDetails?.title || formData.programInterest || '',
         institution: summitDetails?.college || formData.institution || '',
         collegeAddress: summitDetails?.address || formData.collegeAddress || '',
-        totalAmount: totalAmount
+        baseAmount: isFree ? 0 : basePrice,
+        gstAmount: isFree ? 0 : taxAmount,
+        platformFee: isFree ? 0 : processingFee,
+        totalAmount: totalAmount,
+        summitId: summitDetails?.id || formData.summitId || null,
       }, summitDetails);
 
       if (result.success && result.redirectUrl) {

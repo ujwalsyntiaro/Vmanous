@@ -25,6 +25,10 @@ export const initiatePhonePePayment = async (formData, summitDetails = null) => 
         formData.photoPreview ||
         "https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=300",
       programTitle: formData.programInterest || "AI Summit Workshop 2026",
+      summitId: formData.summitId ? Number(formData.summitId) : (summitDetails?.id ? Number(summitDetails.id) : null),
+      baseAmount: formData.baseAmount !== undefined ? Number(formData.baseAmount) : null,
+      gstAmount: formData.gstAmount !== undefined ? Number(formData.gstAmount) : null,
+      platformFee: formData.platformFee !== undefined ? Number(formData.platformFee) : null,
       amountPaid:
         Number(formData.totalAmount || formData.amountPaid) || 2358.82,
     };
