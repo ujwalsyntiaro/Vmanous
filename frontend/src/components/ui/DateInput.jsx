@@ -27,6 +27,22 @@ export const ddmmYYYYToISO = (str) => {
   return str;
 };
 
+// Helper: Validates if DD/MM/YYYY is a real calendar date
+export const isValidDDMMYYYY = (str) => {
+  if (!str) return true; // Optional field empty is valid
+  if (!/^\d{2}\/\d{2}\/\d{4}$/.test(str)) return false;
+  const [day, month, year] = str.split('/').map(Number);
+  if (month < 1 || month > 12) return false;
+  if (day < 1 || day > 31) return false;
+  if (year < 1990 || year > 2099) return false;
+  const dateObj = new Date(year, month - 1, day);
+  return (
+    dateObj.getFullYear() === year &&
+    dateObj.getMonth() === month - 1 &&
+    dateObj.getDate() === day
+  );
+};
+
 const DateInput = ({
   name,
   value,
@@ -39,23 +55,39 @@ const DateInput = ({
 
   // Derive display value in DD/MM/YYYY format
   const displayValue = isoToDDMMYYYY(value);
+  const isValid = isValidDDMMYYYY(displayValue);
 
-  // Handle manual text entry
+  // Handle manual text entry with DD/MM/YYYY validation
   const handleTextChange = (e) => {
     let raw = e.target.value;
     
     // Extract only digits
-    const digits = raw.replace(/\D/g, '');
+    const digits = raw.replace(/\D/g, '').slice(0, 8);
     let formatted = digits;
-    
+
+    let day = digits.slice(0, 2);
+    let month = digits.slice(2, 4);
+    let year = digits.slice(4, 8);
+
+    // Validate Day max 31
+    if (day.length === 2 && Number(day) > 31) {
+      day = '31';
+    }
+    // Validate Month max 12
+    if (month.length === 2 && Number(month) > 12) {
+      month = '12';
+    }
+
     if (digits.length > 2 && digits.length <= 4) {
-      formatted = `${digits.slice(0, 2)}/${digits.slice(2)}`;
+      formatted = `${day}/${month}`;
     } else if (digits.length > 4) {
-      formatted = `${digits.slice(0, 2)}/${digits.slice(2, 4)}/${digits.slice(4, 8)}`;
+      formatted = `${day}/${month}/${year}`;
+    } else {
+      formatted = day;
     }
 
     let isoVal = formatted;
-    if (formatted.length === 10) {
+    if (formatted.length === 10 && isValidDDMMYYYY(formatted)) {
       isoVal = ddmmYYYYToISO(formatted);
     }
 
@@ -104,7 +136,7 @@ const DateInput = ({
         required={required}
         placeholder={placeholder}
         maxLength={10}
-        className={`${className} pr-10`}
+        className={`${className} pr-10 ${!isValid && displayValue.length === 10 ? 'border-red-500 ring-2 ring-red-200' : ''}`}
       />
       
       {/* Hidden native date picker for browser popup */}
@@ -121,7 +153,7 @@ const DateInput = ({
         type="button"
         onClick={openCalendar}
         className="absolute right-3 text-gray-400 hover:text-[#2D73B4] transition-colors focus:outline-none"
-        title="Select Date"
+        title="Select Date (DD/MM/YYYY)"
       >
         <Calendar className="w-4 h-4" />
       </button>

@@ -1,9 +1,27 @@
 import { getApplications } from "./applicationService";
 
+export const liveBroadcastChannel = (typeof window !== "undefined" && "BroadcastChannel" in window)
+  ? new BroadcastChannel("vmanous_live_updates")
+  : null;
+
+export const broadcastSummitUpdate = () => {
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new Event("summits_updated"));
+    window.dispatchEvent(new Event("applications_updated"));
+    if (liveBroadcastChannel) {
+      try {
+        liveBroadcastChannel.postMessage({ type: "SUMMIT_UPDATED", timestamp: Date.now() });
+      } catch (e) { }
+    }
+  }
+};
+
+
+
 export const formatEventDates = (startDate, endDate) => {
   if (!startDate && !endDate) return "";
-  if (!endDate) return startDate;
-  if (!startDate) return endDate;
+  if (!endDate) endDate = startDate;
+  if (!startDate) startDate = endDate;
 
   const d1 = new Date(startDate);
   const d2 = new Date(endDate);
@@ -17,6 +35,9 @@ export const formatEventDates = (startDate, endDate) => {
     const year2 = d2.getFullYear();
 
     if (m1 === m2 && year1 === year2) {
+      if (day1 === day2) {
+        return `${m1} ${day1}, ${year1}`;
+      }
       return `${m1} ${day1}-${day2}, ${year1}`;
     } else if (year1 === year2) {
       return `${m1} ${day1} - ${m2} ${day2}, ${year1}`;
@@ -25,175 +46,17 @@ export const formatEventDates = (startDate, endDate) => {
     }
   }
 
-  return `${startDate} - ${endDate}`;
+  return startDate === endDate ? startDate : `${startDate} - ${endDate}`;
 };
 
-export const INITIAL_SUMMITS = [
-  {
-    id: 1,
-    title: "AI SUMMIT WORKSHOP",
-    subtitle: "Generative AI, Prompt Engineering & Agentic LLMs",
-    type: "Flagship Event",
-    college: "G H RAISONI",
-    address: "Shradhhaa park Nagpur",
-    price: 1999,
-    originalPrice: 4999,
-    taxRate: 18,
-    taxMode: "Exclusive",
-    processingFee: 0,
-    processingFeeType: 'Fixed',
-    duration: '1-Day Live Workshop',
-    time: '10:00 AM - 05:00 PM',
-    startDate: '2026-08-30',
-    endDate: '2026-08-30',
-    date: '30-08-2026',
-    seatCapacity: 100,
-    status: "Registration Open",
-    features: ["Providing Certificate"],
-  },
-  {
-    id: 2,
-    title: "Workshop Aegentic ai",
-    subtitle: "Full-Stack AI & RAG Architecture Engineering",
-    type: "Campus Workshop",
-    college: "KDK",
-    address: "Sakardhara",
-    price: 2999,
-    originalPrice: 6999,
-    taxRate: 18,
-    taxMode: "Exclusive",
-    processingFee: 0,
-    processingFeeType: 'Fixed',
-    duration: '2-Day Live Workshop',
-    time: '10:00 AM - 05:00 PM',
-    startDate: '2026-08-20',
-    endDate: '2026-08-20',
-    date: '20-08-2026',
-    seatCapacity: 10,
-    enrolledCount: 5,
-    status: 'Event Completed',
-    features: ['Expert Mentorship']
-  },
-  {
-    id: 3,
-    title: "Data Science",
-    subtitle: "Machine Learning, PyTorch & Deep Learning Models",
-    type: "Flagship Event",
-    college: "D Y PATIL",
-    address: "Akurdi pune",
-    price: 1999,
-    originalPrice: 4999,
-    taxRate: 18,
-    taxMode: "Exclusive",
-    processingFee: 0,
-    processingFeeType: "Fixed",
-    duration: "2-Day Live Workshop",
-    time: "10:00 AM - 05:00 PM",
-    startDate: "2026-08-20",
-    endDate: "2026-08-25",
-    date: "Aug 20-25, 2026",
-    seatCapacity: 150,
-    status: "Registration Open",
-    features: ["Providing Certificate", "123456"],
-  },
-  {
-    id: 4,
-    title: "AI Summit Workshop 2026",
-    subtitle: "Machine Learning, PyTorch & Deep Learning Models",
-    type: "Flagship Event",
-    college: "INDIAN INSTITUTE OF TECHNOLOGY",
-    address: "Victor Menezes Convention Centre",
-    price: 2999,
-    originalPrice: 6999,
-    taxRate: 18,
-    taxMode: "Exclusive",
-    processingFee: 0,
-    processingFeeType: "Fixed",
-    duration: "3-Day Hands-on Summit",
-    time: "09:00 AM - 05:00 PM",
-    startDate: "2026-11-14",
-    endDate: "2026-11-16",
-    date: "Nov 14-16, 2026",
-    seatCapacity: 100,
-    status: "Registration Open",
-    features: ["Hands-on GPU Labs"],
-  },
-  {
-    id: 5,
-    title: "AI Summit Workshop 2026",
-    subtitle: "Full-Stack AI & RAG Architecture Engineering",
-    type: "Flagship Event",
-    college: "DELHI TECHNOLOGICAL UNIVERSITY",
-    address: "Delhi Campus Auditorium",
-    price: 1999,
-    originalPrice: 4999,
-    taxRate: 18,
-    taxMode: "Exclusive",
-    processingFee: 0,
-    processingFeeType: "Fixed",
-    duration: "2-Day National Bootcamp",
-    time: "10:00 AM - 04:00 PM",
-    startDate: "2026-12-12",
-    endDate: "2026-12-13",
-    date: "Dec 12-13, 2026",
-    seatCapacity: 100,
-    status: 'Registration Open',
-    features: ['Full Stack AI']
-  },
-  {
-    id: 101,
-    title: 'AI & Data Science Masterclass',
-    subtitle: 'Machine Learning & Python Analytics Bootcamp',
-    type: 'Campus Workshop',
-    college: 'COEP Technological University',
-    address: 'Pune Campus Auditorium',
-    price: 1999,
-    originalPrice: 4999,
-    taxRate: 18,
-    taxMode: 'Exclusive',
-    processingFee: 0,
-    processingFeeType: 'Fixed',
-    duration: '2-Day Workshop',
-    time: '09:30 AM - 04:30 PM',
-    startDate: '2026-07-10',
-    endDate: '2026-07-11',
-    date: '10-07-2026',
-    seatCapacity: 100,
-    enrolledCount: 78,
-    status: 'Event Completed',
-    features: ['Certificates Issued', 'Hands-on Labs']
-  },
-  {
-    id: 102,
-    title: 'Power BI Enterprise Summit',
-    subtitle: 'DAX Optimization & Corporate Dashboarding',
-    type: 'Flagship Event',
-    college: 'MIT World Peace University',
-    address: 'Kothrud Auditorium, Pune',
-    price: 2499,
-    originalPrice: 5999,
-    taxRate: 18,
-    taxMode: 'Exclusive',
-    processingFee: 0,
-    processingFeeType: 'Fixed',
-    duration: '2-Day Summit',
-    time: '10:00 AM - 05:00 PM',
-    startDate: '2026-06-15',
-    endDate: '2026-06-16',
-    date: '15-06-2026',
-    seatCapacity: 120,
-    enrolledCount: 112,
-    status: 'Event Completed',
-    features: ['Executive Certification', 'Case Studies']
-  }
-];
+export const INITIAL_SUMMITS = [];
 
-const isCollegeMatch = (colA, colB) => {
+export const isCollegeMatch = (colA, colB) => {
   if (!colA || !colB) return false;
   const a = colA.trim().toLowerCase();
   const b = colB.trim().toLowerCase();
 
-  if (a === b || a.includes(b) || b.includes(a)) return true;
+  if (a === b) return true;
 
   const keywordsMap = [
     { keys: ["nit", "national institute of technology"] },
@@ -202,40 +65,29 @@ const isCollegeMatch = (colA, colB) => {
     { keys: ["d y patil", "d.y. patil", "dypatil", "dyp"] },
     { keys: ["raisoni", "ghraisoni", "ghrcem"] },
     { keys: ["kdk"] },
+    { keys: ["priyadarshini", "priyadhrshini", "pce"] },
+    { keys: ["palloti", "pallotti", "st. vincent pallotti", "st vincent pallotti"] },
+    { keys: ["ramdeo", "ramdeobaba", "rknec"] }
   ];
 
   for (const group of keywordsMap) {
     const hasA = group.keys.some((k) => a.includes(k));
     const hasB = group.keys.some((k) => b.includes(k));
-    if (hasA && hasB) return true;
+    if (hasA && hasB) {
+      return true;
+    }
   }
 
-  const wordsA = a
-    .split(/\s+/)
-    .filter(
-      (w) =>
-        w.length >= 4 &&
-        ![
-          "college",
-          "engineering",
-          "institute",
-          "technology",
-          "university",
-        ].includes(w),
-    );
-  const wordsB = b
-    .split(/\s+/)
-    .filter(
-      (w) =>
-        w.length >= 4 &&
-        ![
-          "college",
-          "engineering",
-          "institute",
-          "technology",
-          "university",
-        ].includes(w),
-    );
+  const stopWords = [
+    "college", "engineering", "institute", "technology", "university",
+    "nagpur", "pune", "delhi", "mumbai", "campus", "nagar", "city",
+    "road", "park", "center", "centre", "main", "auditorium", "subhash", "lokmanya", "midc"
+  ];
+
+  const wordsA = a.split(/\s+/).filter((w) => w.length >= 3 && !stopWords.includes(w));
+  const wordsB = b.split(/\s+/).filter((w) => w.length >= 3 && !stopWords.includes(w));
+
+  if (wordsA.length === 0 || wordsB.length === 0) return false;
 
   return wordsA.some((w) => wordsB.includes(w));
 };
@@ -253,33 +105,45 @@ export const getSummits = () => {
     const sumTitle = (s.title || "").trim().toLowerCase();
 
     const matched = paidApps.filter((a) => {
-      // 1. Exclude non-paid applications
       if (a.paymentStatus && a.paymentStatus !== "Paid") return false;
 
-      // 2. Validate college match
-      const collegeMatches = isCollegeMatch(a.collegeName, s.college);
-
-      // 3. If summitId matches AND college matches, count it
+      // 1. summitId match
       if (
         a.summitId &&
         (a.summitId === s.id || Number(a.summitId) === Number(s.id))
       ) {
-        if (!s.college || collegeMatches) {
-          return true;
-        }
+        return true;
       }
 
-      // 4. Otherwise, BOTH program title AND college must match
+      // 2. College match
+      if (isCollegeMatch(a.collegeName, s.college)) {
+        return true;
+      }
+
+      // 3. Program Title match
       const progTitle = (a.programTitle || "").trim().toLowerCase();
-      const titleMatches = Boolean(
+      if (
         progTitle &&
         sumTitle &&
         (progTitle === sumTitle ||
           progTitle.includes(sumTitle) ||
-          sumTitle.includes(progTitle)),
-      );
+          sumTitle.includes(progTitle))
+      ) {
+        return true;
+      }
 
-      return titleMatches && collegeMatches;
+      // 4. Default fallback: Assign unspecified/general applications to Flagship Card 1 (or G H Raisoni)
+      if (Number(s.id) === 1 || (s.college && s.college.toUpperCase().includes("RAISONI"))) {
+        const matchesOtherCollege = [
+          "kdk", "d y patil", "dypatil", "iit", "dtu", "delhi technological"
+        ].some(colKey => (a.collegeName || "").toLowerCase().includes(colKey));
+
+        if (!matchesOtherCollege) {
+          return true;
+        }
+      }
+
+      return false;
     });
 
     return matched.length;
@@ -292,26 +156,57 @@ export const getSummits = () => {
     try {
       const parsed = JSON.parse(stored);
       if (Array.isArray(parsed) && parsed.length > 0) {
-        // Ensure id 1 & 2 dates and statuses are updated correctly
-        const updatedParsed = parsed.map(s => {
-          if (Number(s.id) === 1 && (s.startDate === '2026-08-19' || s.date === '19-08-2026')) {
-            return { ...s, startDate: '2026-08-30', endDate: '2026-08-30', date: '30-08-2026', status: 'Registration Open' };
-          }
-          if (Number(s.id) === 2) {
-            return { ...s, startDate: '2026-08-20', endDate: '2026-08-20', date: '20-08-2026', status: 'Event Completed' };
-          }
-          return s;
-        });
-
-        // Merge missing summits from INITIAL_SUMMITS
-        const existingIds = new Set(updatedParsed.map(p => Number(p.id)));
-        const missing = INITIAL_SUMMITS.filter(init => !existingIds.has(Number(init.id)));
-        listToProcess = [...updatedParsed, ...missing];
+        listToProcess = parsed;
       }
     } catch (e) {
       console.error("Error parsing stored summits:", e);
     }
   }
+
+  if (!Array.isArray(listToProcess) || listToProcess.length === 0) {
+    listToProcess = INITIAL_SUMMITS;
+  }
+
+  // Partition paid applications across summits without double-counting
+  const countsMap = {};
+  listToProcess.forEach((s) => {
+    countsMap[s.id] = 0;
+  });
+
+  const computeCountForSummit = (s) => {
+    const sumTitle = (s.title || "").trim().toLowerCase();
+
+    const matched = paidApps.filter((a) => {
+      if (a.paymentStatus && a.paymentStatus !== "Paid") return false;
+
+      // 1. Exact summitId match
+      if (a.summitId !== null && a.summitId !== undefined && Number(a.summitId) === Number(s.id)) {
+        return true;
+      }
+
+      // 2. Primary College match (when summit specifies a college)
+      if (s.college && isCollegeMatch(a.collegeName, s.college)) {
+        return true;
+      }
+
+      // 3. Fallback for Flagship Card 1 (G H Raisoni)
+      if (Number(s.id) === 1 || (s.college && s.college.toUpperCase().includes("RAISONI"))) {
+        const matchesOtherCollege = [
+          "kdk", "d y patil", "dypatil", "iit", "dtu", "delhi technological", "priyadarshini", "priyadhrshini", "pce", "palloti"
+        ].some(colKey => (a.collegeName || "").toLowerCase().includes(colKey));
+
+        if (!matchesOtherCollege) {
+          return true;
+        }
+      }
+
+      // 4. Fallback exact title match ONLY if summit has no specific college set
+      const progTitle = (a.programTitle || "").trim().toLowerCase();
+      return Boolean(progTitle && sumTitle && progTitle === sumTitle);
+    });
+
+    return matched.length;
+  };
 
   const updated = listToProcess.map((s) => {
     let dur = s.duration;
@@ -319,25 +214,31 @@ export const getSummits = () => {
       const num = parseInt(dur) || 2;
       dur = `${num}-Day Live Workshop`;
     }
+    const computed = computeCountForSummit(s);
+    const finalEnrolledCount = computed;
+
+    const cap = s.seatCapacity !== undefined ? Number(s.seatCapacity) : 100;
+    const isCompleted = s.status === 'Event Completed' || s.status === 'Completed';
+    const isFull = finalEnrolledCount >= cap;
+    const isClosed = s.status === 'Closed' || isFull;
+    const finalStatus = isCompleted
+      ? s.status
+      : (isClosed ? 'Registration Closed' : (s.status === 'Filling Fast' ? 'Filling Fast' : 'Registration Open'));
+
     return {
       ...s,
       duration: dur,
       address: s.address || "",
       time: s.time || "",
-      status: s.status || "Registration Open",
-      seatCapacity: s.seatCapacity !== undefined ? s.seatCapacity : 100,
-      enrolledCount:
-        s.enrolledCount !== undefined &&
-        s.enrolledCount !== null &&
-        s.enrolledCount > 0
-          ? s.enrolledCount
-          : computeCount(s) || s.enrolledCount || 0,
+      status: finalStatus,
+      seatCapacity: cap,
+      enrolledCount: finalEnrolledCount,
       price: s.price !== undefined ? s.price : 1999,
       originalPrice: s.originalPrice || 4999,
       taxRate: s.taxRate !== undefined ? s.taxRate : 18,
       taxMode: s.taxMode || "Exclusive",
-      processingFee: s.processingFee || 0,
-      processingFeeType: s.processingFeeType || "Fixed",
+      processingFee: (s.processingFee !== undefined && s.processingFee !== null) ? Number(s.processingFee) : 0,
+      processingFeeType: s.processingFeeType || 'Percentage',
       startDate: s.startDate || "",
       endDate: s.endDate || "",
       features: s.features || [],
@@ -351,45 +252,34 @@ export const getSummits = () => {
 export const isSummitActive = (summit) => {
   if (!summit) return false;
 
-  // Explicit status check: if marked completed, return false
+  // 1. Explicit status check: if marked completed, return false
   if (summit.status === 'Event Completed' || summit.status === 'Completed') {
     return false;
   }
 
-  // 1. Seats Full Validation
-  const enrolledCount =
-    summit.enrolledCount !== undefined && summit.enrolledCount !== null
-      ? Number(summit.enrolledCount)
-      : Array.isArray(summit.applications)
-        ? summit.applications.filter(
-            (a) => a.paymentStatus === "Paid" || !a.paymentStatus,
-          ).length
-        : 0;
-  const seatCapacity =
-    summit.seatCapacity !== undefined ? Number(summit.seatCapacity) : 100;
-
-  if (seatCapacity > 0 && enrolledCount >= seatCapacity) {
-    return false; // Seats are full -> hide
+  // 2. If status is active (Registration Open, Filling Fast, Registration Closed), return true
+  if (!summit.status || summit.status === 'Registration Open' || summit.status === 'Filling Fast' || summit.status === 'Registration Closed') {
+    return true;
   }
 
-  // 2. Date Completed / Expired Validation
+  // 3. Date Completed / Expired Validation
   const now = new Date();
-  now.setHours(0, 0, 0, 0);
+  now.setHours(0, 0, 0, 0); // Start of today
 
   const parseDateStr = (dStr) => {
     if (!dStr) return null;
     const str = String(dStr).trim();
 
-    // DD-MM-YYYY or DD/MM/YYYY (e.g. 19-08-2026 or 20-08-2026)
-    if (/^\d{1,2}[-\/]\d{1,2}[-\/]\d{4}$/.test(str)) {
-      const parts = str.split(/[-\/]/).map(Number);
-      return new Date(parts[2], parts[1] - 1, parts[0]);
-    }
-
-    // YYYY-MM-DD (e.g. 2026-08-19 or 2026-08-20)
+    // YYYY-MM-DD (e.g. 2026-08-30)
     if (/^\d{4}-\d{2}-\d{2}$/.test(str)) {
       const [y, m, d] = str.split("-").map(Number);
       return new Date(y, m - 1, d);
+    }
+
+    // DD-MM-YYYY or DD/MM/YYYY (e.g. 19-08-2026, 20-08-2026, 30-08-2026)
+    if (/^\d{1,2}[-\/]\d{1,2}[-\/]\d{4}$/.test(str)) {
+      const parts = str.split(/[-\/]/).map(Number);
+      return new Date(parts[2], parts[1] - 1, parts[0]);
     }
 
     // Range e.g. "Aug 20-25, 2026" or "Aug 20 - 25, 2026"
@@ -410,12 +300,12 @@ export const isSummitActive = (summit) => {
     return null;
   };
 
-  const eventDate = parseDateStr(summit.date) || parseDateStr(summit.endDate) || parseDateStr(summit.startDate);
+  const eventDate = parseDateStr(summit.endDate) || parseDateStr(summit.startDate) || parseDateStr(summit.date);
 
   if (eventDate) {
     eventDate.setHours(23, 59, 59, 999);
     if (eventDate < now) {
-      return false; // Event date completed -> hide
+      return false; // Event date is in the past -> move to Past Records / Inactive
     }
   }
 
@@ -434,10 +324,12 @@ export const saveSummits = (summits) => {
 export const fetchSummitsAsync = async () => {
   try {
     const res = await fetch("/api/v1/summits");
-    const data = await res.json();
-    if (data.success && Array.isArray(data.data) && data.data.length > 0) {
-      saveSummits(data.data);
-      return getSummits();
+    if (res.ok) {
+      const data = await res.json();
+      if (data.success && Array.isArray(data.data) && data.data.length > 0) {
+        saveSummits(data.data);
+        return getSummits();
+      }
     }
   } catch (err) {
     console.warn("API fetch summits failed, fallback to local:", err);
@@ -445,19 +337,32 @@ export const fetchSummitsAsync = async () => {
   return getSummits();
 };
 
-export const addSummit = (summit) => {
-  const summits = getSummits();
+export const addSummit = async (summit) => {
   const newSummit = { ...summit, id: Date.now() };
+  const summits = getSummits();
   summits.unshift(newSummit);
   saveSummits(summits);
 
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('summits_updated'));
+  }
+
   // Sync with MySQL Database
   try {
-    fetch("/api/v1/summits", {
+    const res = await fetch("/api/v1/summits", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(newSummit),
-    }).catch((err) => console.log("Summit API sync notice:", err));
+      body: JSON.stringify(summit),
+    });
+    const data = await res.json();
+    if (data.success && data.data) {
+      const current = getSummits();
+      const updated = current.map(s => s.id === newSummit.id ? { ...data.data, enrolledCount: 0 } : s);
+      saveSummits(updated);
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('summits_updated'));
+      }
+    }
   } catch (err) {
     console.error("Summit API error:", err);
   }

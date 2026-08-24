@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Container from '../ui/Container';
-import { 
-  Target, 
-  BarChart3, 
-  Database, 
-  Folder, 
-  Microscope, 
-  Briefcase, 
-  CheckCircle2 
+import {
+  Target,
+  BarChart3,
+  Database,
+  Folder,
+  Microscope,
+  Briefcase,
+  CheckCircle2
 } from 'lucide-react';
 
 export const EcosystemSection = ({ nodes = [] }) => {
@@ -47,7 +47,7 @@ export const EcosystemSection = ({ nodes = [] }) => {
   const rOrbit = isMobile ? 125 : 180;
 
   return (
-    <section className="pt-6 md:pt-10 pb-12 md:pb-20 bg-[#F7FCF9] relative overflow-hidden">
+    <section className="pt-6 md:pt-10 pb-3 md:pb-4 bg-[#F7FCF9] relative overflow-hidden">
       <Container className="relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
 
@@ -127,20 +127,18 @@ export const EcosystemSection = ({ nodes = [] }) => {
                     >
                       {/* White Circular Badge */}
                       <div
-                        className={`w-12 h-12 xs:w-14 xs:h-14 md:w-16 md:h-16 rounded-full bg-white shadow-[0_4px_20px_rgba(0,0,0,0.08)] border transition-all duration-300 flex items-center justify-center ${
-                          isActive
+                        className={`w-12 h-12 xs:w-14 xs:h-14 md:w-16 md:h-16 rounded-full bg-white shadow-[0_4px_20px_rgba(0,0,0,0.08)] border transition-all duration-300 flex items-center justify-center ${isActive
                             ? 'border-emerald-500 scale-110 shadow-emerald-500/20 shadow-lg ring-4 ring-emerald-500/15'
                             : 'border-slate-100 group-hover:border-emerald-300 group-hover:scale-105 group-hover:shadow-md'
-                        }`}
+                          }`}
                       >
                         {getNodeIcon(node.title)}
                       </div>
 
                       {/* Text Label Below Icon */}
                       <span
-                        className={`mt-1 xs:mt-1.5 text-[11px] xs:text-xs md:text-sm font-semibold text-center leading-tight max-w-[80px] xs:max-w-[90px] md:max-w-[110px] transition-colors duration-200 ${
-                          isActive ? 'text-emerald-600 font-bold' : 'text-slate-800 group-hover:text-emerald-600'
-                        }`}
+                        className={`mt-1 xs:mt-1.5 text-[11px] xs:text-xs md:text-sm font-semibold text-center leading-tight max-w-[80px] xs:max-w-[90px] md:max-w-[110px] transition-colors duration-200 ${isActive ? 'text-emerald-600 font-bold' : 'text-slate-800 group-hover:text-emerald-600'
+                          }`}
                       >
                         {node.title}
                       </span>
@@ -151,7 +149,7 @@ export const EcosystemSection = ({ nodes = [] }) => {
             </div>
 
             {/* Active Node Description Card (Below Graphic) */}
-            <div className="h-16 w-full max-w-sm mt-3 flex items-center justify-center">
+            <div className="min-h-[36px] w-full max-w-sm mt-1 flex items-center justify-center">
               <AnimatePresence mode="wait">
                 {activeNode ? (
                   <motion.div

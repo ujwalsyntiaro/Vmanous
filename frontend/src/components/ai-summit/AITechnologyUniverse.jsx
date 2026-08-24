@@ -29,23 +29,23 @@ export const AITechnologyUniverse = () => {
   const ry = windowWidth < 480 ? 180 : windowWidth < 640 ? 195 : windowWidth < 768 ? 215 : 230;
 
   return (
-    <section className="py-8 md:py-16 bg-[#030712] relative overflow-hidden">
+    <section className="pt-2 md:pt-4 pb-10 md:pb-12 bg-[#030712] relative">
       {/* Background Ambient Glow & Subtle Grid Pattern */}
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(59,130,246,0.12)_0,transparent_70%)] pointer-events-none" />
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#1f29370a_1px,transparent_1px),linear-gradient(to_bottom,#1f29370a_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)] pointer-events-none" />
 
       <Container>
         {/* Header */}
-        <div className="text-center max-w-3xl mx-auto mb-6 md:mb-14 relative z-10">
-          <h2 className="text-2xl md:text-4xl font-medium tracking-tight text-white mb-4">
+        <div className="text-center max-w-3xl mx-auto mb-3 md:mb-6 relative z-10">
+          <h2 className="text-xl sm:text-2xl md:text-3xl font-medium tracking-tight text-white mb-2">
             Explore the World of AI
           </h2>
-          <p className="text-base md:text-lg text-slate-400 max-w-2xl mx-auto">
+          <p className="text-sm md:text-base text-slate-400 max-w-2xl mx-auto">
             A complete technology ecosystem spanning from fundamental concepts to cutting-edge research.
           </p>
         </div>
 
-        <div className="relative min-h-[480px] xs:min-h-[500px] sm:min-h-[520px] md:min-h-[540px] flex items-center justify-center max-w-5xl mx-auto py-2 md:py-0 overflow-visible">
+        <div className="relative h-[380px] xs:h-[410px] sm:h-[440px] md:h-[460px] flex items-center justify-center max-w-5xl mx-auto py-2 md:py-0 overflow-visible">
           {/* Glowing Ambient Core */}
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 sm:w-72 sm:h-72 rounded-full bg-blue-600/15 blur-3xl pointer-events-none" />
 
@@ -58,8 +58,7 @@ export const AITechnologyUniverse = () => {
           </div>
 
           {/* Futuristic Orbit Rings */}
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[360px] sm:w-[340px] sm:h-[400px] md:w-[460px] md:h-[460px] rounded-full border border-blue-500/20 shadow-[0_0_30px_rgba(59,130,246,0.05)] pointer-events-none" />
-          <div className="hidden md:block absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[360px] h-[360px] rounded-full border border-dashed border-cyan-400/20 animate-[spin_80s_linear_infinite] pointer-events-none" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] sm:w-[360px] sm:h-[360px] md:w-[460px] md:h-[460px] rounded-full border border-blue-500/20 shadow-[0_0_30px_rgba(59,130,246,0.05)] pointer-events-none" />
 
           {/* Orbit Nodes Aligned in Circle around Central Core */}
           {techNodes.map((node) => {
@@ -68,6 +67,7 @@ export const AITechnologyUniverse = () => {
             const dy = Math.sin(rad) * ry;
 
             const isLeft = node.angle > 90 && node.angle < 270;
+            const isLower = node.angle >= 60 && node.angle <= 240;
             const isActive = activeNode?.name === node.name;
 
             return (
@@ -112,18 +112,19 @@ export const AITechnologyUniverse = () => {
                   <AnimatePresence>
                     {isActive && (
                       <motion.div
-                        initial={{ opacity: 0, scale: 0.9, y: 5 }}
-                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        initial={{ opacity: 0, scale: 0.9, x: isLeft ? 10 : -10 }}
+                        animate={{ opacity: 1, scale: 1, x: 0 }}
                         exit={{ opacity: 0, scale: 0.9 }}
                         transition={{ duration: 0.2 }}
-                        className={`hidden md:block absolute z-50 w-56 sm:w-60 bg-[#0A0F24]/95 border border-cyan-400/40 p-3 sm:p-4 rounded-2xl shadow-[0_10px_35px_rgba(0,0,0,0.8)] backdrop-blur-2xl pointer-events-none ${isLeft
-                            ? 'right-full mr-3 top-1/2 -translate-y-1/2'
-                            : 'left-full ml-3 top-1/2 -translate-y-1/2'
-                          }`}
+                        className={`hidden md:block absolute z-50 w-56 sm:w-60 bg-[#0A0F24]/95 border border-cyan-400/50 p-3.5 rounded-2xl shadow-[0_10px_35px_rgba(0,0,0,0.9)] backdrop-blur-2xl pointer-events-none ${
+                          isLeft ? 'right-full mr-3' : 'left-full ml-3'
+                        } ${
+                          isLower ? 'bottom-0' : 'top-1/2 -translate-y-1/2'
+                        }`}
                       >
-                        <div className="flex items-center gap-2 mb-1.5">
+                        <div className="flex items-center gap-2 mb-1">
                           <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                          <h4 className="text-xs font-medium text-white tracking-wide">
+                          <h4 className="text-xs font-bold text-white tracking-wide">
                             {node.name}
                           </h4>
                         </div>
@@ -138,7 +139,7 @@ export const AITechnologyUniverse = () => {
         </div>
 
         {/* Mobile View Active Node Details Box (Displayed in the empty space below orbit) */}
-        <div className="block md:hidden mt-4 px-4 max-w-md mx-auto min-h-[90px]">
+        <div className="block md:hidden mt-2 px-4 max-w-md mx-auto">
           <AnimatePresence mode="wait">
             {activeNode ? (
               <motion.div

@@ -25,7 +25,7 @@ import {
   ChevronDown,
 } from "lucide-react";
 import StatCard from "../../components/admin/StatCard";
-import { getSummits } from "../../services/summitService";
+import { getSummits, isSummitActive, isCollegeMatch } from "../../services/summitService";
 import {
   getApplications,
   getFinancialMetrics,
@@ -33,7 +33,7 @@ import {
   updateVerificationStatus,
   deleteApplication,
 } from "../../services/applicationService";
-import { getStudents } from "../../services/studentService";
+import { getStudents, getUniqueStudents } from "../../services/studentService";
 
 const DashboardHome = () => {
   const navigate = useNavigate();
@@ -78,43 +78,60 @@ const DashboardHome = () => {
   }, []);
 
   const loadDashboardData = async () => {
+    let currentApps = getApplications();
     try {
       const res = await fetch("/api/v1/applications");
       const json = await res.json();
       if (json.success && Array.isArray(json.data)) {
-        setApplications(json.data);
-      } else {
-        const apps = getApplications();
-        setApplications(apps);
+        currentApps = json.data;
+        saveApplications(json.data);
       }
     } catch (err) {
       console.log("MySQL API fallback notice for applications");
-      const apps = getApplications();
-      setApplications(apps);
     }
+    setApplications(currentApps);
 
-    // Fetch students list
+    let apiStudents = [];
     try {
       const resStu = await fetch("/api/v1/students");
       const jsonStu = await resStu.json();
-      if (
-        jsonStu.success &&
-        Array.isArray(jsonStu.data) &&
-        jsonStu.data.length > 0
-      ) {
-        setStudents(jsonStu.data);
-      } else {
-        setStudents(getStudents());
+      if (jsonStu.success && Array.isArray(jsonStu.data)) {
+        apiStudents = jsonStu.data;
       }
     } catch (err) {
-      setStudents(getStudents());
+      console.log("Students API fetch notice");
     }
 
+    const uniqueList = getUniqueStudents(currentApps, apiStudents);
+    setStudents(uniqueList);
     setSummits(getSummits());
   };
 
   useEffect(() => {
     loadDashboardData();
+    window.addEventListener("summits_updated", loadDashboardData);
+    window.addEventListener("applications_updated", loadDashboardData);
+
+    let bc = null;
+    if (typeof window !== "undefined" && "BroadcastChannel" in window) {
+      bc = new BroadcastChannel("vmanous_live_updates");
+      bc.onmessage = (msg) => {
+        if (msg.data?.type === "SUMMIT_UPDATED") {
+          loadDashboardData();
+        }
+      };
+    }
+
+    const syncInterval = setInterval(() => {
+      loadDashboardData();
+    }, 5000);
+
+    return () => {
+      window.removeEventListener("summits_updated", loadDashboardData);
+      window.removeEventListener("applications_updated", loadDashboardData);
+      if (bc) bc.close();
+      clearInterval(syncInterval);
+    };
   }, []);
 
   // 1. MASTER DATE FILTERING LOGIC (Applies across all revenue cards, stats, and table)
@@ -160,11 +177,67 @@ const DashboardHome = () => {
     return true;
   });
 
-  // Calculate dynamic financial metrics for selected Date Range
-  const revMetrics = getFinancialMetrics(dateFilteredApps);
+  const activeSummits = summits.filter(isSummitActive);
+
+  // Active Paid Applications (42 active enrollments matching active workshops)
+  const activePaidApps = dateFilteredApps.filter((app) => {
+    if (app.paymentStatus && app.paymentStatus !== "Paid") return false;
+    if (activeSummits.length === 0) return true;
+    return activeSummits.some((s) => {
+      const sumTitle = (s.title || "").trim().toLowerCase();
+      const collegeMatches = isCollegeMatch(app.collegeName, s.college);
+
+      if (app.summitId && (app.summitId === s.id || Number(app.summitId) === Number(s.id))) {
+        if (!s.college || collegeMatches) return true;
+      }
+
+      const progTitle = (app.programTitle || "").trim().toLowerCase();
+      const titleMatches = Boolean(
+        progTitle &&
+        sumTitle &&
+        (progTitle === sumTitle ||
+          progTitle.includes(sumTitle) ||
+          sumTitle.includes(progTitle))
+      );
+
+      return titleMatches && collegeMatches;
+    });
+  });
+
+  // Calculate dynamic financial metrics for Active Paid Enrollments
+  const revMetrics = getFinancialMetrics(activePaidApps.length > 0 ? activePaidApps : dateFilteredApps);
 
   // 2. TABLE FILTERING LOGIC (Filters dateFilteredApps further by College, Status, Search)
   const filteredApps = dateFilteredApps.filter((app) => {
+    // Only display applications matching active workshops when activeTab is All or Paid by default
+    if ((activeTab === "All" || activeTab === "Paid") && activeSummits.length > 0) {
+      if (app.paymentStatus && app.paymentStatus !== "Paid") return false;
+      const isMatchingActive = activeSummits.some((s) => {
+        const sumTitle = (s.title || "").trim().toLowerCase();
+        const collegeMatches = isCollegeMatch(app.collegeName, s.college);
+
+        if (
+          app.summitId &&
+          (app.summitId === s.id || Number(app.summitId) === Number(s.id))
+        ) {
+          if (!s.college || collegeMatches) return true;
+        }
+
+        const progTitle = (app.programTitle || "").trim().toLowerCase();
+        const titleMatches = Boolean(
+          progTitle &&
+          sumTitle &&
+          (progTitle === sumTitle ||
+            progTitle.includes(sumTitle) ||
+            sumTitle.includes(progTitle)),
+        );
+
+        return titleMatches && collegeMatches;
+      });
+
+      if (!isMatchingActive) return false;
+    }
+
     // College Filter
     if (selectedCollege !== "All") {
       const target = selectedCollege.toLowerCase();
@@ -462,38 +535,48 @@ const DashboardHome = () => {
       </div>
 
       {/* KPI Cards Grid (Dynamically updated for selected Master Date Range) */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2.5">
-        <StatCard
-          title="Total Students"
-          value={students.length.toString()}
-          icon={Users}
-          onClick={() => navigate('/cpanel/enrollments')}
-        />
-        <StatCard
-          title="Active Programs"
-          value={summits.length.toString()}
-          icon={BookOpen}
-          onClick={() => navigate('/cpanel/ai-summits')}
-        />
-        <StatCard
-          title="Paid Registrations"
-          value={revMetrics.totalPaidCount.toString()}
-          icon={CheckCircle2}
-          onClick={() => navigate('/cpanel/applications')}
-        />
-        <StatCard
-          title="Failed Payments"
-          value={revMetrics.failedCount.toString()}
-          icon={AlertCircle}
-          onClick={() => navigate('/cpanel/applications')}
-        />
-        <StatCard
-          title="Pending Audits"
-          value={revMetrics.pendingAuditCount.toString()}
-          icon={FileText}
-          onClick={() => navigate('/cpanel/applications')}
-        />
-      </div>
+      {(() => {
+        const totalAllEnrolled = summits.reduce(
+          (sum, s) => sum + Number(s.enrolledCount || 0),
+          0
+        );
+        const displayTotalStudents = filteredApps.length > 0 ? filteredApps.length : (totalAllEnrolled > 0 ? totalAllEnrolled : students.length);
+
+        return (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2.5">
+            <StatCard
+              title="Total Students"
+              value={displayTotalStudents.toString()}
+              icon={Users}
+              onClick={() => navigate('/cpanel/enrollments')}
+            />
+            <StatCard
+              title="Active Programs"
+              value={summits.length.toString()}
+              icon={BookOpen}
+              onClick={() => navigate('/cpanel/ai-summits')}
+            />
+            <StatCard
+              title="Paid Registrations"
+              value={revMetrics.totalPaidCount.toString()}
+              icon={CheckCircle2}
+              onClick={() => navigate('/cpanel/applications')}
+            />
+            <StatCard
+              title="Failed Payments"
+              value={revMetrics.failedCount.toString()}
+              icon={AlertCircle}
+              onClick={() => navigate('/cpanel/applications')}
+            />
+            <StatCard
+              title="Pending Audits"
+              value={revMetrics.pendingAuditCount.toString()}
+              icon={FileText}
+              onClick={() => navigate('/cpanel/applications')}
+            />
+          </div>
+        );
+      })()}
 
       {/* 📋 COMPLETE STUDENT APPLICATIONS & LEADS TABLE */}
       <div className="space-y-3 pt-1">
@@ -526,7 +609,7 @@ const DashboardHome = () => {
                 />
                 <span className="block truncate pr-2">
                   {activeTab === "All" &&
-                    `All Statuses (${dateFilteredApps.length})`}
+                    `All Statuses (${filteredApps.length})`}
                   {activeTab === "Paid" && `Paid Registrations (${paidCount})`}
                   {activeTab === "Failed" && `Failed Payments (${failedCount})`}
                   {activeTab === "Pending Audit" &&
@@ -546,14 +629,13 @@ const DashboardHome = () => {
                       setActiveTab("All");
                       setIsStatusOpen(false);
                     }}
-                    className={`w-full px-3 py-2 text-left text-xs font-bold flex items-center gap-2 transition-colors cursor-pointer ${
-                      activeTab === "All"
+                    className={`w-full px-3 py-2 text-left text-xs font-bold flex items-center gap-2 transition-colors cursor-pointer ${activeTab === "All"
                         ? "bg-slate-100 text-slate-900 font-extrabold"
                         : "text-slate-700 hover:bg-slate-50"
-                    }`}
+                      }`}
                   >
                     <Filter size={14} className="text-[#2D73B4]" />
-                    <span>All Statuses ({dateFilteredApps.length})</span>
+                    <span>All Statuses ({filteredApps.length})</span>
                   </button>
 
                   <button
@@ -562,11 +644,10 @@ const DashboardHome = () => {
                       setActiveTab("Paid");
                       setIsStatusOpen(false);
                     }}
-                    className={`w-full px-3 py-2 text-left text-xs font-bold flex items-center gap-2 transition-colors cursor-pointer ${
-                      activeTab === "Paid"
+                    className={`w-full px-3 py-2 text-left text-xs font-bold flex items-center gap-2 transition-colors cursor-pointer ${activeTab === "Paid"
                         ? "bg-emerald-100 text-emerald-900 font-extrabold"
                         : "text-emerald-800 hover:bg-emerald-50"
-                    }`}
+                      }`}
                   >
                     <CheckCircle2 size={14} className="text-emerald-600" />
                     <span>Paid Registrations ({paidCount})</span>
@@ -578,11 +659,10 @@ const DashboardHome = () => {
                       setActiveTab("Failed");
                       setIsStatusOpen(false);
                     }}
-                    className={`w-full px-3 py-2 text-left text-xs font-bold flex items-center gap-2 transition-colors cursor-pointer ${
-                      activeTab === "Failed"
+                    className={`w-full px-3 py-2 text-left text-xs font-bold flex items-center gap-2 transition-colors cursor-pointer ${activeTab === "Failed"
                         ? "bg-rose-100 text-rose-900 font-extrabold"
                         : "text-rose-800 hover:bg-rose-50"
-                    }`}
+                      }`}
                   >
                     <AlertCircle size={14} className="text-rose-600" />
                     <span>Failed Payments ({failedCount})</span>
@@ -594,11 +674,10 @@ const DashboardHome = () => {
                       setActiveTab("Pending Audit");
                       setIsStatusOpen(false);
                     }}
-                    className={`w-full px-3 py-2 text-left text-xs font-bold flex items-center gap-2 transition-colors cursor-pointer ${
-                      activeTab === "Pending Audit"
+                    className={`w-full px-3 py-2 text-left text-xs font-bold flex items-center gap-2 transition-colors cursor-pointer ${activeTab === "Pending Audit"
                         ? "bg-amber-100 text-amber-950 font-extrabold"
                         : "text-amber-900 hover:bg-amber-50"
-                    }`}
+                      }`}
                   >
                     <Clock size={14} className="text-amber-600" />
                     <span>Pending Audit ({pendingAuditCount})</span>
@@ -637,11 +716,10 @@ const DashboardHome = () => {
                       setSelectedCollege("All");
                       setIsCollegeOpen(false);
                     }}
-                    className={`w-full px-3 py-2 text-left text-xs font-bold transition-colors cursor-pointer ${
-                      selectedCollege === "All"
+                    className={`w-full px-3 py-2 text-left text-xs font-bold transition-colors cursor-pointer ${selectedCollege === "All"
                         ? "bg-slate-100 text-slate-900 font-extrabold"
                         : "text-slate-700 hover:bg-slate-50"
-                    }`}
+                      }`}
                   >
                     All Partner Colleges
                   </button>
@@ -653,11 +731,10 @@ const DashboardHome = () => {
                         setSelectedCollege(name);
                         setIsCollegeOpen(false);
                       }}
-                      className={`w-full px-3 py-2 text-left text-xs font-semibold transition-colors cursor-pointer truncate ${
-                        selectedCollege === name
+                      className={`w-full px-3 py-2 text-left text-xs font-semibold transition-colors cursor-pointer truncate ${selectedCollege === name
                           ? "bg-blue-50 text-[#2D73B4] font-bold"
                           : "text-slate-700 hover:bg-slate-50"
-                      }`}
+                        }`}
                     >
                       {name}
                     </button>

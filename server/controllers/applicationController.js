@@ -3,8 +3,12 @@ const prisma = require('../config/prisma');
 // Get all applications with financial metrics summary
 const getApplications = async (req, res) => {
   try {
-    const { range, startDate, endDate } = req.query;
+    const { range, startDate, endDate, collegeName } = req.query;
     let whereClause = {};
+
+    if (collegeName) {
+      whereClause.collegeName = { contains: collegeName };
+    }
 
     if (startDate || endDate) {
       whereClause.createdAt = {};

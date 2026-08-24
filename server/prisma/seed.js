@@ -23,9 +23,9 @@ async function main() {
         processingFeeType: 'Fixed',
         duration: '1-Day Live Workshop',
         time: '10:00 AM - 05:00 PM',
-        startDate: '2026-08-19',
-        endDate: '2026-08-19',
-        date: '19-08-2026',
+        startDate: '2026-08-30',
+        endDate: '2026-08-30',
+        date: '30-08-2026',
         seatCapacity: 100,
         status: 'Registration Open',
         features: ['Providing Certificate']

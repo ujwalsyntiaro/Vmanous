@@ -5,7 +5,7 @@ const isCollegeMatch = (colA, colB) => {
   const a = colA.trim().toLowerCase();
   const b = colB.trim().toLowerCase();
 
-  if (a === b || a.includes(b) || b.includes(a)) return true;
+  if (a === b) return true;
 
   const keywordsMap = [
     { keys: ['nit', 'national institute of technology'] },
@@ -13,24 +13,37 @@ const isCollegeMatch = (colA, colB) => {
     { keys: ['dtu', 'delhi technological university'] },
     { keys: ['d y patil', 'd.y. patil', 'dypatil', 'dyp'] },
     { keys: ['raisoni', 'ghraisoni', 'ghrcem'] },
-    { keys: ['kdk'] }
+    { keys: ['kdk'] },
+    { keys: ['priyadarshini', 'priyadhrshini', 'pce'] },
+    { keys: ['palloti', 'pallotti', 'st. vincent pallotti', 'st vincent pallotti'] },
+    { keys: ['ramdeo', 'ramdeobaba', 'rknec'] }
   ];
 
   for (const group of keywordsMap) {
     const hasA = group.keys.some(k => a.includes(k));
     const hasB = group.keys.some(k => b.includes(k));
-    if (hasA && hasB) return true;
+    if (hasA && hasB) {
+      return true;
+    }
   }
 
-  const wordsA = a.split(/\s+/).filter(w => w.length >= 4 && !['college', 'engineering', 'institute', 'technology', 'university'].includes(w));
-  const wordsB = b.split(/\s+/).filter(w => w.length >= 4 && !['college', 'engineering', 'institute', 'technology', 'university'].includes(w));
+  const stopWords = [
+    'college', 'engineering', 'institute', 'technology', 'university',
+    'nagpur', 'pune', 'delhi', 'mumbai', 'campus', 'nagar', 'city',
+    'road', 'park', 'center', 'centre', 'main', 'auditorium', 'subhash', 'lokmanya', 'midc'
+  ];
+
+  const wordsA = a.split(/\s+/).filter(w => w.length >= 3 && !stopWords.includes(w));
+  const wordsB = b.split(/\s+/).filter(w => w.length >= 3 && !stopWords.includes(w));
+
+  if (wordsA.length === 0 || wordsB.length === 0) return false;
 
   return wordsA.some(w => wordsB.includes(w));
 };
 
 const getSummits = async (req, res) => {
   try {
-    const summits = await prisma.summit.findMany({
+    let summits = await prisma.summit.findMany({
       orderBy: { createdAt: 'desc' },
       include: { applications: true }
     });
@@ -43,29 +56,48 @@ const getSummits = async (req, res) => {
       const sumTitle = (summit.title || '').trim().toLowerCase();
 
       const matched = paidApplications.filter(app => {
-        // 1. Exclude non-paid applications
         if (app.paymentStatus && app.paymentStatus !== 'Paid') return false;
 
-        // 2. Validate college match
-        const collegeMatches = isCollegeMatch(app.collegeName, summit.college);
+        // 1. Explicit summitId match
+        if (app.summitId !== null && app.summitId !== undefined && Number(app.summitId) === Number(summit.id)) {
+          return true;
+        }
 
-        // 3. If summitId matches AND college matches, count it
-        if (app.summitId && (app.summitId === summit.id || Number(app.summitId) === Number(summit.id))) {
-          if (!summit.college || collegeMatches) {
+        // 2. Primary College match (when summit specifies a college)
+        if (summit.college && isCollegeMatch(app.collegeName, summit.college)) {
+          return true;
+        }
+
+        // 3. Fallback for Flagship Card 1 (G H Raisoni)
+        if (Number(summit.id) === 1 || (summit.college && summit.college.toUpperCase().includes('RAISONI'))) {
+          const matchesOtherCollege = [
+            'kdk', 'd y patil', 'dypatil', 'iit', 'dtu', 'delhi technological', 'priyadarshini', 'priyadhrshini', 'pce', 'palloti'
+          ].some(colKey => (app.collegeName || '').toLowerCase().includes(colKey));
+
+          if (!matchesOtherCollege) {
             return true;
           }
         }
 
-        // 4. Otherwise, BOTH program title AND college must match
+        // 4. Fallback exact title match ONLY if summit has no specific college set
         const progTitle = (app.programTitle || '').trim().toLowerCase();
-        const titleMatches = Boolean(progTitle && sumTitle && (progTitle === sumTitle || progTitle.includes(sumTitle) || sumTitle.includes(progTitle)));
-
-        return titleMatches && collegeMatches;
+        return Boolean(progTitle && sumTitle && progTitle === sumTitle);
       });
+
+      const seatCapacity = summit.seatCapacity !== undefined ? Number(summit.seatCapacity) : 100;
+      const isCompleted = summit.status === 'Event Completed' || summit.status === 'Completed';
+      const isFull = matched.length >= seatCapacity;
+      const isClosed = summit.status === 'Closed' || isFull;
+      const dynamicStatus = isCompleted
+        ? summit.status
+        : (isClosed ? 'Registration Closed' : (summit.status === 'Filling Fast' ? 'Filling Fast' : 'Registration Open'));
 
       return {
         ...summit,
-        enrolledCount: matched.length
+        status: dynamicStatus,
+        seatCapacity: seatCapacity,
+        enrolledCount: matched.length,
+        applications: matched
       };
     });
 
@@ -78,15 +110,39 @@ const getSummits = async (req, res) => {
 
 const createSummit = async (req, res) => {
   try {
-    const summitData = req.body;
+    const {
+      id,
+      durationDays,
+      startTime,
+      startAmPm,
+      endTime,
+      endAmPm,
+      applications,
+      enrolledCount,
+      ...validData
+    } = req.body;
+
     const newSummit = await prisma.summit.create({
       data: {
-        ...summitData,
-        price: Number(summitData.price || 1999),
-        originalPrice: Number(summitData.originalPrice || 4999),
-        taxRate: Number(summitData.taxRate || 18),
-        seatCapacity: Number(summitData.seatCapacity || 100),
-        features: Array.isArray(summitData.features) ? summitData.features : []
+        title: validData.title || "New Workshop",
+        subtitle: validData.subtitle || "",
+        type: validData.type || "Flagship Event",
+        college: validData.college || "University",
+        address: validData.address || "",
+        price: validData.price !== undefined && validData.price !== null ? Number(validData.price) : 1999,
+        originalPrice: validData.originalPrice !== undefined && validData.originalPrice !== null ? Number(validData.originalPrice) : 4999,
+        taxRate: validData.taxRate !== undefined && validData.taxRate !== null ? Number(validData.taxRate) : 18,
+        taxMode: validData.taxMode || "Exclusive",
+        processingFee: validData.processingFee !== undefined && validData.processingFee !== null ? Number(validData.processingFee) : 0,
+        processingFeeType: validData.processingFeeType || "Percentage",
+        duration: validData.duration || "1-Day Live Workshop",
+        time: validData.time || "10:00 AM - 05:00 PM",
+        startDate: validData.startDate || "",
+        endDate: validData.endDate || "",
+        date: validData.date || "",
+        seatCapacity: Number(validData.seatCapacity || 100),
+        status: validData.status || "Registration Open",
+        features: Array.isArray(validData.features) ? validData.features : []
       }
     });
     res.status(201).json({ success: true, data: newSummit });
@@ -99,15 +155,40 @@ const createSummit = async (req, res) => {
 const updateSummit = async (req, res) => {
   try {
     const { id } = req.params;
-    const summitData = req.body;
+    const {
+      id: bodyId,
+      durationDays,
+      startTime,
+      startAmPm,
+      endTime,
+      endAmPm,
+      applications,
+      enrolledCount,
+      ...validData
+    } = req.body;
+
     const updated = await prisma.summit.update({
       where: { id: Number(id) },
       data: {
-        ...summitData,
-        price: Number(summitData.price),
-        originalPrice: Number(summitData.originalPrice),
-        taxRate: Number(summitData.taxRate),
-        seatCapacity: Number(summitData.seatCapacity)
+        title: validData.title,
+        subtitle: validData.subtitle,
+        type: validData.type,
+        college: validData.college,
+        address: validData.address,
+        price: Number(validData.price),
+        originalPrice: Number(validData.originalPrice),
+        taxRate: Number(validData.taxRate),
+        taxMode: validData.taxMode,
+        processingFee: Number(validData.processingFee),
+        processingFeeType: validData.processingFeeType,
+        duration: validData.duration,
+        time: validData.time,
+        startDate: validData.startDate,
+        endDate: validData.endDate,
+        date: validData.date,
+        seatCapacity: Number(validData.seatCapacity),
+        status: validData.status,
+        features: Array.isArray(validData.features) ? validData.features : []
       }
     });
     res.json({ success: true, data: updated });
@@ -120,8 +201,13 @@ const updateSummit = async (req, res) => {
 const deleteSummit = async (req, res) => {
   try {
     const { id } = req.params;
-    await prisma.summit.delete({ where: { id: Number(id) } });
-    res.json({ success: true, message: 'Summit deleted' });
+    const summitIdNum = Number(id);
+    await prisma.application.updateMany({
+      where: { summitId: summitIdNum },
+      data: { summitId: null }
+    });
+    await prisma.summit.delete({ where: { id: summitIdNum } });
+    res.json({ success: true });
   } catch (error) {
     console.error('Error deleting summit:', error);
     res.status(500).json({ success: false, error: 'Delete failed' });

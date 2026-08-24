@@ -11,10 +11,12 @@ import {
   CheckCircle2,
   DollarSign,
   Tag,
+  ChevronDown,
   X
 } from 'lucide-react';
-import DateInput from '../../components/ui/DateInput';
-import { getSummits, saveSummits, formatEventDates } from '../../services/summitService';
+import DateInput, { isoToDDMMYYYY, isValidDDMMYYYY } from '../../components/ui/DateInput';
+import { getSummits, fetchSummitsAsync, saveSummits, formatEventDates } from '../../services/summitService';
+import { saveApplications } from '../../services/applicationService';
 import ProgramCard from '../../components/ui/ProgramCard';
 
 const parseTimeStr = (timeStr) => {
@@ -34,7 +36,7 @@ const parseTimeStr = (timeStr) => {
 };
 
 const ManageWorkshops = () => {
-  const [workshops, setWorkshops] = useState([]);
+  const [workshops, setWorkshops] = useState(() => getSummits());
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -60,14 +62,32 @@ const ManageWorkshops = () => {
     taxRate: 18,
     taxMode: 'Exclusive',
     processingFee: 0,
-    processingFeeType: 'Fixed',
+    processingFeeType: 'Percentage',
     features: ''
   });
 
   useEffect(() => {
-    const all = getSummits();
-    // Filter workshop type or default to all workshops
-    setWorkshops(all);
+    const loadWorkshops = async () => {
+      try {
+        const resApps = await fetch("/api/v1/applications");
+        const jsonApps = await resApps.json();
+        if (jsonApps.success && Array.isArray(jsonApps.data) && jsonApps.data.length > 0) {
+          saveApplications(jsonApps.data);
+        }
+      } catch (err) {
+        console.log("Applications fetch error notice");
+      }
+
+      const data = await fetchSummitsAsync();
+      setWorkshops(data);
+    };
+    loadWorkshops();
+    window.addEventListener("applications_updated", loadWorkshops);
+    window.addEventListener("summits_updated", loadWorkshops);
+    return () => {
+      window.removeEventListener("applications_updated", loadWorkshops);
+      window.removeEventListener("summits_updated", loadWorkshops);
+    };
   }, []);
 
   const openAddModal = () => {
@@ -93,7 +113,7 @@ const ManageWorkshops = () => {
       taxRate: 18,
       taxMode: 'Exclusive',
       processingFee: 0,
-      processingFeeType: 'Fixed',
+      processingFeeType: 'Percentage',
       features: ''
     });
     setIsModalOpen(true);
@@ -123,8 +143,8 @@ const ManageWorkshops = () => {
       originalPrice: item.originalPrice || 2999,
       taxRate: item.taxRate !== undefined ? item.taxRate : 18,
       taxMode: item.taxMode || 'Exclusive',
-      processingFee: item.processingFee || 0,
-      processingFeeType: item.processingFeeType || 'Fixed',
+      processingFee: (item.processingFee !== undefined && item.processingFee !== null) ? item.processingFee : 0,
+      processingFeeType: (item.processingFeeType && item.processingFeeType !== 'Fixed') ? item.processingFeeType : 'Percentage',
       features: (item.features || []).join('\n')
     });
     setIsModalOpen(true);
@@ -142,16 +162,35 @@ const ManageWorkshops = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (formData.startDate) {
+      const startDisp = isoToDDMMYYYY(formData.startDate);
+      if (!isValidDDMMYYYY(startDisp)) {
+        alert("Please enter a valid Start Date in DD/MM/YYYY format.");
+        return;
+      }
+    }
+
+    if (formData.endDate) {
+      const endDisp = isoToDDMMYYYY(formData.endDate);
+      if (!isValidDDMMYYYY(endDisp)) {
+        alert("Please enter a valid End Date in DD/MM/YYYY format.");
+        return;
+      }
+    }
+
     const days = parseInt(formData.durationDays) || 1;
     const duration = `${days}-Day Live Workshop`;
     const timeStr = `${formData.startTime || '10:00'} ${formData.startAmPm || 'AM'} - ${formData.endTime || '05:00'} ${formData.endAmPm || 'PM'}`;
 
+    const finalEndDate = formData.endDate || formData.startDate;
     const formattedDate = (formData.startDate || formData.endDate)
-      ? formatEventDates(formData.startDate, formData.endDate)
+      ? formatEventDates(formData.startDate, finalEndDate)
       : formData.date;
 
+    const featStr = typeof formData.features === 'string' ? formData.features : '';
     const workshopData = {
       ...formData,
       duration: duration,
@@ -162,25 +201,23 @@ const ManageWorkshops = () => {
       originalPrice: Number(formData.originalPrice),
       taxRate: Number(formData.taxRate),
       processingFee: Number(formData.processingFee),
-      processingFeeType: formData.processingFeeType || 'Fixed',
-      features: formData.features.split('\n').filter(f => f.trim() !== '')
+      processingFeeType: formData.processingFeeType || 'Percentage',
+      features: featStr.split('\n').filter(f => f.trim() !== '')
     };
 
-    let updated;
     if (editingId) {
-      updated = workshops.map(w => w.id === editingId ? { ...w, ...workshopData } : w);
+      await updateSummit(editingId, workshopData);
     } else {
-      const newItem = { id: Date.now(), ...workshopData };
-      updated = [newItem, ...workshops];
+      await addSummit(workshopData);
     }
-    setWorkshops(updated);
-    saveSummits(updated);
+
+    setWorkshops(getSummits());
     setIsModalOpen(false);
   };
 
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
-      
+
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
@@ -194,7 +231,7 @@ const ManageWorkshops = () => {
           className="px-4 py-2.5 bg-[#2D73B4] text-white rounded-xl text-sm font-semibold hover:bg-[#235b8f] transition-all flex items-center gap-2 shadow-md shadow-[#2D73B4]/20 cursor-pointer"
         >
           <Plus size={18} />
-          Create New Workshop
+          Create New
         </button>
       </div>
 
@@ -204,6 +241,7 @@ const ManageWorkshops = () => {
           <div key={item.id} className="w-full md:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)]">
             <ProgramCard
               summit={item}
+              isAdmin={true}
               onEdit={() => openEditModal(item)}
               onDelete={() => handleDelete(item.id)}
             />
@@ -217,7 +255,7 @@ const ManageWorkshops = () => {
           <div className="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl space-y-5 my-8 animate-in zoom-in-95 duration-200">
             <div className="flex items-center justify-between border-b border-gray-100 pb-3">
               <h3 className="font-bold text-slate-900 text-lg">
-                {editingId ? 'Edit Workshop' : 'Create New Workshop'}
+                {editingId ? 'Edit Program' : 'Create New'}
               </h3>
               <button onClick={() => setIsModalOpen(false)} className="p-1 text-slate-400 hover:text-slate-800">
                 <X size={20} />
@@ -276,19 +314,39 @@ const ManageWorkshops = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1 h-5 flex items-center">Duration</label>
-                  <div className="flex items-center w-full h-10 border border-gray-200 rounded-lg bg-white overflow-hidden focus-within:ring-2 focus-within:ring-[#2D73B4]/20 focus-within:border-[#2D73B4] transition-all">
-                    <input
-                      type="number"
-                      min="1"
-                      name="durationDays"
-                      value={formData.durationDays}
-                      onChange={handleInputChange}
-                      className="w-16 h-full px-3 text-center text-sm font-bold outline-none bg-transparent text-slate-800"
-                      placeholder="1"
-                    />
-                    <div className="h-full border-l border-gray-200 flex items-center flex-1 px-3 bg-slate-50 text-xs font-semibold text-slate-700 select-none">
-                      -Day Live Workshop
+                  <label className="block text-xs font-semibold text-slate-700 mb-1 h-5 flex items-center">Total Hours & Duration</label>
+                  <div className="flex items-center gap-2">
+                    {/* Manual Total Hours Input (Left Side) */}
+                    <div className="flex items-center w-1/2 h-10 border border-gray-200 rounded-lg bg-white overflow-hidden focus-within:ring-2 focus-within:ring-[#2D73B4]/20 focus-within:border-[#2D73B4] transition-all">
+                      <input
+                        type="number"
+                        min="1"
+                        max="500"
+                        name="totalHours"
+                        value={formData.totalHours || ''}
+                        onChange={handleInputChange}
+                        className="w-12 h-full px-2 text-center text-sm font-bold outline-none bg-transparent text-slate-800"
+                        placeholder="10"
+                      />
+                      <div className="h-full border-l border-gray-200 flex items-center flex-1 px-2 bg-slate-50 text-xs font-semibold text-slate-700 select-none">
+                        Hrs
+                      </div>
+                    </div>
+
+                    {/* Duration Days Input (Right Side) */}
+                    <div className="flex items-center w-1/2 h-10 border border-gray-200 rounded-lg bg-white overflow-hidden focus-within:ring-2 focus-within:ring-[#2D73B4]/20 focus-within:border-[#2D73B4] transition-all">
+                      <input
+                        type="number"
+                        min="1"
+                        name="durationDays"
+                        value={formData.durationDays}
+                        onChange={handleInputChange}
+                        className="w-10 h-full px-2 text-center text-sm font-bold outline-none bg-transparent text-slate-800"
+                        placeholder="1"
+                      />
+                      <div className="h-full border-l border-gray-200 flex items-center flex-1 px-2 bg-slate-50 text-xs font-semibold text-slate-700 select-none">
+                        -Day Workshop
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -305,16 +363,17 @@ const ManageWorkshops = () => {
                         className="w-full h-full px-3 text-xs font-semibold outline-none bg-transparent text-slate-800 min-w-0"
                         placeholder="10:00"
                       />
-                      <div className="h-full border-l border-gray-200 flex items-center bg-slate-50 hover:bg-slate-100 transition-colors">
+                      <div className="relative h-full border-l border-gray-200 flex items-center bg-slate-50 hover:bg-slate-100 transition-colors">
                         <select
                           name="startAmPm"
                           value={formData.startAmPm}
                           onChange={handleInputChange}
-                          className="h-full px-2 text-xs bg-transparent font-bold outline-none text-slate-700 cursor-pointer"
+                          className="h-full pl-2.5 pr-6 text-xs bg-transparent font-bold outline-none text-slate-700 cursor-pointer appearance-none"
                         >
                           <option value="AM">AM</option>
                           <option value="PM">PM</option>
                         </select>
+                        <ChevronDown className="w-3 h-3 text-slate-500 absolute right-1.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                       </div>
                     </div>
 
@@ -329,16 +388,17 @@ const ManageWorkshops = () => {
                         className="w-full h-full px-3 text-xs font-semibold outline-none bg-transparent text-slate-800 min-w-0"
                         placeholder="05:00"
                       />
-                      <div className="h-full border-l border-gray-200 flex items-center bg-slate-50 hover:bg-slate-100 transition-colors">
+                      <div className="relative h-full border-l border-gray-200 flex items-center bg-slate-50 hover:bg-slate-100 transition-colors">
                         <select
                           name="endAmPm"
                           value={formData.endAmPm}
                           onChange={handleInputChange}
-                          className="h-full px-2 text-xs bg-transparent font-bold outline-none text-slate-700 cursor-pointer"
+                          className="h-full pl-2.5 pr-6 text-xs bg-transparent font-bold outline-none text-slate-700 cursor-pointer appearance-none"
                         >
                           <option value="AM">AM</option>
                           <option value="PM">PM</option>
                         </select>
+                        <ChevronDown className="w-3 h-3 text-slate-500 absolute right-1.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                       </div>
                     </div>
                   </div>
@@ -357,9 +417,8 @@ const ManageWorkshops = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">End Date</label>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">End Date (Optional)</label>
                   <DateInput
-                    required
                     name="endDate"
                     value={formData.endDate}
                     onChange={handleInputChange}
@@ -384,16 +443,19 @@ const ManageWorkshops = () => {
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 mb-1">Status</label>
-                  <select
-                    name="status"
-                    value={formData.status}
-                    onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg outline-none font-semibold"
-                  >
-                    <option value="Registration Open">Registration Open</option>
-                    <option value="Filling Fast">Filling Fast</option>
-                    <option value="Closed">Closed</option>
-                  </select>
+                  <div className="relative">
+                    <select
+                      name="status"
+                      value={formData.status}
+                      onChange={handleInputChange}
+                      className="w-full pl-3 pr-8 py-2 border border-gray-200 rounded-lg outline-none font-semibold text-slate-800 bg-white appearance-none cursor-pointer"
+                    >
+                      <option value="Registration Open">Registration Open</option>
+                      <option value="Filling Fast">Filling Fast</option>
+                      <option value="Closed">Closed</option>
+                    </select>
+                    <ChevronDown className="w-4 h-4 text-slate-500 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  </div>
                 </div>
               </div>
 
@@ -426,7 +488,7 @@ const ManageWorkshops = () => {
                   </div>
                   <div>
                     <div className="flex items-center justify-between mb-1 h-5">
-                      <label className="text-xs font-semibold text-slate-700 whitespace-nowrap">Platform Fee</label>
+                      <label className="text-xs font-semibold text-slate-700 whitespace-nowrap">Gateway</label>
                       {formData.processingFeeType === 'Percentage' && (
                         <span className="text-[10px] text-emerald-600 font-bold truncate ml-1">
                           = ₹{Math.round((Number(formData.price || 0) * Number(formData.processingFee || 0)) / 100)}
@@ -442,16 +504,17 @@ const ManageWorkshops = () => {
                         className="w-full h-full px-3 text-sm font-semibold outline-none bg-transparent text-slate-800 placeholder-gray-400 min-w-0"
                         placeholder="0"
                       />
-                      <div className="h-full border-l border-gray-200 flex items-center bg-slate-50 hover:bg-slate-100 transition-colors">
+                      <div className="relative h-full border-l border-gray-200 flex items-center bg-slate-50 hover:bg-slate-100 transition-colors">
                         <select
                           name="processingFeeType"
-                          value={formData.processingFeeType || 'Fixed'}
+                          value={formData.processingFeeType || 'Percentage'}
                           onChange={handleInputChange}
-                          className="h-full px-2.5 text-xs bg-transparent font-bold outline-none text-slate-700 cursor-pointer"
+                          className="h-full pl-2.5 pr-6 text-xs bg-transparent font-bold outline-none text-slate-700 cursor-pointer appearance-none"
                         >
                           <option value="Fixed">₹</option>
                           <option value="Percentage">%</option>
                         </select>
+                        <ChevronDown className="w-3 h-3 text-slate-500 absolute right-1.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                       </div>
                     </div>
                   </div>

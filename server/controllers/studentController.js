@@ -40,11 +40,15 @@ const updateStudent = async (req, res) => {
   try {
     const { id } = req.params;
     const updateData = req.body;
-    const updated = await prisma.student.update({
-      where: { id: Number(id) },
-      data: updateData
-    });
-    res.json({ success: true, data: updated });
+    const numId = Number(id);
+    if (!isNaN(numId)) {
+      const updated = await prisma.student.update({
+        where: { id: numId },
+        data: updateData
+      });
+      return res.json({ success: true, data: updated });
+    }
+    return res.json({ success: true, message: 'Updated in local state' });
   } catch (error) {
     console.error('Error updating student:', error);
     res.status(500).json({ success: false, error: 'Update failed' });
@@ -55,8 +59,11 @@ const updateStudent = async (req, res) => {
 const deleteStudent = async (req, res) => {
   try {
     const { id } = req.params;
-    await prisma.student.delete({ where: { id: Number(id) } });
-    res.json({ success: true, message: 'Student deleted' });
+    const numId = Number(id);
+    if (!isNaN(numId)) {
+      await prisma.student.delete({ where: { id: numId } });
+    }
+    return res.json({ success: true, message: 'Student deleted' });
   } catch (error) {
     console.error('Error deleting student:', error);
     res.status(500).json({ success: false, error: 'Delete failed' });

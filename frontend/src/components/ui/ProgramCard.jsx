@@ -1,9 +1,9 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Building2, Calendar, CheckCircle2, ArrowRight, Edit2, Trash2, MapPin, Clock } from 'lucide-react';
+import { Building2, Calendar, CheckCircle2, ArrowRight, Edit2, Trash2, MapPin, Clock, Users } from 'lucide-react';
 import { isSummitActive } from '../../services/summitService';
 
-const ProgramCard = ({ summit, index = 0, isAdmin = false, isHistory = false, onRegister, onEdit, onDelete }) => {
+const ProgramCard = ({ summit, index = 0, isAdmin = false, isHistory = false, onRegister, onEdit, onDelete, onViewStudents }) => {
   if (!isAdmin && !isSummitActive(summit)) {
     return null;
   }
@@ -13,8 +13,13 @@ const ProgramCard = ({ summit, index = 0, isAdmin = false, isHistory = false, on
     : (Array.isArray(summit.applications)
       ? summit.applications.filter(a => a.paymentStatus === 'Paid' || !a.paymentStatus).length
       : 0);
-  const seatCapacity = summit.seatCapacity || 100;
-  const isCompleted = summit.status === 'Event Completed' || summit.status === 'Completed' || !isSummitActive(summit);
+  const seatCapacity = summit.seatCapacity !== undefined ? Number(summit.seatCapacity) : 100;
+  const isCompleted = summit.status === 'Event Completed' || summit.status === 'Completed';
+  const isFull = enrolledCount >= seatCapacity;
+  const isClosed = summit.status === 'Closed' || isFull;
+  const displayStatus = isCompleted
+    ? summit.status
+    : (isClosed ? 'Registration Closed' : (summit.status === 'Filling Fast' ? 'Filling Fast' : 'Registration Open'));
 
   return (
     <motion.div
@@ -34,13 +39,17 @@ const ProgramCard = ({ summit, index = 0, isAdmin = false, isHistory = false, on
             {summit.type || 'Flagship Event'}
           </span>
           <div className="flex flex-col items-end gap-1">
-            {summit.status && (
+            {(summit.status || isFull) && (
               <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wider uppercase ${
                 isCompleted
                   ? 'bg-amber-100 text-amber-800 border border-amber-300'
-                  : 'bg-blue-50 text-blue-700 border border-blue-200/60'
+                  : isClosed
+                    ? 'bg-red-50 text-red-700 border border-red-200'
+                    : summit.status === 'Filling Fast'
+                      ? 'bg-amber-50 text-amber-700 border border-amber-200'
+                      : 'bg-blue-50 text-blue-700 border border-blue-200/60'
               }`}>
-                {summit.status}
+                {displayStatus}
               </span>
             )}
             {summit.seatCapacity ? (
@@ -118,7 +127,7 @@ const ProgramCard = ({ summit, index = 0, isAdmin = false, isHistory = false, on
       {/* Card Footer: Admin Actions vs Student CTA */}
       <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between gap-3 relative z-10">
         {isAdmin ? (
-          <div className="flex items-center justify-end gap-3 w-full">
+          <div className="flex items-center justify-end gap-2 sm:gap-3 w-full">
             {onEdit && !isHistory && (
               <button
                 onClick={() => onEdit(summit)}
@@ -128,16 +137,26 @@ const ProgramCard = ({ summit, index = 0, isAdmin = false, isHistory = false, on
                 Edit
               </button>
             )}
+            {isHistory && onViewStudents && (
+              <button
+                onClick={() => onViewStudents(summit)}
+                className="flex-1 px-3 py-2 bg-emerald-50 border border-emerald-200 text-emerald-700 font-semibold rounded-md hover:bg-emerald-100 transition-colors flex items-center justify-center gap-1.5 text-xs cursor-pointer"
+                title="View Enrolled Student Registration List"
+              >
+                <Users size={15} />
+                <span>Enrolled Student List ({enrolledCount})</span>
+              </button>
+            )}
             {onDelete && (
               <button
                 onClick={() => onDelete(summit.id)}
                 className={`py-2 bg-red-50 border border-red-200 text-red-600 font-semibold rounded-md hover:bg-red-100 transition-colors flex items-center justify-center gap-2 text-xs cursor-pointer ${
-                  isHistory || !onEdit ? 'w-full px-4' : 'px-3.5'
+                  !isHistory && !onEdit ? 'w-full px-4' : 'px-3'
                 }`}
                 title="Delete Record"
               >
                 <Trash2 size={15} />
-                {isHistory ? 'Delete History Record' : ''}
+                {!isHistory ? '' : ''}
               </button>
             )}
           </div>
@@ -145,20 +164,29 @@ const ProgramCard = ({ summit, index = 0, isAdmin = false, isHistory = false, on
           <>
             {/* Left side: Only Seats Left */}
             <div className="flex items-center gap-1.5 min-w-0">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0 animate-pulse" />
+              <span className={`w-2 h-2 rounded-full shrink-0 ${isClosed ? 'bg-red-500' : 'bg-emerald-500 animate-pulse'}`} />
               <span className="text-xs sm:text-sm font-bold text-slate-700 truncate">
                 {Math.max(0, seatCapacity - enrolledCount)} seats left
               </span>
             </div>
 
-            {/* Right side: Border-only Register Now Button (Charcoal in normal, Green on hover) */}
-            <button
-              onClick={() => onRegister && onRegister(summit)}
-              className="px-3.5 sm:px-4 py-1 sm:py-1.5 rounded-lg bg-transparent border-2 border-slate-800 text-slate-800 font-bold text-xs tracking-wide hover:border-emerald-600 hover:text-emerald-600 transition-all duration-200 flex items-center justify-center gap-1.5 group/btn cursor-pointer shrink-0"
-            >
-              <span className="font-bold whitespace-nowrap">Register Now</span>
-              <ArrowRight size={15} className="transform group-hover/btn:translate-x-1 transition-transform" />
-            </button>
+            {/* Right side: Register Now Button vs Closed Button */}
+            {isClosed ? (
+              <button
+                disabled
+                className="px-3.5 sm:px-4 py-1.5 rounded-lg bg-slate-100 border border-slate-300 text-slate-400 font-bold text-xs tracking-wide cursor-not-allowed opacity-80 flex items-center justify-center gap-1.5 shrink-0 select-none"
+              >
+                <span className="font-bold whitespace-nowrap">Registration Closed</span>
+              </button>
+            ) : (
+              <button
+                onClick={() => onRegister && onRegister(summit)}
+                className="px-3.5 sm:px-4 py-1 sm:py-1.5 rounded-lg bg-transparent border border-slate-800 text-slate-800 font-bold text-xs tracking-wide hover:border-emerald-600 hover:text-emerald-600 transition-all duration-200 flex items-center justify-center gap-1.5 group/btn cursor-pointer shrink-0"
+              >
+                <span className="font-bold whitespace-nowrap">Register Now</span>
+                <ArrowRight size={15} className="transform group-hover/btn:translate-x-1 transition-transform" />
+              </button>
+            )}
           </>
         )}
       </div>

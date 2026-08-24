@@ -71,7 +71,7 @@ export const HomeHero = () => {
 
   return (
     <section
-      className="relative h-[220px] sm:h-[300px] md:min-h-[85vh] flex items-end pt-12 pb-6 md:pt-24 md:pb-20 overflow-hidden bg-[#050816]"
+      className="relative h-[320px] sm:h-[420px] md:min-h-[90vh] flex items-end pt-12 pb-8 md:pt-24 md:pb-24 overflow-hidden bg-[#050816]"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
@@ -93,7 +93,7 @@ export const HomeHero = () => {
         <div className="absolute inset-0 bg-gradient-to-t from-[#050816]/70 to-transparent" />
       </div>
 
-      <div className="relative z-10 w-full mb-1 sm:mb-4 px-4 sm:px-6 md:px-10 lg:px-16">
+      <div className="relative z-10 w-full mb-3 sm:mb-6 px-4 sm:px-6 md:px-10 lg:px-16">
         <div className="max-w-4xl text-left">
           <AnimatePresence mode="wait">
             <motion.div

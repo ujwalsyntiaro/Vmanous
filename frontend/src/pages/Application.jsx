@@ -309,6 +309,26 @@ export const Application = () => {
     const { name, value } = e.target;
     let val = value;
 
+    // First Name, Middle Name, Last Name - allow characters and spaces only, strip numbers
+    if (name === 'firstName' || name === 'middleName' || name === 'lastName') {
+      if (/[0-9]/.test(value)) {
+        setErrors(prev => ({ ...prev, [name]: 'Only characters allowed, numbers not permitted' }));
+      } else {
+        setErrors(prev => ({ ...prev, [name]: null }));
+      }
+      val = value.replace(/[0-9]/g, '');
+    }
+
+    // Email Address - strict lowercase validation, no capital letters
+    if (name === 'email') {
+      if (/[A-Z]/.test(value)) {
+        setErrors(prev => ({ ...prev, email: 'Capital letters are not allowed in email' }));
+      } else {
+        setErrors(prev => ({ ...prev, email: null }));
+      }
+      val = value.toLowerCase();
+    }
+
     // Phone / Alternate Phone - allow digits only and max 10 characters
     if (name === 'phone' || name === 'alternatePhone') {
       val = value.replace(/\D/g, '').slice(0, 10);
@@ -325,54 +345,45 @@ export const Application = () => {
       // Real-time validation for Alternate Phone
       if (name === 'alternatePhone') {
         if (val.length > 0 && val.length < 10) {
-          setErrors(prev => ({ ...prev, alternatePhone: 'Alternate phone number must be 10 digits' }));
+          setErrors(prev => ({ ...prev, alternatePhone: 'Alternate number must be 10 digits' }));
         } else {
           setErrors(prev => ({ ...prev, alternatePhone: null }));
         }
       }
     }
 
-    setFormData(prev => ({ ...prev, [name]: val }));
-
-    // Real-time validation for 10th and 12th percentage
+    // Real-time validation for 10th and 12th percentage (cap max 100)
     if (name === 'tenthPercentage' || name === 'twelfthPercentage') {
       const numVal = parseFloat(value);
-      if (value !== '' && (isNaN(numVal) || numVal < 0 || numVal > 100)) {
-        setErrors(prev => ({
-          ...prev,
-          [name]: 'Percentage must be between 0% and 100%'
-        }));
+      if (value !== '' && !isNaN(numVal) && numVal > 100) {
+        val = '100';
+        setErrors(prev => ({ ...prev, [name]: 'Percentage cannot exceed 100%' }));
+      } else if (value !== '' && (isNaN(numVal) || numVal < 0)) {
+        setErrors(prev => ({ ...prev, [name]: 'Percentage must be between 0% and 100%' }));
       } else {
-        setErrors(prev => ({
-          ...prev,
-          [name]: null
-        }));
+        setErrors(prev => ({ ...prev, [name]: null }));
       }
     }
 
-    // Real-time validation for Diploma percentage (allows N/A or numeric percentage)
+    // Real-time validation for Diploma percentage (allows N/A or numeric percentage, cap max 100)
     if (name === 'diplomaPercentage') {
       const trimmedUpper = value.trim().toUpperCase();
       if (value !== '' && trimmedUpper !== 'N/A' && trimmedUpper !== 'NA') {
         const numVal = parseFloat(value);
-        if (isNaN(numVal) || numVal < 0 || numVal > 100) {
-          setErrors(prev => ({
-            ...prev,
-            diplomaPercentage: 'Enter percentage (0-100) or N/A'
-          }));
+        if (!isNaN(numVal) && numVal > 100) {
+          val = '100';
+          setErrors(prev => ({ ...prev, diplomaPercentage: 'Percentage cannot exceed 100%' }));
+        } else if (isNaN(numVal) || numVal < 0) {
+          setErrors(prev => ({ ...prev, diplomaPercentage: 'Enter percentage (0-100) or N/A' }));
         } else {
-          setErrors(prev => ({
-            ...prev,
-            diplomaPercentage: null
-          }));
+          setErrors(prev => ({ ...prev, diplomaPercentage: null }));
         }
       } else {
-        setErrors(prev => ({
-          ...prev,
-          diplomaPercentage: null
-        }));
+        setErrors(prev => ({ ...prev, diplomaPercentage: null }));
       }
     }
+
+    setFormData(prev => ({ ...prev, [name]: val }));
 
     if (name === 'semester') {
       if (errors.semester) setErrors(prev => ({ ...prev, semester: null }));
@@ -390,6 +401,26 @@ export const Application = () => {
 
     const newErrors = {};
 
+    // Validate First Name (No numbers)
+    if (/[0-9]/.test(formData.firstName)) {
+      newErrors.firstName = 'Only characters allowed in First Name';
+    }
+
+    // Validate Middle Name (No numbers)
+    if (/[0-9]/.test(formData.middleName)) {
+      newErrors.middleName = 'Only characters allowed in Middle Name';
+    }
+
+    // Validate Last Name (No numbers)
+    if (/[0-9]/.test(formData.lastName)) {
+      newErrors.lastName = 'Only characters allowed in Last Name';
+    }
+
+    // Validate Email Address (No capital letters)
+    if (/[A-Z]/.test(formData.email)) {
+      newErrors.email = 'Capital letters are not allowed in email';
+    }
+
     // Validate Phone Number (10 digits)
     if (!formData.phone || formData.phone.trim().length !== 10) {
       newErrors.phone = 'Please enter a valid 10-digit phone number';
@@ -397,7 +428,7 @@ export const Application = () => {
 
     // Validate Alternate Phone (if provided, must be 10 digits)
     if (formData.alternatePhone && formData.alternatePhone.trim().length > 0 && formData.alternatePhone.trim().length !== 10) {
-      newErrors.alternatePhone = 'Alternate phone number must be 10 digits';
+      newErrors.alternatePhone = 'Alternate number must be 10 digits';
     }
 
     // Validate Blood Group
@@ -546,22 +577,22 @@ export const Application = () => {
             className="bg-white shadow-xl rounded-md overflow-hidden"
           >
             {/* Form Header */}
-            <div className="bg-white text-slate-800 p-5 md:px-8 md:pt-6 md:pb-3 border-b border-gray-100 relative overflow-hidden">
+            <div className="bg-white text-slate-800 p-4 md:px-8 md:pt-4 md:pb-2.5 border-b border-gray-100 relative overflow-hidden">
               <div className="relative z-10">
                 <h2 className="text-lg md:text-xl font-semibold tracking-tight mb-1">
                   Application Form
                 </h2>
                 <p className="text-slate-500 flex items-center gap-2 flex-wrap text-xs md:text-sm">
                   Applying for:
-                  <span className="inline-flex items-center px-3 py-0.5 rounded-full bg-emerald-50 border border-emerald-100 text-emerald-600 font-bold text-xs uppercase tracking-wider">
-                    {formData.programInterest} &bull; {activeCollege} {summitDetails?.date ? ` • ${summitDetails.date}` : ''}
+                  <span className="inline-flex items-center px-3 py-0.5 rounded-full bg-emerald-50 border border-emerald-100 text-emerald-700 font-bold text-xs tracking-wide">
+                    {String(formData.programInterest || '').toLowerCase().replace(/\b[a-z]/g, c => c.toUpperCase()).replace(/\bAi\b/g, 'AI')} &bull; {String(activeCollege || '').toLowerCase().replace(/\b[a-z]/g, c => c.toUpperCase()).replace(/\b(Iit|Nit|Dtu|Vmv|Vnr|Vjiet)\b/g, m => m.toUpperCase()).replace(/&technology/gi, '& Technology')} {summitDetails?.date ? ` • ${summitDetails.date}` : ''}
                   </span>
                 </p>
               </div>
             </div>
 
             {/* Form Body */}
-            <div className="p-5 md:p-8">
+            <div className="p-4 sm:p-5 md:pt-4 md:px-8 md:pb-3.5">
               {isSubmitted ? (
                 <motion.div
                   initial={{ opacity: 0, scale: 0.95 }}
@@ -603,11 +634,19 @@ export const Application = () => {
                             type="text"
                             name="firstName"
                             required
-                            placeholder="Enter first name"
+                            placeholder="First name"
                             value={formData.firstName}
                             onChange={handleChange}
-                            className="w-full px-4 py-2.5 rounded-lg bg-white border border-slate-400 text-slate-800 text-sm font-medium focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/15 outline-none transition-all duration-200 placeholder:text-slate-400"
+                            className={`w-full px-4 py-1.5 rounded-lg bg-white border text-slate-800 text-sm font-medium focus:ring-2 outline-none transition-all duration-200 placeholder:text-slate-400 ${errors.firstName
+                              ? 'border-red-500 focus:border-red-500 focus:ring-red-500/15'
+                              : 'border-slate-400 focus:border-emerald-600 focus:ring-emerald-600/15'
+                              }`}
                           />
+                          {errors.firstName && (
+                            <p className="mt-1 text-[11px] text-red-500 font-semibold flex items-center gap-1">
+                              <span>•</span> {errors.firstName}
+                            </p>
+                          )}
                         </div>
 
                         {/* Middle Name */}
@@ -618,11 +657,19 @@ export const Application = () => {
                           <input
                             type="text"
                             name="middleName"
-                            placeholder="Enter middle name"
+                            placeholder="Middle name"
                             value={formData.middleName}
                             onChange={handleChange}
-                            className="w-full px-4 py-2.5 rounded-lg bg-white border border-slate-400 text-slate-800 text-sm font-medium focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/15 outline-none transition-all duration-200 placeholder:text-slate-400"
+                            className={`w-full px-4 py-1.5 rounded-lg bg-white border text-slate-800 text-sm font-medium focus:ring-2 outline-none transition-all duration-200 placeholder:text-slate-400 ${errors.middleName
+                              ? 'border-red-500 focus:border-red-500 focus:ring-red-500/15'
+                              : 'border-slate-400 focus:border-emerald-600 focus:ring-emerald-600/15'
+                              }`}
                           />
+                          {errors.middleName && (
+                            <p className="mt-1 text-[11px] text-red-500 font-semibold flex items-center gap-1">
+                              <span>•</span> {errors.middleName}
+                            </p>
+                          )}
                         </div>
                       </div>
 
@@ -637,17 +684,25 @@ export const Application = () => {
                             type="text"
                             name="lastName"
                             required
-                            placeholder="Enter last name"
+                            placeholder="Last name"
                             value={formData.lastName}
                             onChange={handleChange}
-                            className="w-full px-4 py-2.5 rounded-lg bg-white border border-slate-400 text-slate-800 text-sm font-medium focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/15 outline-none transition-all duration-200 placeholder:text-slate-400"
+                            className={`w-full px-4 py-1.5 rounded-lg bg-white border text-slate-800 text-sm font-medium focus:ring-2 outline-none transition-all duration-200 placeholder:text-slate-400 ${errors.lastName
+                              ? 'border-red-500 focus:border-red-500 focus:ring-red-500/15'
+                              : 'border-slate-400 focus:border-emerald-600 focus:ring-emerald-600/15'
+                              }`}
                           />
+                          {errors.lastName && (
+                            <p className="mt-1 text-[11px] text-red-500 font-semibold flex items-center gap-1">
+                              <span>•</span> {errors.lastName}
+                            </p>
+                          )}
                         </div>
                         {/* Empty space next to Last Name */}
                         <div></div>
                       </div>
 
-                      {/* Phone Number & Alternate Phone Number */}
+                      {/* Phone Number & Alternate Number */}
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {/* Phone Number */}
                         <div>
@@ -659,10 +714,10 @@ export const Application = () => {
                             name="phone"
                             required
                             maxLength={10}
-                            placeholder="Enter 10-digit phone number"
+                            placeholder="10-digit phone number"
                             value={formData.phone}
                             onChange={handleChange}
-                            className={`w-full px-4 py-2.5 rounded-lg bg-white border text-slate-800 text-sm font-medium focus:ring-2 outline-none transition-all duration-200 placeholder:text-slate-400 ${errors.phone
+                            className={`w-full px-4 py-1.5 rounded-lg bg-white border text-slate-800 text-sm font-medium focus:ring-2 outline-none transition-all duration-200 placeholder:text-slate-400 ${errors.phone
                               ? 'border-red-500 focus:border-red-500 focus:ring-red-500/15'
                               : 'border-slate-400 focus:border-emerald-600 focus:ring-emerald-600/15'
                               }`}
@@ -674,19 +729,19 @@ export const Application = () => {
                           )}
                         </div>
 
-                        {/* Alternate Phone Number */}
+                        {/* Alternate Number */}
                         <div>
                           <label className="block text-xs font-bold text-slate-700 mb-1">
-                            Alternate Phone Number
+                            Alternate Number
                           </label>
                           <input
                             type="tel"
                             name="alternatePhone"
                             maxLength={10}
-                            placeholder="Enter alternate phone number"
+                            placeholder="Alternate number"
                             value={formData.alternatePhone}
                             onChange={handleChange}
-                            className={`w-full px-4 py-2.5 rounded-lg bg-white border text-slate-800 text-sm font-medium focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/15 outline-none transition-all duration-200 placeholder:text-slate-400 ${errors.alternatePhone
+                            className={`w-full px-4 py-1.5 rounded-lg bg-white border text-slate-800 text-sm font-medium focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/15 outline-none transition-all duration-200 placeholder:text-slate-400 ${errors.alternatePhone
                               ? 'border-red-500 focus:border-red-500 focus:ring-red-500/15'
                               : 'border-slate-400 focus:border-emerald-600 focus:ring-emerald-600/15'
                               }`}
@@ -710,11 +765,19 @@ export const Application = () => {
                             type="email"
                             name="email"
                             required
-                            placeholder="Enter email address"
+                            placeholder="Email address"
                             value={formData.email}
                             onChange={handleChange}
-                            className="w-full px-4 py-2.5 rounded-lg bg-white border border-slate-400 text-slate-800 text-sm font-medium focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/15 outline-none transition-all duration-200 placeholder:text-slate-400"
+                            className={`w-full px-4 py-1.5 rounded-lg bg-white border text-slate-800 text-sm font-medium focus:ring-2 outline-none transition-all duration-200 placeholder:text-slate-400 ${errors.email
+                              ? 'border-red-500 focus:border-red-500 focus:ring-red-500/15'
+                              : 'border-slate-400 focus:border-emerald-600 focus:ring-emerald-600/15'
+                              }`}
                           />
+                          {errors.email && (
+                            <p className="mt-1 text-[11px] text-red-500 font-semibold flex items-center gap-1">
+                              <span>•</span> {errors.email}
+                            </p>
+                          )}
                         </div>
 
                         {/* Date of Birth & Blood Group */}
@@ -732,7 +795,7 @@ export const Application = () => {
                               maxLength={10}
                               value={formData.dob}
                               onChange={handleDobChange}
-                              className={`w-full px-3 py-2.5 rounded-lg bg-white border text-slate-800 text-xs font-medium focus:ring-2 outline-none transition-all duration-200 placeholder:text-slate-400 ${errors.dob
+                              className={`w-full px-3 py-1.5 rounded-lg bg-white border text-slate-800 text-xs font-medium focus:ring-2 outline-none transition-all duration-200 placeholder:text-slate-400 ${errors.dob
                                   ? 'border-red-500 focus:border-red-500 focus:ring-red-500/15'
                                   : 'border-slate-400 focus:border-emerald-600 focus:ring-emerald-600/15'
                                 }`}
@@ -758,7 +821,7 @@ export const Application = () => {
                                   handleChange(e);
                                   if (e.target.value) setErrors(prev => ({ ...prev, bloodGroup: null }));
                                 }}
-                                className={`w-full pl-3 pr-8 py-2.5 rounded-lg bg-white border text-slate-800 text-xs font-medium focus:ring-2 outline-none transition-all duration-200 appearance-none cursor-pointer ${errors.bloodGroup
+                                className={`w-full pl-3 pr-8 py-1.5 rounded-lg bg-white border text-slate-800 text-xs font-medium focus:ring-2 outline-none transition-all duration-200 appearance-none cursor-pointer ${errors.bloodGroup
                                   ? 'border-red-500 focus:border-red-500 focus:ring-red-500/15'
                                   : 'border-slate-400 focus:border-emerald-600 focus:ring-emerald-600/15'
                                   }`}
@@ -794,7 +857,7 @@ export const Application = () => {
                         {formData.selfie ? (
                           <div className="flex flex-col items-center gap-3">
                             <div className="relative group">
-                              <img src={formData.selfie} alt="Selfie preview" className="w-40 h-40 object-cover rounded-full shadow-lg border-4 border-slate-700" />
+                              <img src={formData.selfie} alt="Selfie preview" className="w-40 h-40 object-cover rounded-full shadow-lg border-2 border-slate-700" />
                               <div className="absolute inset-0 rounded-full bg-slate-900/10 opacity-0 group-hover:opacity-100 transition-opacity" />
                             </div>
                             <button type="button" onClick={retakePhoto} className="flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-slate-100 text-slate-800 border border-slate-300 text-xs font-bold hover:bg-slate-200 transition-colors cursor-pointer shadow-sm">
@@ -803,7 +866,7 @@ export const Application = () => {
                           </div>
                         ) : isCameraOpen ? (
                           <div className="flex flex-col items-center justify-center gap-3">
-                            <div className="w-40 h-40 rounded-full shadow-xl overflow-hidden relative bg-black border-4 border-slate-700">
+                            <div className="w-40 h-40 rounded-full shadow-xl overflow-hidden relative bg-black border-2 border-slate-700">
                               <video ref={videoRef} autoPlay playsInline className="w-full h-full object-cover rounded-full scale-x-[-1]" />
                               <canvas ref={canvasRef} className="hidden" />
                             </div>
@@ -820,7 +883,7 @@ export const Application = () => {
                           <div className="flex flex-col items-center justify-center gap-3">
                             <div
                               onClick={startCamera}
-                              className="w-36 h-36 rounded-full bg-slate-200 border-2 border-slate-700 shadow-md flex items-center justify-center overflow-hidden shrink-0 relative group cursor-pointer hover:shadow-lg transition-all duration-300"
+                              className="w-36 h-36 rounded-full bg-slate-200 border border-slate-700 shadow-md flex items-center justify-center overflow-hidden shrink-0 relative group cursor-pointer hover:shadow-lg transition-all duration-300"
                             >
                               <svg
                                 width="144"
@@ -836,13 +899,25 @@ export const Application = () => {
                               </svg>
                             </div>
                             {cameraError && <p className="text-[11px] text-red-500 font-medium text-center max-w-[180px]">{cameraError}</p>}
-                            <div className="flex flex-wrap justify-center items-center gap-3 mt-5">
-                              <button type="button" onClick={startCamera} className="px-4 py-2 border-2 border-slate-800 text-slate-800 bg-white text-xs font-bold rounded-lg shadow-xs hover:bg-slate-100 transition-colors cursor-pointer flex items-center gap-1.5">
-                                <Camera size={14} className="text-slate-800" /> Capture
+                            <div className="inline-flex items-center bg-white border border-slate-700 rounded-md p-0.5 shadow-xs mt-3">
+                              <button
+                                type="button"
+                                onClick={startCamera}
+                                title="Capture Photo"
+                                aria-label="Capture Photo"
+                                className="px-3 py-0.5 text-slate-800 hover:bg-slate-100 rounded-sm transition-colors cursor-pointer flex items-center justify-center"
+                              >
+                                <Camera size={16} className="text-slate-800" />
                               </button>
+                              <span className="shrink-0" style={{ width: '1px', height: '14px', backgroundColor: '#334155', display: 'inline-block' }} />
                               <div className="relative overflow-hidden">
-                                <button type="button" className="px-4 py-2 border-2 border-slate-800 text-slate-800 bg-white text-xs font-bold rounded-lg shadow-xs hover:bg-slate-100 transition-colors cursor-pointer flex items-center gap-1.5">
-                                  <Upload size={14} className="text-slate-800" /> Upload
+                                <button
+                                  type="button"
+                                  title="Upload Photo"
+                                  aria-label="Upload Photo"
+                                  className="px-3 py-0.5 text-slate-800 hover:bg-slate-100 rounded-sm transition-colors cursor-pointer flex items-center justify-center"
+                                >
+                                  <Upload size={16} className="text-slate-800" />
                                 </button>
                                 <input
                                   type="file"
@@ -866,7 +941,7 @@ export const Application = () => {
                     {/* 10th % */}
                     <div>
                       <label className="block text-xs font-bold text-slate-700 mb-1">
-                        10th Grade Marks (%) <span className="text-red-500">*</span>
+                        10th Marks (%) <span className="text-red-500">*</span>
                       </label>
                       <div className="relative">
                         <input
@@ -876,10 +951,10 @@ export const Application = () => {
                           min="0"
                           max="100"
                           step="0.01"
-                          placeholder="Enter 10th percentage"
+                          placeholder="10th percentage"
                           value={formData.tenthPercentage}
                           onChange={handleChange}
-                          className={`w-full px-4 py-2.5 pr-8 rounded-lg bg-white border text-slate-800 text-sm font-medium focus:ring-2 outline-none transition-all duration-200 placeholder:text-slate-400 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${errors.tenthPercentage
+                          className={`w-full px-4 py-1.5 pr-8 rounded-lg bg-white border text-slate-800 text-sm font-medium focus:ring-2 outline-none transition-all duration-200 placeholder:text-slate-400 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${errors.tenthPercentage
                             ? 'border-red-500 focus:border-red-500 focus:ring-red-500/15'
                             : 'border-slate-400 focus:border-[#2D73B4] focus:ring-[#2D73B4]/15'
                             }`}
@@ -906,10 +981,10 @@ export const Application = () => {
                           min="0"
                           max="100"
                           step="0.01"
-                          placeholder="Enter 12th percentage"
+                          placeholder="12th percentage"
                           value={formData.twelfthPercentage}
                           onChange={handleChange}
-                          className={`w-full px-4 py-2.5 pr-8 rounded-lg bg-white border text-slate-800 text-sm font-medium focus:ring-2 outline-none transition-all duration-200 placeholder:text-slate-400 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${errors.twelfthPercentage
+                          className={`w-full px-4 py-1.5 pr-8 rounded-lg bg-white border text-slate-800 text-sm font-medium focus:ring-2 outline-none transition-all duration-200 placeholder:text-slate-400 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${errors.twelfthPercentage
                             ? 'border-red-500 focus:border-red-500 focus:ring-red-500/15'
                             : 'border-slate-400 focus:border-[#2D73B4] focus:ring-[#2D73B4]/15'
                             }`}
@@ -932,10 +1007,10 @@ export const Application = () => {
                         <input
                           type="text"
                           name="diplomaPercentage"
-                          placeholder="Enter diploma percentage or N/A"
+                          placeholder="Diploma percentage or N/A"
                           value={formData.diplomaPercentage}
                           onChange={handleChange}
-                          className={`w-full px-4 py-2.5 ${formData.diplomaPercentage && formData.diplomaPercentage.toString().toUpperCase() !== 'N/A' ? 'pr-8' : 'pr-4'
+                          className={`w-full px-4 py-1.5 ${formData.diplomaPercentage && formData.diplomaPercentage.toString().toUpperCase() !== 'N/A' ? 'pr-8' : 'pr-4'
                             } rounded-lg bg-white border text-slate-800 text-sm font-medium focus:ring-2 outline-none transition-all duration-200 placeholder:text-slate-400 ${errors.diplomaPercentage
                               ? 'border-red-500 focus:border-red-500 focus:ring-red-500/15'
                               : 'border-slate-400 focus:border-[#2D73B4] focus:ring-[#2D73B4]/15'
@@ -1149,18 +1224,18 @@ export const Application = () => {
 
 
                   {/* Submit Button */}
-                  <div className="pt-2 flex justify-end">
+                  <div className="pt-1 flex justify-end">
                     <button
                       type="submit"
                       disabled={isSubmitting}
-                      className="px-6 py-2.5 bg-white border-2 border-slate-300 text-slate-900 font-bold rounded-lg hover:border-emerald-600 hover:text-emerald-600 hover:bg-emerald-50/30 transition-all duration-200 flex items-center justify-center gap-2 text-sm group cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
+                      className="px-4 py-1.5 bg-white border border-slate-700 text-slate-900 font-semibold rounded-md hover:border-emerald-600 hover:text-emerald-600 hover:bg-emerald-50/30 transition-all duration-200 flex items-center justify-center gap-1.5 text-xs sm:text-sm group cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed shadow-xs"
                     >
                       {isSubmitting ? (
                         <span className="inline-block animate-pulse">Processing...</span>
                       ) : (
                         <>
                           <span>Next</span>
-                          <ArrowRight size={18} className="transform group-hover:translate-x-1 transition-transform duration-300" />
+                          <ArrowRight size={15} className="transform group-hover:translate-x-1 transition-transform duration-300" />
                         </>
                       )}
                     </button>

@@ -295,6 +295,35 @@ const verifyPaymentStatus = async (req, res) => {
         console.warn('[PaymentTransaction Notice] Transaction record already created or logged:', txnErr.message);
       }
 
+      // 2b. Safely sync into Student model roster
+      try {
+        const studentEmail = (app.email || '').trim().toLowerCase();
+        if (studentEmail) {
+          await prisma.student.upsert({
+            where: { email: studentEmail },
+            update: {
+              name: app.studentName,
+              phone: app.phone,
+              collegeName: app.collegeName,
+              branch: app.branch,
+              year: app.year,
+              passCode: app.passCode || passCode
+            },
+            create: {
+              name: app.studentName,
+              email: studentEmail,
+              phone: app.phone,
+              collegeName: app.collegeName,
+              branch: app.branch,
+              year: app.year,
+              passCode: app.passCode || passCode
+            }
+          });
+        }
+      } catch (stuErr) {
+        console.warn('[Student Roster Sync Notice]:', stuErr.message);
+      }
+
       // 3. Automatically Dispatch Workshop Pass PDF via Email in Background
       const emailPayload = {
         ...app,

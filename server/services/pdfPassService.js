@@ -17,7 +17,6 @@ const getPhotoBuffer = async (urlStr) => {
       const response = await axios.get(urlStr, { responseType: 'arraybuffer', timeout: 5000 });
       return Buffer.from(response.data);
     } else if (urlStr.length > 100) {
-      // Raw base64 string without data prefix
       return Buffer.from(urlStr.trim(), 'base64');
     }
   } catch (err) {
@@ -34,8 +33,42 @@ const getPhotoBuffer = async (urlStr) => {
 const generatePassPDF = async (data) => {
   return new Promise(async (resolve, reject) => {
     try {
+      const passId = data.passCode || data.transactionId || data.passId || 'T2608231343366807015049';
+      const studentName = data.studentName || data.name || 'Ramesh Shahu';
+      const collegeName = (data.collegeName || 'VALLURUPALLI NAGESWARA RAO VIGNANA JYOTHI INSTITUTE OF ENGINEERING &TECHNOLOGY').toUpperCase();
+      const rawAddress = data.venueLocation || data.collegeAddress || data.city || 'Hyderabad';
+      const collegeAddress = rawAddress.toLowerCase().replace(/\b[a-z]/g, c => c.toUpperCase());
+      const programTitle = data.programTitle || data.programInterest || 'AI Summit 2026';
+      const degree = data.degree || 'B.E.';
+      const branch = data.branch || data.specialization || 'Cloud Computing & DevOps';
+      const semester = data.year || data.semester || '5th Semester';
+      const bloodGroup = data.bloodGroup || 'A-';
+      const phone = data.phone || data.mobileNumber || '8523697412';
+      
+      let eventDateStr = '23 Aug 2026';
+      if (data.eventDate || data.startDate) {
+        try {
+          const d = new Date(data.eventDate || data.startDate);
+          if (!isNaN(d.getTime())) {
+            eventDateStr = d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+          }
+        } catch (e) {}
+      }
+
+      const timingStr = data.timing || data.workshopTime || '10:00 AM - 04:00 PM';
+
+      // Dynamic Card Height Calculation
+      const collegeFontSize = collegeName.length > 35 ? 9.5 : (collegeName.length > 22 ? 11 : 12.5);
+      const collegeLines = Math.max(1, Math.ceil((collegeName.length * (collegeFontSize * 0.58)) / 220));
+      const headerExtraY = (collegeLines - 1) * 14;
+
+      const studentNameLines = Math.max(1, Math.ceil((studentName.length * 9.5) / 200));
+      const studentExtraY = (studentNameLines - 1) * 16;
+
+      const totalCardHeight = Math.max(560, 560 + headerExtraY + studentExtraY);
+
       const doc = new PDFDocument({
-        size: [360, 560], // Ticket Badge Dimensions
+        size: [360, totalCardHeight],
         margin: 15
       });
 
@@ -44,17 +77,8 @@ const generatePassPDF = async (data) => {
       doc.on('end', () => resolve(Buffer.concat(chunks)));
       doc.on('error', (err) => reject(err));
 
-      const passId = data.passCode || data.transactionId || 'T2608201407180834378858';
-      const studentName = data.studentName || 'Participant';
-      const collegeName = (data.collegeName || 'KDK').toUpperCase();
-      const collegeAddress = data.venueLocation || 'Sakardhara';
-      const programTitle = data.programTitle || 'Workshop Aegentic ai';
-      const degree = data.degree || 'MCA';
-      const branch = data.branch || 'Data Science & Analytics';
-      const semester = data.year || data.semester || '2nd Semester';
-      const bloodGroup = data.bloodGroup || 'B-';
-      const phone = data.phone || '8569841230';
-      const currentDate = new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+      // Coordinates setup
+      let curY = 20;
 
       // 1. Fetch QR Code Buffer
       const qrDataText = `=== VMANOUS WORKSHOP PASS ===\nPass ID: ${passId}\nParticipant: ${studentName}\nEmail: ${data.email || 'N/A'}\nMobile: ${phone}\nCollege: ${collegeName}\nStatus: VERIFIED & PAID`;
@@ -64,92 +88,123 @@ const generatePassPDF = async (data) => {
       // 2. Fetch Student Photo Buffer
       const photoBuffer = await getPhotoBuffer(data.selfiePhotoUrl);
 
-      // 3. Card Background & Outer Border
+      // 3. Main Card Background & Left/Right Side Borders Only (No Straight Top/Bottom Lines)
       doc.save();
-      doc.roundedRect(10, 10, 340, 540, 12)
-         .lineWidth(1)
-         .strokeColor('#e2e8f0')
-         .fillAndStroke('#ffffff', '#e2e8f0');
+      // White Background Fill
+      doc.rect(10, 10, 340, totalCardHeight - 20).fill('#ffffff');
+      // Left & Right Vertical Side Border Lines Only
+      doc.lineWidth(1).strokeColor('#000000');
+      doc.moveTo(10, 10).lineTo(10, totalCardHeight - 10).stroke();
+      doc.moveTo(350, 10).lineTo(350, totalCardHeight - 10).stroke();
       doc.restore();
 
-      // 4. Top-Left Circular "Payment Successful" Ink Seal Badge (Image 2 Replica)
-      const sealX = 52;
-      const sealY = 52;
-
+      // 4. Top Sawtooth (Zig-Zag) Cutouts
       doc.save();
-      // Outer Seal Ring
-      doc.circle(sealX, sealY, 32).lineWidth(1.8).strokeColor('#047857').stroke();
-      // Inner Seal Ring
-      doc.circle(sealX, sealY, 25).lineWidth(1.2).strokeColor('#047857').stroke();
-
-      // Top Circular Arc Label
-      doc.font('Helvetica-Bold').fontSize(5.5).fillColor('#047857')
-         .text('OFFICIAL PASS 2026', sealX - 22, sealY - 20, { width: 44, align: 'center' });
-
-      // Center Bold Text: "Payment Successful"
-      doc.font('Helvetica-Bold').fontSize(8.5).fillColor('#047857')
-         .text('Payment', sealX - 22, sealY - 7, { width: 44, align: 'center' });
-      doc.font('Helvetica-Bold').fontSize(7.5).fillColor('#047857')
-         .text('Successful', sealX - 22, sealY + 4, { width: 44, align: 'center' });
+      doc.lineWidth(1).strokeColor('#000000');
+      const toothW = 8;
+      const toothH = 3.5;
+      let toothX = 10;
+      doc.moveTo(10, 10);
+      for (let i = 0; i < 42.5; i++) {
+        doc.lineTo(toothX + toothW / 2, 10 + toothH).lineTo(toothX + toothW, 10);
+        toothX += toothW;
+      }
+      doc.stroke();
       doc.restore();
 
-      // 5. Header Section: College Name, Address & Transaction Pass ID
+      // 5. Top Center Checkmark Symbol (Overlapping Zig-Zag cleanly like Web Pass Image 2)
       doc.save();
+      // Mask Circle
+      doc.circle(180, 15, 20).fill('#ffffff');
+      // Green Arc Circle
+      doc.lineWidth(3.5).strokeColor('#5cb85c')
+         .path('M 195 9 A 17 17 0 1 0 195 24')
+         .stroke();
+      // Checkmark tick
+      doc.lineWidth(3.5).strokeColor('#5cb85c')
+         .moveTo(170, 16)
+         .lineTo(177, 24)
+         .lineTo(197, 4)
+         .stroke();
+      doc.restore();
+
+      // 6. Header Text Section
+      curY = 44;
       doc.font('Helvetica-Bold')
-         .fontSize(15)
+         .fontSize(16)
+         .fillColor('#5cb85c')
+         .text('Payment Successful!', 20, curY, { width: 320, align: 'center' });
+
+      curY = doc.y + 6;
+
+      doc.font('Helvetica-Bold')
+         .fontSize(collegeFontSize)
          .fillColor('#0f172a')
-         .text(collegeName, 90, 24, { width: 240, align: 'center' });
+         .text(collegeName, 20, curY, { width: 320, align: 'center', lineGap: 1 });
 
-      doc.font('Helvetica-Bold')
-         .fontSize(9)
-         .fillColor('#64748b')
-         .text(collegeAddress, 90, 44, { width: 240, align: 'center' });
+      curY = doc.y + 3;
+      if (collegeAddress) {
+        doc.font('Helvetica-Bold')
+           .fontSize(8.5)
+           .fillColor('#64748b')
+           .text(collegeAddress, 20, curY, { width: 320, align: 'center' });
+        curY = doc.y + 2;
+      }
 
       doc.font('Helvetica-Bold')
          .fontSize(8)
          .fillColor('#94a3b8')
-         .text(passId, 90, 58, { width: 240, align: 'center' });
-      doc.restore();
+         .text(passId, 20, curY, { width: 320, align: 'center' });
 
-      // 6. Program Badge Tag (Soft Emerald Green Pill)
+      const headerBottomY = doc.y;
+
+      // 7. Program Badge Tag
+      const badgeY = Math.max(132, headerBottomY + 10);
       doc.save();
-      doc.roundedRect(25, 90, 130, 18, 9).fill('#ecfdf5');
+      doc.roundedRect(25, badgeY, 115, 18, 9).fill('#ecfdf5');
       doc.font('Helvetica-Bold')
          .fontSize(8.5)
          .fillColor('#059669')
-         .text(programTitle, 32, 94, { width: 116, align: 'left' });
+         .text(programTitle, 32, badgeY + 4, { width: 104, align: 'left' });
       doc.restore();
 
-      // 7. Participant Name
+      // 8. Participant Name
+      const nameY = badgeY + 24;
       doc.save();
       doc.font('Helvetica-Bold')
-         .fontSize(16)
+         .fontSize(15)
          .fillColor('#0f172a')
-         .text(studentName, 25, 116, { width: 210 });
+         .text(studentName, 25, nameY, { width: 210 });
+      doc.restore();
 
-      // 8. Mobile Number & Blood Group Info
+      doc.font('Helvetica-Bold').fontSize(15);
+      const nameHeight = doc.heightOfString(studentName, { width: 210 });
+
+      // 9. Mobile Number & Blood Group Info (Title Case Labels)
+      const infoY = nameY + nameHeight + 8;
+      doc.save();
       doc.font('Helvetica-Bold')
-         .fontSize(7)
+         .fontSize(7.5)
          .fillColor('#94a3b8')
-         .text('MOBILE NUMBER', 25, 142);
+         .text('Mobile Number', 25, infoY);
       doc.font('Helvetica-Bold')
          .fontSize(9)
          .fillColor('#334155')
-         .text(phone, 25, 151);
+         .text(phone, 25, infoY + 10);
 
       doc.font('Helvetica-Bold')
-         .fontSize(7)
+         .fontSize(7.5)
          .fillColor('#94a3b8')
-         .text('BLOOD GROUP', 115, 142);
+         .text('Blood Group', 115, infoY);
       doc.font('Helvetica-Bold')
          .fontSize(9)
          .fillColor('#047857')
-         .text(bloodGroup, 115, 151);
+         .text(bloodGroup, 115, infoY + 10);
       doc.restore();
 
-      // 9. Student Photo (Top Right Corner Circle Avatar)
+      // 10. Student Photo (Right Corner Avatar)
       const avatarCenterX = 285;
-      const avatarCenterY = 130;
+      const avatarCenterY = nameY + 20;
       const avatarRadius = 36;
 
       doc.save();
@@ -161,104 +216,130 @@ const generatePassPDF = async (data) => {
             height: avatarRadius * 2
           });
         } catch (imgErr) {
-          console.warn('[PDF Generator] Could not render photo buffer:', imgErr.message);
+          console.warn('[PDF Generator] Photo buffer render error:', imgErr.message);
           doc.circle(avatarCenterX, avatarCenterY, avatarRadius).fillAndStroke('#f1f5f9', '#cbd5e1');
         }
       } else {
-        // Soft Light Gray Avatar Placeholder Circle
         doc.circle(avatarCenterX, avatarCenterY, avatarRadius).fillAndStroke('#f1f5f9', '#cbd5e1');
         doc.circle(avatarCenterX, avatarCenterY - 6, 12).fill('#94a3b8');
       }
       doc.restore();
 
-      // Avatar Border Ring
       doc.save();
       doc.circle(avatarCenterX, avatarCenterY, avatarRadius).lineWidth(2).strokeColor('#cbd5e1').stroke();
       doc.restore();
 
-      // 10. Divider Line Accent
+      // 11. Center Accent Divider Line
+      const dividerY = Math.max(infoY + 28, avatarCenterY + 44);
       doc.save();
-      doc.moveTo(25, 180).lineTo(335, 180).lineWidth(0.5).strokeColor('#e2e8f0').stroke();
-      doc.circle(180, 180, 4).fill('#10b981');
+      doc.moveTo(25, dividerY).lineTo(335, dividerY).lineWidth(0.5).strokeColor('#e2e8f0').stroke();
+      doc.circle(180, dividerY, 4).fill('#10b981');
       doc.restore();
 
-      // 11. Academic Details Grid (Degree, Specialization, Semester)
-      const boxY = 195;
+      // 12. Academic Details Grid (Degree, Specialization, Semester in Title Case)
+      const boxY = dividerY + 15;
       const boxW = 98;
       const boxH = 44;
 
       doc.save();
       // Degree Box
-      doc.roundedRect(25, boxY, boxW, boxH, 8).fillAndStroke('#f8fafc', '#f1f5f9');
-      doc.font('Helvetica-Bold').fontSize(7.5).fillColor('#94a3b8').text('DEGREE', 28, boxY + 8, { width: boxW - 6, align: 'center' });
-      doc.font('Helvetica-Bold').fontSize(10.5).fillColor('#0f172a').text(degree, 28, boxY + 22, { width: boxW - 6, align: 'center' });
+      doc.roundedRect(25, boxY, boxW, boxH, 8).lineWidth(1).strokeColor('#e2e8f0').fillAndStroke('#ffffff', '#e2e8f0');
+      doc.font('Helvetica-Bold').fontSize(7.5).fillColor('#94a3b8').text('Degree', 28, boxY + 8, { width: boxW - 6, align: 'center' });
+      doc.font('Helvetica-Bold').fontSize(10).fillColor('#0f172a').text(degree, 28, boxY + 22, { width: boxW - 6, align: 'center' });
 
       // Specialization Box
-      doc.roundedRect(131, boxY, boxW, boxH, 8).fillAndStroke('#f8fafc', '#f1f5f9');
-      doc.font('Helvetica-Bold').fontSize(7.5).fillColor('#94a3b8').text('SPECIALIZATION', 134, boxY + 8, { width: boxW - 6, align: 'center' });
+      doc.roundedRect(131, boxY, boxW, boxH, 8).lineWidth(1).strokeColor('#e2e8f0').fillAndStroke('#ffffff', '#e2e8f0');
+      doc.font('Helvetica-Bold').fontSize(7.5).fillColor('#94a3b8').text('Specialization', 134, boxY + 8, { width: boxW - 6, align: 'center' });
       doc.font('Helvetica-Bold').fontSize(8.5).fillColor('#0f172a').text(branch, 134, boxY + 20, { width: boxW - 6, align: 'center' });
 
       // Semester Box
-      doc.roundedRect(237, boxY, boxW, boxH, 8).fillAndStroke('#f8fafc', '#f1f5f9');
-      doc.font('Helvetica-Bold').fontSize(7.5).fillColor('#94a3b8').text('SEMESTER', 240, boxY + 8, { width: boxW - 6, align: 'center' });
-      doc.font('Helvetica-Bold').fontSize(10.5).fillColor('#0f172a').text(semester, 240, boxY + 22, { width: boxW - 6, align: 'center' });
+      doc.roundedRect(237, boxY, boxW, boxH, 8).lineWidth(1).strokeColor('#e2e8f0').fillAndStroke('#ffffff', '#e2e8f0');
+      doc.font('Helvetica-Bold').fontSize(7.5).fillColor('#94a3b8').text('Semester', 240, boxY + 8, { width: boxW - 6, align: 'center' });
+      doc.font('Helvetica-Bold').fontSize(9.5).fillColor('#0f172a').text(semester, 240, boxY + 22, { width: boxW - 6, align: 'center' });
       doc.restore();
 
-      // 12. Dotted Ticket Tear Line
-      const dotY = 255;
+      // 13. Dotted Ticket Tear Line & 180° Side Notch Cuts
+      const dotY = boxY + boxH + 16;
       doc.save();
-      doc.circle(10, dotY, 7).fill('#f8fafc');
-      doc.circle(350, dotY, 7).fill('#f8fafc');
+      // Left side notch mask
+      doc.rect(8, dotY - 14, 4, 28).fill('#ffffff');
+      doc.path(`M 10,${dotY - 14} A 12,14 0 0,1 10,${dotY + 14}`)
+         .lineWidth(1)
+         .strokeColor('#000000')
+         .stroke();
 
+      // Right side notch mask
+      doc.rect(348, dotY - 14, 4, 28).fill('#ffffff');
+      doc.path(`M 350,${dotY - 14} A 12,14 0 0,0 350,${dotY + 14}`)
+         .lineWidth(1)
+         .strokeColor('#000000')
+         .stroke();
+
+      // Dashed Line
       doc.moveTo(22, dotY)
          .lineTo(338, dotY)
-         .lineWidth(1)
+         .lineWidth(1.5)
          .dash(4, { space: 3 })
-         .strokeColor('#cbd5e1')
+         .strokeColor('#000000')
          .stroke();
       doc.restore();
 
-      // 13. Event Details & Scannable QR Code Section
-      const bottomY = 275;
+      // 14. Event Details & Icons
+      const bottomY = dotY + 20;
 
       doc.save();
-      // Event Date Block
-      doc.font('Helvetica-Bold').fontSize(8).fillColor('#047857').text('EVENT DATE', 25, bottomY);
-      doc.font('Helvetica-Bold').fontSize(13).fillColor('#0f172a').text(currentDate, 25, bottomY + 12);
+      // Calendar icon + EVENT DATE
+      doc.lineWidth(1).strokeColor('#047857');
+      doc.rect(25, bottomY - 1, 8, 8).stroke();
+      doc.moveTo(25, bottomY + 2).lineTo(33, bottomY + 2).stroke();
+      doc.font('Helvetica-Bold').fontSize(8).fillColor('#047857').text('EVENT DATE', 37, bottomY);
+      doc.font('Helvetica-Bold').fontSize(13).fillColor('#0f172a').text(eventDateStr, 25, bottomY + 12);
 
-      // Workshop Time Block
-      doc.font('Helvetica-Bold').fontSize(8).fillColor('#64748b').text('WORKSHOP TIME', 25, bottomY + 36);
-      doc.font('Helvetica-Bold').fontSize(11).fillColor('#0f172a').text('10:00 AM - 04:00 PM', 25, bottomY + 48);
+      // Clock icon + WORKSHOP TIME
+      doc.circle(29, bottomY + 39, 4).stroke();
+      doc.moveTo(29, bottomY + 37).lineTo(29, bottomY + 39).lineTo(31, bottomY + 39).stroke();
+      doc.font('Helvetica-Bold').fontSize(8).fillColor('#64748b').text('WORKSHOP TIME', 37, bottomY + 36);
+      doc.font('Helvetica-Bold').fontSize(11).fillColor('#0f172a').text(timingStr, 25, bottomY + 48);
 
-      // Official Pass Badge Pill
+      // OFFICIAL PASS Badge Tag
       doc.roundedRect(25, bottomY + 74, 90, 18, 9).fill('#d1fae5');
-      doc.font('Helvetica-Bold').fontSize(8).fillColor('#047857').text('• OFFICIAL PASS', 32, bottomY + 79);
+      doc.circle(33, bottomY + 83, 2.5).fill('#047857');
+      doc.font('Helvetica-Bold').fontSize(8).fillColor('#047857').text('OFFICIAL PASS', 39, bottomY + 79);
       doc.restore();
 
-      // QR Code Image & Frame (Bottom Right)
+      // 15. QR Code Image & Corner Brackets
       const qrX = 220;
       const qrY = bottomY - 5;
       const qrSize = 115;
       const brLen = 12;
 
       doc.save();
-      doc.lineWidth(2).strokeColor('#059669');
-      // Top-Left Corner
+      doc.lineWidth(1).strokeColor('#000000');
       doc.moveTo(qrX - 4, qrY - 4 + brLen).lineTo(qrX - 4, qrY - 4).lineTo(qrX - 4 + brLen, qrY - 4).stroke();
-      // Top-Right Corner
       doc.moveTo(qrX + qrSize + 4 - brLen, qrY - 4).lineTo(qrX + qrSize + 4, qrY - 4).lineTo(qrX + qrSize + 4, qrY - 4 + brLen).stroke();
-      // Bottom-Left Corner
       doc.moveTo(qrX - 4, qrY + qrSize + 4 - brLen).lineTo(qrX - 4, qrY + qrSize + 4).lineTo(qrX - 4 + brLen, qrY + qrSize + 4).stroke();
-      // Bottom-Right Corner
       doc.moveTo(qrX + qrSize + 4 - brLen, qrY + qrSize + 4).lineTo(qrX + qrSize + 4, qrY + qrSize + 4).lineTo(qrX + qrSize + 4, qrY + qrSize + 4 - brLen).stroke();
 
-      // Render QR Image
       doc.image(qrBuffer, qrX, qrY, { width: qrSize, height: qrSize });
       doc.restore();
 
-      // Footer Instructions Line
+      // 16. Bottom Sawtooth (Zig-Zag) Cutouts
       doc.save();
-      doc.font('Helvetica').fontSize(7).fillColor('#94a3b8').text('Please present this PDF Pass at the gate entry desk on workshop day.', 20, 532, { width: 320, align: 'center' });
+      doc.lineWidth(1).strokeColor('#000000');
+      const bY = totalCardHeight - 10;
+      let bX = 10;
+      doc.moveTo(10, bY);
+      for (let i = 0; i < 42.5; i++) {
+        doc.lineTo(bX + toothW / 2, bY - toothH).lineTo(bX + toothW, bY);
+        bX += toothW;
+      }
+      doc.stroke();
+      doc.restore();
+
+      // 17. Footer Text Line
+      doc.save();
+      const footerY = totalCardHeight - 28;
+      doc.font('Helvetica').fontSize(7).fillColor('#94a3b8').text('Please present this PDF Pass at the gate entry desk on workshop day.', 20, footerY, { width: 320, align: 'center' });
       doc.restore();
 
       doc.end();

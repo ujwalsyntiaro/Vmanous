@@ -16,6 +16,7 @@ import {
 import { verifyPhonePeStatus } from '../services/paymentService';
 import { saveApplications, getApplications } from '../services/applicationService';
 import { saveStudents, getStudents } from '../services/studentService';
+import { broadcastSummitUpdate } from '../services/summitService';
 
 export const PaymentCallback = () => {
   const [searchParams] = useSearchParams();
@@ -84,6 +85,8 @@ export const PaymentCallback = () => {
           if (!currentStudents.some(s => s.email && s.email.toLowerCase() === appData.email.toLowerCase())) {
             saveStudents([newStudent, ...currentStudents]);
           }
+          // Trigger live reactive update events across all open windows & tabs
+          broadcastSummitUpdate();
         } catch (storageErr) {
           console.warn('Local state sync notice:', storageErr);
         }

@@ -9,8 +9,10 @@ import {
   Trash2,
   RefreshCw,
   Award,
+  ChevronDown,
 } from "lucide-react";
-import { getStudents, deleteStudent } from "../../services/studentService";
+import { getStudents, getUniqueStudents, deleteStudent } from "../../services/studentService";
+import { getApplications } from "../../services/applicationService";
 
 const ManageStudents = () => {
   const navigate = useNavigate();
@@ -20,36 +22,38 @@ const ManageStudents = () => {
 
   useEffect(() => {
     loadStudentsData();
+    window.addEventListener("applications_updated", loadStudentsData);
+    window.addEventListener("summits_updated", loadStudentsData);
+    return () => {
+      window.removeEventListener("applications_updated", loadStudentsData);
+      window.removeEventListener("summits_updated", loadStudentsData);
+    };
   }, []);
 
   const loadStudentsData = async () => {
+    let currentApps = getApplications();
+    try {
+      const resApp = await fetch("/api/v1/applications");
+      const jsonApp = await resApp.json();
+      if (jsonApp.success && Array.isArray(jsonApp.data) && jsonApp.data.length > 0) {
+        currentApps = jsonApp.data;
+      }
+    } catch (err) {
+      console.log("Applications fetch notice");
+    }
+
+    let apiData = [];
     try {
       const res = await fetch("/api/v1/students");
       const json = await res.json();
-      if (json.success && Array.isArray(json.data) && json.data.length > 0) {
-        setStudents(
-          json.data.map((s) => ({
-            id: `stu_${s.id}`,
-            studentName: s.name,
-            email: s.email,
-            phone: s.phone,
-            collegeName: s.collegeName,
-            programTitle: "AI SUMMIT WORKSHOP 2030",
-            venueLocation: "Main Campus",
-            branch: s.branch || "Computer Science & Engineering",
-            year: s.year || "3rd Year",
-            degree: "B.Tech",
-            passCode: s.passCode || "PASS-VERIFIED",
-            paymentStatus: "Paid",
-          })),
-        );
-        return;
+      if (json.success && Array.isArray(json.data)) {
+        apiData = json.data;
       }
     } catch (err) {
       console.log("Using local fallback for students:", err);
     }
-    const rawStudents = getStudents();
-    setStudents(rawStudents);
+    const unique = getUniqueStudents(currentApps, apiData);
+    setStudents(unique);
   };
 
   const handleDelete = async (id) => {
@@ -105,12 +109,12 @@ const ManageStudents = () => {
         <div className="relative w-full sm:w-72">
           <Building2
             size={16}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+            className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 z-10 pointer-events-none"
           />
           <select
             value={selectedCollege}
             onChange={(e) => setSelectedCollege(e.target.value)}
-            className="w-full pl-9 pr-8 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold text-slate-700 outline-none focus:ring-2 focus:ring-[#2D73B4]/20 focus:border-[#2D73B4]"
+            className="w-full pl-9 pr-10 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold text-slate-700 outline-none appearance-none focus:ring-2 focus:ring-[#2D73B4]/20 focus:border-[#2D73B4] cursor-pointer transition-all shadow-2xs hover:bg-white"
           >
             <option value="All">
               All Colleges ({students.length} Enrolled)
@@ -126,6 +130,10 @@ const ManageStudents = () => {
               );
             })}
           </select>
+          <ChevronDown
+            size={14}
+            className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none z-10"
+          />
         </div>
 
         {/* Search Bar */}
@@ -220,17 +228,37 @@ const ManageStudents = () => {
                     <td className="py-3.5 px-4 text-right">
                       <div className="flex items-center justify-end gap-2">
                         <button
-                          onClick={() =>
+                          onClick={() => {
+                            const nameParts = (stu.studentName || "").trim().split(" ");
+                            const fName = nameParts[0] || "Student";
+                            const lName = nameParts.slice(1).join(" ") || "";
                             navigate("/pass", {
                               state: {
                                 formData: {
-                                  firstName: stu.studentName,
+                                  firstName: fName,
+                                  lastName: lName,
+                                  fullName: stu.studentName,
                                   email: stu.email,
+                                  phone: stu.phone || "N/A",
+                                  bloodGroup: stu.bloodGroup || "O+",
                                   institution: stu.collegeName,
+                                  collegeAddress: stu.venueLocation || "Main Campus Auditorium",
+                                  programInterest: stu.programTitle || "AI Summit Workshop 2026",
+                                  degree: stu.degree || "B.Tech",
+                                  branch: stu.branch || "Computer Science",
+                                  semester: stu.year || "3rd Year",
+                                  selfie: stu.selfiePhotoUrl,
+                                  selfiePhotoUrl: stu.selfiePhotoUrl,
+                                  tenthPercentage: stu.marksTenth || "85",
+                                  twelfthPercentage: stu.marksTwelfth || "83",
+                                  appliedDate: stu.createdAt || stu.enrolledAt,
+                                  paymentStatus: "Paid",
                                 },
+                                paymentId: stu.passCode || stu.transactionId || "PASS-VERIFIED",
+                                passCode: stu.passCode || "PASS-VERIFIED",
                               },
-                            })
-                          }
+                            });
+                          }}
                           className="px-2.5 py-1.5 bg-blue-50 text-[#2D73B4] hover:bg-blue-100 rounded-lg text-xs font-semibold transition-all flex items-center gap-1 cursor-pointer"
                         >
                           <ExternalLink size={14} />

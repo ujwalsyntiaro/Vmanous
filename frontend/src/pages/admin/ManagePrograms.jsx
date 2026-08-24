@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Edit2, Trash2, Calendar, Clock, MapPin, CheckCircle2, Building2, LayoutGrid, List, Receipt, DollarSign, History, Users } from 'lucide-react';
-import { getSummits, addSummit, updateSummit, deleteSummit, formatEventDates, isSummitActive } from '../../services/summitService';
+import { Plus, Edit2, Trash2, Calendar, Clock, MapPin, CheckCircle2, Building2, LayoutGrid, List, Receipt, DollarSign, History, Users, ChevronDown, Download, X, Search } from 'lucide-react';
+import { getSummits, fetchSummitsAsync, addSummit, updateSummit, deleteSummit, formatEventDates, isSummitActive, isCollegeMatch } from '../../services/summitService';
+import { getApplications, saveApplications } from '../../services/applicationService';
 import ProgramCard from '../../components/ui/ProgramCard';
-import DateInput from '../../components/ui/DateInput';
+import DateInput, { isoToDDMMYYYY, isValidDDMMYYYY } from '../../components/ui/DateInput';
 
 const parseTimeStr = (timeStr) => {
   if (!timeStr) {
@@ -33,10 +34,13 @@ const parseTimeStr = (timeStr) => {
 };
 
 const ManagePrograms = () => {
-  const [summits, setSummits] = useState([]);
+  const [summits, setSummits] = useState(() => getSummits());
+  const [applications, setApplications] = useState(() => getApplications());
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [viewMode, setViewMode] = useState("grid");
+  const [historyModalSummit, setHistoryModalSummit] = useState(null);
+  const [historySearchQuery, setHistorySearchQuery] = useState("");
 
   const [formData, setFormData] = useState({
     title: "",
@@ -59,29 +63,154 @@ const ManagePrograms = () => {
     taxRate: 18,
     taxMode: "Exclusive",
     processingFee: 0,
-    processingFeeType: "Fixed",
+    processingFeeType: "Percentage",
     features: "",
   });
 
   const loadSummits = async () => {
     try {
-      const res = await fetch("/api/v1/summits");
-      const data = await res.json();
-      if (data.success && Array.isArray(data.data) && data.data.length > 0) {
-        setSummits(data.data);
-        return;
+      const resApps = await fetch("/api/v1/applications");
+      const jsonApps = await resApps.json();
+      if (jsonApps.success && Array.isArray(jsonApps.data)) {
+        saveApplications(jsonApps.data);
+        setApplications(jsonApps.data);
+      } else {
+        setApplications(getApplications());
       }
     } catch (err) {
-      console.warn(
-        "Backend API summit fetch failed, falling back to local service:",
-        err,
-      );
+      setApplications(getApplications());
     }
-    setSummits(getSummits());
+
+    const data = await fetchSummitsAsync();
+    setSummits(data);
+  };
+
+  const openHistoryStudentsModal = async (summit) => {
+    try {
+      const resApps = await fetch("/api/v1/applications");
+      const jsonApps = await resApps.json();
+      if (jsonApps.success && Array.isArray(jsonApps.data)) {
+        saveApplications(jsonApps.data);
+        setApplications(jsonApps.data);
+      }
+    } catch (err) { }
+
+    setHistoryModalSummit(summit);
+    setHistorySearchQuery("");
+  };
+
+  const getAttendeesForSummit = (summit, appsList = applications) => {
+    if (!summit) return [];
+
+    return appsList.filter((app) => {
+      if (app.paymentStatus && app.paymentStatus !== "Paid") return false;
+
+      // 1. Explicit summitId match
+      if (app.summitId !== null && app.summitId !== undefined && Number(app.summitId) === Number(summit.id)) {
+        return true;
+      }
+
+      // 2. Primary College match
+      if (summit.college && isCollegeMatch(app.collegeName, summit.college)) {
+        return true;
+      }
+
+      return false;
+    });
+  };
+
+  const exportSummitAttendeesToExcel = (summit, attendees) => {
+    if (!summit || !Array.isArray(attendees) || attendees.length === 0) return;
+
+    const sanitize = (str) => String(str || "").replace(/[^a-zA-Z0-9_\- ]/g, "_");
+    const fileName = `${sanitize(summit.college || "College")}_${sanitize(summit.title || "Summit")}_Enrolled_Students.xls`;
+
+    let table = `<table border="1">
+      <thead>
+        <tr style="background-color: #047857; color: #ffffff; font-weight: bold; text-align: left;">
+          <th>#</th>
+          <th>Student Name</th>
+          <th>Email Address</th>
+          <th>Phone Number</th>
+          <th>College Name</th>
+          <th>Program Title</th>
+          <th>Degree & Branch</th>
+          <th>Pass Code</th>
+          <th>Amount Paid (INR)</th>
+          <th>Payment Status</th>
+          <th>Verification Status</th>
+          <th>Registration Date</th>
+        </tr>
+      </thead>
+      <tbody>`;
+
+    attendees.forEach((app, idx) => {
+      const name = app.studentName || app.name || "Student";
+      const email = app.email || "-";
+      const phone = app.phone || "-";
+      const col = app.collegeName || summit.college || "-";
+      const prog = app.programTitle || summit.title || "-";
+      const deg = `${app.degree || "B.Tech"} - ${app.branch || "CSE"}`;
+      const pass = app.passCode || "PASS-VERIFIED";
+      const amt = Number(app.amountPaid || app.amount || summit.price || 1999).toLocaleString('en-IN');
+      const payStatus = app.paymentStatus || "Paid";
+      const verStatus = app.verificationStatus || "Verified";
+      const regDate = app.createdAt ? new Date(app.createdAt).toLocaleDateString('en-IN') : new Date().toLocaleDateString('en-IN');
+
+      table += `<tr>
+        <td>${idx + 1}</td>
+        <td>${name}</td>
+        <td>${email}</td>
+        <td>'${phone}</td>
+        <td>${col}</td>
+        <td>${prog}</td>
+        <td>${deg}</td>
+        <td>${pass}</td>
+        <td>₹${amt}</td>
+        <td>${payStatus}</td>
+        <td>${verStatus}</td>
+        <td>${regDate}</td>
+      </tr>`;
+    });
+
+    table += `</tbody></table>`;
+
+    const blob = new Blob([`\ufeff${table}`], { type: 'application/vnd.ms-excel;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = fileName;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   };
 
   useEffect(() => {
     loadSummits();
+    window.addEventListener("summits_updated", loadSummits);
+    window.addEventListener("applications_updated", loadSummits);
+
+    let bc = null;
+    if (typeof window !== "undefined" && "BroadcastChannel" in window) {
+      bc = new BroadcastChannel("vmanous_live_updates");
+      bc.onmessage = (msg) => {
+        if (msg.data?.type === "SUMMIT_UPDATED") {
+          loadSummits();
+        }
+      };
+    }
+
+    const syncInterval = setInterval(() => {
+      loadSummits();
+    }, 5000);
+
+    return () => {
+      window.removeEventListener("summits_updated", loadSummits);
+      window.removeEventListener("applications_updated", loadSummits);
+      if (bc) bc.close();
+      clearInterval(syncInterval);
+    };
   }, []);
 
   const openAddModal = () => {
@@ -107,7 +236,7 @@ const ManagePrograms = () => {
       taxRate: 18,
       taxMode: "Exclusive",
       processingFee: 0,
-      processingFeeType: "Fixed",
+      processingFeeType: "Percentage",
       features: "",
     });
     setIsModalOpen(true);
@@ -138,8 +267,8 @@ const ManagePrograms = () => {
       originalPrice: summit.originalPrice || 4999,
       taxRate: summit.taxRate !== undefined ? summit.taxRate : 18,
       taxMode: summit.taxMode || "Exclusive",
-      processingFee: summit.processingFee || 0,
-      processingFeeType: summit.processingFeeType || "Fixed",
+      processingFee: (summit.processingFee !== undefined && summit.processingFee !== null) ? summit.processingFee : 0,
+      processingFeeType: (summit.processingFeeType && summit.processingFeeType !== 'Fixed') ? summit.processingFeeType : "Percentage",
       features: (summit.features || []).join("\n"),
     });
     setIsModalOpen(true);
@@ -156,17 +285,36 @@ const ManagePrograms = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (formData.startDate) {
+      const startDisp = isoToDDMMYYYY(formData.startDate);
+      if (!isValidDDMMYYYY(startDisp)) {
+        alert("Please enter a valid Start Date in DD/MM/YYYY format.");
+        return;
+      }
+    }
+
+    if (formData.endDate) {
+      const endDisp = isoToDDMMYYYY(formData.endDate);
+      if (!isValidDDMMYYYY(endDisp)) {
+        alert("Please enter a valid End Date in DD/MM/YYYY format.");
+        return;
+      }
+    }
+
     const days = parseInt(formData.durationDays) || 1;
     const duration = `${days}-Day Live Workshop`;
     const timeStr = `${formData.startTime || "10:00"} ${formData.startAmPm || "AM"} - ${formData.endTime || "05:00"} ${formData.endAmPm || "PM"}`;
 
+    const finalEndDate = formData.endDate || formData.startDate;
     const formattedDate =
       formData.startDate || formData.endDate
-        ? formatEventDates(formData.startDate, formData.endDate)
+        ? formatEventDates(formData.startDate, finalEndDate)
         : formData.date;
 
+    const featStr = typeof formData.features === 'string' ? formData.features : '';
     const summitData = {
       ...formData,
       duration: duration,
@@ -177,14 +325,14 @@ const ManagePrograms = () => {
       originalPrice: Number(formData.originalPrice),
       taxRate: Number(formData.taxRate),
       processingFee: Number(formData.processingFee),
-      processingFeeType: formData.processingFeeType || "Fixed",
-      features: formData.features.split("\n").filter((f) => f.trim() !== ""),
+      processingFeeType: formData.processingFeeType || "Percentage",
+      features: featStr.split("\n").filter((f) => f.trim() !== ""),
     };
 
     if (editingId) {
-      updateSummit(editingId, summitData);
+      await updateSummit(editingId, summitData);
     } else {
-      addSummit(summitData);
+      await addSummit(summitData);
     }
 
     setSummits(getSummits());
@@ -222,7 +370,7 @@ const ManagePrograms = () => {
             className="flex items-center gap-2 px-4 py-2 bg-[#2D73B4] text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm font-medium cursor-pointer"
           >
             <Plus size={18} />
-            Create New Workshop
+            Create New
           </button>
         </div>
       </div>
@@ -388,6 +536,7 @@ const ManagePrograms = () => {
                   isHistory={true}
                   onEdit={null}
                   onDelete={handleDelete}
+                  onViewStudents={openHistoryStudentsModal}
                 />
               </div>
             ))}
@@ -450,7 +599,15 @@ const ManagePrograms = () => {
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <div className="flex justify-end gap-3">
+                        <div className="flex justify-end items-center gap-2">
+                          <button
+                            onClick={() => openHistoryStudentsModal(summit)}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-semibold rounded-md hover:bg-emerald-100 transition-colors cursor-pointer"
+                            title="View Enrolled Student Registration List"
+                          >
+                            <Users size={14} />
+                            <span>Enrolled Student List ({summit.enrolledCount !== undefined ? summit.enrolledCount : 0})</span>
+                          </button>
                           <button
                             onClick={() => handleDelete(summit.id)}
                             className="text-gray-400 hover:text-red-600 transition-colors p-1"
@@ -483,7 +640,7 @@ const ManagePrograms = () => {
             {/* Modal Header */}
             <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/80 shrink-0">
               <h2 className="text-base sm:text-lg font-bold text-vmanous-navy-dark">
-                {editingId ? "Edit Workshop Program" : "Create New Workshop"}
+                {editingId ? "Edit Program" : "Create New"}
               </h2>
               <button
                 type="button"
@@ -616,7 +773,7 @@ const ManagePrograms = () => {
 
                     <div>
                       <label className="block text-xs font-semibold text-gray-700 mb-1">
-                        Platform Fee
+                        Gateway
                       </label>
                       <div className="flex items-center w-full h-9 border border-gray-200 rounded-md bg-white overflow-hidden focus-within:ring-2 focus-within:ring-[#2D73B4]/20 focus-within:border-[#2D73B4]">
                         <input
@@ -627,15 +784,18 @@ const ManagePrograms = () => {
                           className="w-full h-full px-2.5 text-xs font-semibold outline-none bg-transparent text-slate-800 min-w-0"
                           placeholder="0"
                         />
-                        <select
-                          name="processingFeeType"
-                          value={formData.processingFeeType || "Fixed"}
-                          onChange={handleInputChange}
-                          className="h-full px-2 text-xs bg-slate-50 border-l border-gray-200 font-bold outline-none text-slate-700 cursor-pointer"
-                        >
-                          <option value="Fixed">₹</option>
-                          <option value="Percentage">%</option>
-                        </select>
+                        <div className="relative h-full border-l border-gray-200 flex items-center bg-slate-50 hover:bg-slate-100 transition-colors">
+                          <select
+                            name="processingFeeType"
+                            value={formData.processingFeeType || "Percentage"}
+                            onChange={handleInputChange}
+                            className="h-full pl-2 pr-6 text-xs bg-transparent font-bold outline-none text-slate-700 cursor-pointer appearance-none"
+                          >
+                            <option value="Fixed">₹</option>
+                            <option value="Percentage">%</option>
+                          </select>
+                          <ChevronDown className="w-3 h-3 text-slate-500 absolute right-1.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -644,20 +804,23 @@ const ManagePrograms = () => {
                     <label className="block text-xs font-semibold text-gray-700 mb-1">
                       Tax Mode
                     </label>
-                    <select
-                      name="taxMode"
-                      value={formData.taxMode}
-                      onChange={handleInputChange}
-                      className="w-full h-9 px-3 border border-gray-200 rounded-md focus:ring-2 focus:ring-[#2D73B4]/20 focus:border-[#2D73B4] outline-none text-xs bg-white font-medium"
-                    >
-                      <option value="Exclusive">
-                        Exclusive (Add GST % extra at checkout)
-                      </option>
-                      <option value="Inclusive">
-                        Inclusive (GST included in price)
-                      </option>
-                      <option value="Free">Free / No Charge</option>
-                    </select>
+                    <div className="relative">
+                      <select
+                        name="taxMode"
+                        value={formData.taxMode}
+                        onChange={handleInputChange}
+                        className="w-full h-9 pl-3 pr-8 border border-gray-200 rounded-md focus:ring-2 focus:ring-[#2D73B4]/20 focus:border-[#2D73B4] outline-none text-xs bg-white font-medium appearance-none cursor-pointer"
+                      >
+                        <option value="Exclusive">
+                          Exclusive (Add GST % extra at checkout)
+                        </option>
+                        <option value="Inclusive">
+                          Inclusive (GST included in price)
+                        </option>
+                        <option value="Free">Free / No Charge</option>
+                      </select>
+                      <ChevronDown className="w-4 h-4 text-slate-500 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                    </div>
                   </div>
                 </div>
 
@@ -665,22 +828,42 @@ const ManagePrograms = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
                   <div>
                     <label className="block text-xs font-semibold text-gray-700 mb-1">
-                      Duration
+                      Total Hours & Duration
                     </label>
-                    <div className="flex items-center w-full h-9 border border-gray-200 rounded-md bg-white overflow-hidden focus-within:ring-2 focus-within:ring-[#2D73B4]/20 focus-within:border-[#2D73B4]">
-                      <input
-                        type="number"
-                        min="1"
-                        max="30"
-                        required
-                        name="durationDays"
-                        value={formData.durationDays}
-                        onChange={handleInputChange}
-                        className="w-14 h-full px-2 text-center text-xs font-bold outline-none bg-transparent text-slate-800"
-                        placeholder="1"
-                      />
-                      <div className="h-full border-l border-gray-200 flex items-center flex-1 px-3 bg-slate-50 text-xs font-semibold text-slate-700 select-none">
-                        -Day Live Workshop
+                    <div className="flex items-center gap-2">
+                      {/* Hours Input (Left Side) */}
+                      <div className="flex items-center w-1/2 h-9 border border-gray-200 rounded-md bg-white overflow-hidden focus-within:ring-2 focus-within:ring-[#2D73B4]/20 focus-within:border-[#2D73B4]">
+                        <input
+                          type="number"
+                          min="1"
+                          max="500"
+                          name="totalHours"
+                          value={formData.totalHours || ''}
+                          onChange={handleInputChange}
+                          className="w-12 h-full px-1.5 text-center text-xs font-bold outline-none bg-transparent text-slate-800"
+                          placeholder="10"
+                        />
+                        <div className="h-full border-l border-gray-200 flex items-center flex-1 px-2 bg-slate-50 text-[11px] font-semibold text-slate-700 select-none">
+                          Hrs
+                        </div>
+                      </div>
+
+                      {/* Days Input (Right Side) */}
+                      <div className="flex items-center w-1/2 h-9 border border-gray-200 rounded-md bg-white overflow-hidden focus-within:ring-2 focus-within:ring-[#2D73B4]/20 focus-within:border-[#2D73B4]">
+                        <input
+                          type="number"
+                          min="1"
+                          max="30"
+                          required
+                          name="durationDays"
+                          value={formData.durationDays}
+                          onChange={handleInputChange}
+                          className="w-10 h-full px-1 text-center text-xs font-bold outline-none bg-transparent text-slate-800"
+                          placeholder="2"
+                        />
+                        <div className="h-full border-l border-gray-200 flex items-center flex-1 px-2 bg-slate-50 text-[11px] font-semibold text-slate-700 select-none">
+                          -Day Workshop
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -700,15 +883,18 @@ const ManagePrograms = () => {
                           className="w-full h-full px-2 text-xs font-semibold outline-none bg-transparent text-slate-800 min-w-0"
                           placeholder="10:00"
                         />
-                        <select
-                          name="startAmPm"
-                          value={formData.startAmPm}
-                          onChange={handleInputChange}
-                          className="h-full px-1.5 text-xs bg-slate-50 border-l border-gray-200 font-bold outline-none text-slate-700 cursor-pointer"
-                        >
-                          <option value="AM">AM</option>
-                          <option value="PM">PM</option>
-                        </select>
+                        <div className="relative h-full border-l border-gray-200 flex items-center bg-slate-50 hover:bg-slate-100 transition-colors">
+                          <select
+                            name="startAmPm"
+                            value={formData.startAmPm}
+                            onChange={handleInputChange}
+                            className="h-full pl-2 pr-6 text-xs bg-transparent font-bold outline-none text-slate-700 cursor-pointer appearance-none"
+                          >
+                            <option value="AM">AM</option>
+                            <option value="PM">PM</option>
+                          </select>
+                          <ChevronDown className="w-3 h-3 text-slate-500 absolute right-1.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                        </div>
                       </div>
                       <span className="text-gray-400 font-bold text-xs shrink-0">
                         to
@@ -723,15 +909,18 @@ const ManagePrograms = () => {
                           className="w-full h-full px-2 text-xs font-semibold outline-none bg-transparent text-slate-800 min-w-0"
                           placeholder="05:00"
                         />
-                        <select
-                          name="endAmPm"
-                          value={formData.endAmPm}
-                          onChange={handleInputChange}
-                          className="h-full px-1.5 text-xs bg-slate-50 border-l border-gray-200 font-bold outline-none text-slate-700 cursor-pointer"
-                        >
-                          <option value="AM">AM</option>
-                          <option value="PM">PM</option>
-                        </select>
+                        <div className="relative h-full border-l border-gray-200 flex items-center bg-slate-50 hover:bg-slate-100 transition-colors">
+                          <select
+                            name="endAmPm"
+                            value={formData.endAmPm}
+                            onChange={handleInputChange}
+                            className="h-full pl-2 pr-6 text-xs bg-transparent font-bold outline-none text-slate-700 cursor-pointer appearance-none"
+                          >
+                            <option value="AM">AM</option>
+                            <option value="PM">PM</option>
+                          </select>
+                          <ChevronDown className="w-3 h-3 text-slate-500 absolute right-1.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -752,10 +941,9 @@ const ManagePrograms = () => {
                   </div>
                   <div>
                     <label className="block text-xs font-semibold text-gray-700 mb-1">
-                      End Date *
+                      End Date (Optional)
                     </label>
                     <DateInput
-                      required
                       name="endDate"
                       value={formData.endDate}
                       onChange={handleInputChange}
@@ -827,6 +1015,165 @@ const ManagePrograms = () => {
               >
                 {editingId ? "Save Changes" : "Create Workshop"}
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 📜 3. ENROLLED STUDENTS SIDE DRAWER / POPUP MODAL (For Past Workshops) */}
+      {historyModalSummit && (
+        <div className="fixed inset-0 z-50 overflow-hidden flex justify-end bg-slate-900/60 backdrop-blur-xs transition-opacity">
+          {/* Backdrop click to close */}
+          <div
+            className="absolute inset-0"
+            onClick={() => {
+              setHistoryModalSummit(null);
+              setHistorySearchQuery("");
+            }}
+          />
+
+          {/* Side Drawer Panel */}
+          <div className="relative w-full max-w-2xl bg-white shadow-2xl h-full flex flex-col z-10 overflow-hidden border-l border-slate-200">
+            {/* Drawer Header */}
+            <div className="px-6 py-5 bg-gradient-to-r from-emerald-900 via-slate-900 to-vmanous-navy-dark text-white flex items-center justify-between shadow-md shrink-0">
+              <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase bg-amber-400 text-slate-900">
+                    Completed Workshop
+                  </span>
+                  <span className="text-xs text-emerald-300 font-semibold">
+                    {historyModalSummit.date}
+                  </span>
+                </div>
+                <h3 className="text-lg font-bold tracking-tight text-white">
+                  {historyModalSummit.title}
+                </h3>
+                <p className="text-xs text-emerald-200/80 flex items-center gap-1.5 mt-0.5">
+                  <Building2 size={13} className="text-emerald-400 shrink-0" />
+                  <span>{historyModalSummit.college}</span>
+                </p>
+              </div>
+
+              <button
+                onClick={() => {
+                  setHistoryModalSummit(null);
+                  setHistorySearchQuery("");
+                }}
+                className="p-2 text-slate-300 hover:text-white hover:bg-white/10 rounded-full transition-colors cursor-pointer"
+                title="Close Panel"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* Drawer Action Bar */}
+            <div className="px-6 py-4 bg-slate-50 border-b border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-3 shrink-0">
+              {/* Search Filter */}
+              <div className="relative w-full sm:w-72">
+                <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                <input
+                  type="text"
+                  placeholder="Search student, email, phone..."
+                  value={historySearchQuery}
+                  onChange={(e) => setHistorySearchQuery(e.target.value)}
+                  className="w-full pl-9 pr-3 py-1.5 text-xs bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 transition-all"
+                />
+              </div>
+
+              {/* Download Excel Button */}
+              {(() => {
+                const attendees = getAttendeesForSummit(historyModalSummit);
+                return (
+                  <button
+                    onClick={() => exportSummitAttendeesToExcel(historyModalSummit, attendees)}
+                    disabled={attendees.length === 0}
+                    className="w-full sm:w-auto px-4 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white font-bold text-xs rounded-lg transition-all shadow-sm flex items-center justify-center gap-2 cursor-pointer shrink-0"
+                    title="Download Excel Spreadsheet of Enrolled Students"
+                  >
+                    <Download size={15} />
+                    <span>Export Excel File (.xls)</span>
+                  </button>
+                );
+              })()}
+            </div>
+
+            {/* Enrolled Students List Content */}
+            <div className="flex-1 overflow-y-auto p-6 space-y-4">
+              {(() => {
+                const allAttendees = getAttendeesForSummit(historyModalSummit);
+                const filteredAttendees = allAttendees.filter((app) => {
+                  if (!historySearchQuery.trim()) return true;
+                  const q = historySearchQuery.toLowerCase();
+                  const name = (app.studentName || app.name || "").toLowerCase();
+                  const email = (app.email || "").toLowerCase();
+                  const phone = (app.phone || "").toLowerCase();
+                  const passCode = (app.passCode || "").toLowerCase();
+                  return name.includes(q) || email.includes(q) || phone.includes(q) || passCode.includes(q);
+                });
+
+                return (
+                  <>
+                    <div className="flex items-center justify-between pb-2 border-b border-slate-200">
+                      <div className="flex items-center gap-2">
+                        <Users size={16} className="text-emerald-600" />
+                        <span className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+                          Enrolled Students Registration List
+                        </span>
+                      </div>
+                      <span className="px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-emerald-100 text-emerald-800 border border-emerald-300">
+                        {filteredAttendees.length} of {allAttendees.length} Students
+                      </span>
+                    </div>
+
+                    {filteredAttendees.length > 0 ? (
+                      <div className="space-y-3">
+                        {filteredAttendees.map((student, idx) => (
+                          <div
+                            key={student.id || idx}
+                            className="p-3.5 bg-white rounded-xl border border-slate-200 shadow-2xs hover:border-emerald-300 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+                          >
+                            <div className="flex items-start gap-3">
+                              <div className="w-8 h-8 rounded-full bg-emerald-50 text-emerald-700 font-extrabold text-xs flex items-center justify-center border border-emerald-200 shrink-0 mt-0.5">
+                                {idx + 1}
+                              </div>
+                              <div>
+                                <div className="font-bold text-sm text-slate-900">
+                                  {student.studentName || student.name || "Student"}
+                                </div>
+                                <div className="text-xs text-slate-500 font-medium">
+                                  {student.email} • {student.phone}
+                                </div>
+                                <div className="text-[11px] text-slate-400 mt-1 font-semibold">
+                                  {student.degree || "B.Tech"} - {student.branch || "Computer Science"} ({student.year || "3rd Year"})
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className="flex flex-col sm:items-end gap-1 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-100">
+                              <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-extrabold uppercase bg-emerald-50 text-emerald-700 border border-emerald-200 tracking-wider">
+                                {student.paymentStatus || "Paid"}
+                              </span>
+                              <span className="text-[10px] font-mono font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
+                                {student.passCode || "PASS-VERIFIED"}
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="py-12 text-center text-slate-400 bg-slate-50 rounded-xl border border-slate-200/80 space-y-2">
+                        <Users size={32} className="mx-auto text-slate-300" />
+                        <p className="text-sm font-semibold text-slate-600">
+                          No enrolled students found.
+                        </p>
+                        <p className="text-xs text-slate-400">
+                          {historySearchQuery ? "Try adjusting your search query." : "No student submissions recorded for this past workshop."}
+                        </p>
+                      </div>
+                    )}
+                  </>
+                );
+              })()}
             </div>
           </div>
         </div>

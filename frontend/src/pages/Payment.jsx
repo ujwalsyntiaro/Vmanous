@@ -22,20 +22,42 @@ import Container from '../components/ui/Container';
 import { initiatePhonePePayment } from '../services/paymentService';
 import { addApplication } from '../services/applicationService';
 import { addStudent } from '../services/studentService';
+import { fetchSummitsAsync } from '../services/summitService';
 
 export const Payment = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [formData, setFormData] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [activeSummit, setActiveSummit] = useState(location.state?.summitDetails || null);
 
-  const summitDetails = location.state?.summitDetails;
+  useEffect(() => {
+    // If no state is found, redirect back to enroll
+    if (!location.state || !location.state.formData) {
+      navigate('/enroll');
+      return;
+    }
+    setFormData(location.state.formData);
+
+    // Fetch latest summit details from DB to guarantee 100% fresh fees from cPanel
+    fetchSummitsAsync().then(summits => {
+      if (summits && summits.length > 0) {
+        const progTitle = location.state?.summitDetails?.title || location.state?.formData?.programInterest;
+        const match = summits.find(s => s.id === location.state?.summitDetails?.id) || summits.find(s => s.title === progTitle) || summits[0];
+        if (match) {
+          setActiveSummit(match);
+        }
+      }
+    }).catch(err => console.error("Error fetching summit details for payment:", err));
+  }, [location, navigate]);
+
+  const summitDetails = activeSummit || location.state?.summitDetails;
   const basePrice = summitDetails?.price !== undefined ? Number(summitDetails.price) : 1999;
   const originalPrice = summitDetails?.originalPrice ? Number(summitDetails.originalPrice) : 4999;
   const taxRate = summitDetails?.taxRate !== undefined ? Number(summitDetails.taxRate) : 18;
   const taxMode = summitDetails?.taxMode || 'Exclusive';
-  const rawProcessingFee = summitDetails?.processingFee !== undefined ? Number(summitDetails.processingFee) : 0;
-  const processingFeeType = summitDetails?.processingFeeType || 'Fixed';
+  const rawProcessingFee = summitDetails?.processingFee !== undefined && summitDetails?.processingFee !== null ? Number(summitDetails.processingFee) : 0;
+  const processingFeeType = summitDetails?.processingFeeType || 'Percentage';
   const processingFee = processingFeeType === 'Percentage'
     ? Math.round((basePrice * rawProcessingFee) / 100)
     : rawProcessingFee;
@@ -43,15 +65,6 @@ export const Payment = () => {
   const isFree = basePrice === 0 || taxMode === 'Free';
   const taxAmount = isFree || taxMode === 'Inclusive' ? 0 : Math.round((basePrice * taxRate) / 100);
   const totalAmount = isFree ? 0 : (basePrice + taxAmount + processingFee);
-
-  useEffect(() => {
-    // If no state is found, redirect back to enroll
-    if (!location.state || !location.state.formData) {
-      navigate('/enroll');
-    } else {
-      setFormData(location.state.formData);
-    }
-  }, [location, navigate]);
 
   if (!formData) return null;
 
@@ -217,8 +230,8 @@ export const Payment = () => {
                             </p>
                           )}
                           {formData.bloodGroup && (
-                            <p className="text-emerald-700 flex items-center gap-1 font-semibold shrink-0">
-                              <Droplet size={11} className="fill-emerald-500 text-emerald-600 shrink-0" />
+                            <p className="text-slate-800 flex items-center gap-1 font-semibold shrink-0">
+                              <Droplet size={11} className="fill-red-500 text-red-600 shrink-0" />
                               <span>Blood: {formData.bloodGroup}</span>
                             </p>
                           )}
@@ -338,30 +351,30 @@ export const Payment = () => {
                 <div className="space-y-3 mb-6">
                   <div className="flex justify-between items-center text-xs text-slate-600">
                     <span>Workshop Registration Fee</span>
-                    <span className="font-bold text-slate-800 text-left min-w-[70px] inline-block">
+                    <span className="font-medium text-slate-800 text-left min-w-[70px] inline-block">
                       {isFree ? 'FREE' : `₹${basePrice.toLocaleString('en-IN')}`}
                     </span>
                   </div>
 
                   <div className="flex justify-between items-center text-xs text-slate-600">
                     <span>Taxes {taxMode === 'Inclusive' ? '(Included)' : taxRate ? `(${taxRate}% GST)` : ''}</span>
-                    <span className="font-bold text-slate-800 text-left min-w-[70px] inline-block">
+                    <span className="font-medium text-slate-800 text-left min-w-[70px] inline-block">
                       {taxMode === 'Inclusive' ? 'Included' : `₹${taxAmount.toLocaleString('en-IN')}`}
                     </span>
                   </div>
 
-                  {processingFee > 0 && (
+                  {(summitDetails?.processingFee !== undefined && summitDetails?.processingFee !== null) && (
                     <div className="flex justify-between items-center text-xs text-slate-600">
-                      <span>Platform Fee {processingFeeType === 'Percentage' ? `(${rawProcessingFee}%)` : ''}</span>
-                      <span className="font-bold text-slate-800 text-left min-w-[70px] inline-block">
+                      <span>Gateway Fee {processingFeeType === 'Percentage' ? `(${rawProcessingFee}%)` : ''}</span>
+                      <span className="font-medium text-slate-800 text-left min-w-[70px] inline-block">
                         ₹{processingFee.toLocaleString('en-IN')}
                       </span>
                     </div>
                   )}
 
                   <div className="border-t border-gray-100 pt-3 flex justify-between items-center">
-                    <span className="text-sm font-bold text-slate-700">Subtotal</span>
-                    <span className="text-base font-extrabold text-slate-900 text-left min-w-[70px] inline-block">
+                    <span className="text-sm font-medium text-slate-700">Subtotal</span>
+                    <span className="text-base font-medium text-slate-900 text-left min-w-[70px] inline-block">
                       {isFree ? 'FREE' : `₹${totalAmount.toLocaleString('en-IN')}`}
                     </span>
                   </div>
@@ -370,13 +383,13 @@ export const Payment = () => {
                 {/* Total Payable */}
                 <div className="bg-[#F8FAFC] rounded-lg p-4 mb-4 flex justify-between items-center">
                   <div>
-                    <span className="text-xs text-slate-500 font-semibold uppercase tracking-wider block mb-1">Total Amount</span>
+                    <span className="text-xs text-slate-500 font-medium uppercase tracking-wider block mb-1">Total Amount</span>
                     <span className="text-[11px] font-medium text-slate-600 bg-white px-2.5 py-0.5 rounded border border-slate-200 shadow-xs inline-block">
                       {isFree ? '100% Free' : taxMode === 'Inclusive' ? 'GST Included' : `Inc. ${taxRate}% GST`}
                     </span>
                   </div>
                   <div className="text-right">
-                    <span className="text-2xl font-black text-slate-900 block">
+                    <span className="text-2xl font-medium text-slate-900 block">
                       {isFree ? 'FREE' : `₹${totalAmount.toLocaleString('en-IN')}`}
                     </span>
                   </div>
@@ -387,25 +400,30 @@ export const Payment = () => {
                   <span>Note: The registration fee is non-refundable after payment.</span>
                 </div>
 
-                {/* Pay & Submit Button */}
-                <button
-                  type="button"
-                  onClick={handleConfirm}
-                  disabled={isProcessing}
-                  className="w-full py-3 bg-white border-2 border-slate-700 text-slate-900 font-extrabold rounded-lg hover:border-emerald-600 hover:text-emerald-600 hover:bg-emerald-50/40 transition-all duration-200 flex items-center justify-center gap-2 text-base cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed mb-4 shadow-sm group"
-                >
-                  {isProcessing ? (
-                    <>
-                      <div className="w-4 h-4 border-2 border-slate-700/30 border-t-slate-900 rounded-full animate-spin" />
-                      <span>Processing Payment...</span>
-                    </>
-                  ) : (
-                    <>
-                      <span>Pay Now</span>
-                      <ArrowRight size={18} className="transform group-hover:translate-x-1 transition-transform duration-200" />
-                    </>
-                  )}
-                </button>
+                {/* Pay & Submit Button Aligned Right with Hover Zoom Effect */}
+                <div className="flex justify-end mb-4">
+                  <motion.button
+                    whileHover={{ scale: 1.06 }}
+                    whileTap={{ scale: 0.96 }}
+                    transition={{ type: "spring", stiffness: 400, damping: 17 }}
+                    type="button"
+                    onClick={handleConfirm}
+                    disabled={isProcessing}
+                    className="px-6 py-2 bg-white border border-slate-700 text-slate-900 font-medium rounded-md hover:border-emerald-600 hover:text-emerald-600 hover:bg-emerald-50/40 transition-colors duration-200 flex items-center justify-center gap-2 text-sm cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed shadow-xs group"
+                  >
+                    {isProcessing ? (
+                      <>
+                        <div className="w-3.5 h-3.5 border-2 border-slate-700/30 border-t-slate-900 rounded-full animate-spin" />
+                        <span>Processing Payment...</span>
+                      </>
+                    ) : (
+                      <>
+                        <span>Pay Now</span>
+                        <ArrowRight size={16} className="transform group-hover:translate-x-1 transition-transform duration-200" />
+                      </>
+                    )}
+                  </motion.button>
+                </div>
 
                 <div className="text-center text-xs text-slate-400 font-medium">
                   Payments are 100% encrypted and safe

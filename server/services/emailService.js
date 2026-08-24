@@ -122,46 +122,56 @@ const sendStudentPassEmail = async (data) => {
     console.log(`[PDF Pass Generator] Generating PDF Pass for ${studentName} (${passCode})...`);
     const pdfBuffer = await generatePassPDF(data);
 
-    // 2. Configure Email Options
+    const now = new Date();
+    const bookingDateTime = now.toLocaleDateString('en-IN', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    }) + ',  ' + now.toLocaleTimeString('en-IN', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true
+    });
+
+    const eventTitle = data.programTitle || 'AI Submit 2026';
+    const collegeName = data.collegeName || 'IIT Patna';
+    const eventDate = data.eventDate || data.startDate ? new Date(data.eventDate || data.startDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' }) : '10 September 2026';
+    const eventTime = data.timing || data.time || '10:00 AM to 6:00 PM';
+    const totalAmount = data.amountPaid ? `₹${Number(data.amountPaid).toLocaleString('en-IN')}` : '₹2,499';
+
+    // 2. Configure Email Options with Exact Requested User Pattern
     const mailOptions = {
-      from: `"VMANOUS AI Workshop" <${senderEmail}>`,
+      from: `"VMANOUS Team" <${senderEmail}>`,
       to: recipientEmail,
-      subject: `🎟️ Your Workshop Entry Pass - ${passCode}`,
+      subject: `Seat Booking Confirmed - ${eventTitle} at ${collegeName}`,
       html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; border: 1px solid #e2e8f0; border-radius: 12px; background-color: #ffffff;">
-          <div style="text-align: center; border-bottom: 2px solid #10b981; padding-bottom: 16px; margin-bottom: 20px;">
-            <h1 style="color: #0f172a; margin: 0; font-size: 24px;">🎉 Workshop Registration Confirmed!</h1>
-            <p style="color: #64748b; font-size: 14px; margin-top: 4px;">Thank you for enrolling in VMANOUS AI Summit & Workshop</p>
-          </div>
+        <div style="font-family: Arial, sans-serif; color: #222222; line-height: 1.5; font-size: 14px; max-width: 600px; padding: 10px;">
+          <p style="margin: 0 0 14px 0;">Dear ${studentName},</p>
 
-          <div style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: #ffffff; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed #475569; padding-bottom: 12px; margin-bottom: 12px;">
-              <span style="font-size: 12px; color: #94a3b8; text-transform: uppercase;">Official Entry Pass Attachment</span>
-              <span style="background-color: #10b981; color: #ffffff; font-size: 11px; padding: 3px 8px; border-radius: 4px; font-weight: bold;">VERIFIED & PAID</span>
-            </div>
+          <p style="margin: 0 0 14px 0;">Greetings from the VMANOUS Team!</p>
 
-            <h3 style="color: #38bdf8; margin: 0 0 10px 0; font-size: 18px;">${data.programTitle || 'AI SUMMIT WORKSHOP'}</h3>
+          <p style="margin: 0 0 14px 0;">We are pleased to confirm your seat booking for ${eventTitle}, scheduled to be held at ${collegeName}.</p>
 
-            <div style="font-size: 14px; line-height: 1.6;">
-              <p style="margin: 4px 0;">👤 <strong>Student Name:</strong> ${studentName}</p>
-              <p style="margin: 4px 0;">🏫 <strong>College:</strong> ${data.collegeName || 'G H RAISONI'}</p>
-              <p style="margin: 4px 0;">🎓 <strong>Degree / Branch:</strong> ${data.degree || 'B.Tech'} - ${data.branch || 'Engineering'}</p>
-              <p style="margin: 4px 0;">📍 <strong>Venue Location:</strong> ${data.venueLocation || 'Campus Auditorium'}</p>
-            </div>
+          <p style="margin: 0 0 14px 0;">Event Details:</p>
 
-            <div style="margin-top: 16px; padding: 12px; background-color: rgba(255,255,255,0.1); border-radius: 6px; text-align: center;">
-              <span style="font-size: 11px; color: #94a3b8; display: block;">PASS CODE / GATE TICKET ID</span>
-              <span style="font-size: 22px; font-weight: bold; color: #10b981; letter-spacing: 2px;">${passCode}</span>
-            </div>
-          </div>
+          <p style="margin: 0 0 4px 0;">Participant Name: ${studentName}</p>
+          <p style="margin: 0 0 4px 0;">College/Institute: ${collegeName}</p>
+          <p style="margin: 0 0 14px 0;">Event: ${eventTitle}</p>
 
-          <div style="padding: 14px; background-color: #f0fdf4; border-left: 4px solid #10b981; border-radius: 6px; font-size: 13px; color: #166534; margin-bottom: 20px;">
-            📄 <strong>PDF Pass Attached:</strong> Your official printable PDF entry pass (with scannable QR Code) is attached to this email (<code>VMANOUS_Workshop_Pass_${passCode}.pdf</code>). Please present it at the entry desk on workshop day.
-          </div>
+          <p style="margin: 0 0 4px 0;">Date: ${eventDate}</p>
+          <p style="margin: 0 0 4px 0;">Time: ${eventTime}</p>
+          <p style="margin: 0 0 4px 0;">Payment Received: ${totalAmount}</p>
+          <p style="margin: 0 0 14px 0;">Booking Date & Time: ${bookingDateTime}</p>
 
-          <p style="color: #94a3b8; font-size: 12px; text-align: center; margin: 0;">
-            VMANOUS Academic Partnerships • Need Help? Email <a href="mailto:support@vmanous.com" style="color: #2563eb;">support@vmanous.com</a>
-          </p>
+          <p style="margin: 0 0 14px 0;">Your payment of ${totalAmount} has been successfully received, and your seat has been reserved for the event.</p>
+
+          <p style="margin: 0 0 14px 0;">Please make sure to carry your registration/booking confirmation Pass on the day of the event.</p>
+
+          <p style="margin: 0 0 14px 0;">We look forward to welcoming you to ${eventTitle} at ${collegeName} and hope you have an insightful and rewarding experience.</p>
+
+          <p style="margin: 20px 0 4px 0;">Best Regards,</p>
+          <p style="margin: 0 0 2px 0;">${eventTitle} Team</p>
+          <p style="margin: 0;">VMANOUS</p>
         </div>
       `,
       attachments: [

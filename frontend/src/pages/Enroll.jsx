@@ -47,6 +47,30 @@ export const Enroll = () => {
       setUpcomingSummits(data.filter(isSummitActive));
     };
     loadSummits();
+
+    window.addEventListener("summits_updated", loadSummits);
+    window.addEventListener("applications_updated", loadSummits);
+
+    let bc = null;
+    if (typeof window !== "undefined" && "BroadcastChannel" in window) {
+      bc = new BroadcastChannel("vmanous_live_updates");
+      bc.onmessage = (msg) => {
+        if (msg.data?.type === "SUMMIT_UPDATED") {
+          loadSummits();
+        }
+      };
+    }
+
+    const syncInterval = setInterval(() => {
+      loadSummits();
+    }, 5000);
+
+    return () => {
+      window.removeEventListener("summits_updated", loadSummits);
+      window.removeEventListener("applications_updated", loadSummits);
+      if (bc) bc.close();
+      clearInterval(syncInterval);
+    };
   }, []);
 
   return (
