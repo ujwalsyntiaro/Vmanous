@@ -44,14 +44,14 @@ export const AISummitHero = ({ data }) => {
         <motion.div
           animate={
             isHovered
-              ? { scale: 1, opacity: 1, boxShadow: '0 0 16px rgba(255, 255, 255, 0.8)' }
+              ? { scale: 1, opacity: 1, boxShadow: '0 0 8px rgba(255, 255, 255, 0.45)' }
               : {
                   scale: [1, 1.05, 1],
                   opacity: [0.7, 1, 0.7],
                   boxShadow: [
-                    '0 0 0px rgba(255, 255, 255, 0.2)',
-                    '0 0 22px rgba(255, 255, 255, 0.95)',
-                    '0 0 0px rgba(255, 255, 255, 0.2)'
+                    '0 0 0px rgba(255, 255, 255, 0.1)',
+                    '0 0 11px rgba(255, 255, 255, 0.5)',
+                    '0 0 0px rgba(255, 255, 255, 0.1)'
                   ]
                 }
           }
@@ -70,7 +70,7 @@ export const AISummitHero = ({ data }) => {
         >
           <Link
             to="/enroll"
-            className="inline-flex items-center justify-center px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-lg text-xs sm:text-sm font-semibold text-white border-2 border-white bg-white/10 backdrop-blur-md hover:bg-white/25 hover:border-white transform hover:-translate-y-0.5 transition-all duration-200 group cursor-pointer whitespace-nowrap shadow-xl"
+            className="inline-flex items-center justify-center px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-lg text-xs sm:text-sm font-semibold text-white border-2 border-white bg-white/10 backdrop-blur-md hover:bg-white/25 hover:border-white transform hover:-translate-y-0.5 transition-all duration-200 group cursor-pointer whitespace-nowrap shadow-md"
           >
             <span className="flex items-center gap-2">
               Enroll Now

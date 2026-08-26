@@ -4,12 +4,15 @@ const {
   getSummits,
   createSummit,
   updateSummit,
-  deleteSummit
+  deleteSummit,
+  verifyEntryCode
 } = require('../controllers/summitController');
 
 router.route('/')
   .get(getSummits)
   .post(createSummit);
+
+router.post('/verify-entry-code', verifyEntryCode);
 
 router.route('/:id')
   .put(updateSummit)

@@ -210,6 +210,16 @@ export const Application = () => {
 
   useEffect(() => {
     window.scrollTo(0, 0);
+
+    // Guard: If summit requires an entry code, ensure user verified it
+    if (summitDetails?.entryCode) {
+      const isVerified = location.state?.entryCodeVerified || (typeof window !== 'undefined' && sessionStorage.getItem(`verified_entry_summit_${summitDetails.id}`) === 'true');
+      if (!isVerified) {
+        navigate('/enroll', { replace: true });
+        return;
+      }
+    }
+
     return () => {
       stopCamera(); // Cleanup on unmount
     };

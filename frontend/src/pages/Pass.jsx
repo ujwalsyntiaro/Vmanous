@@ -241,6 +241,20 @@ Issued On: ${currentDate}
           >
             {/* Main Pass Card Box */}
             <div className="bg-white border border-black relative pt-0 pb-0 shadow-sm">
+              {/* Close Icon (Top-Right Corner: No background, No border, Zoom In/Out on Hover) */}
+              <motion.button
+                type="button"
+                onClick={() => navigate('/')}
+                whileHover={{ scale: 1.25 }}
+                whileTap={{ scale: 0.9 }}
+                transition={{ type: "spring", stiffness: 400, damping: 15 }}
+                className="absolute top-2.5 right-2.5 z-30 p-1 text-slate-400 hover:text-slate-800 bg-transparent border-0 cursor-pointer outline-none focus:outline-none transition-colors"
+                title="Close"
+                data-html2canvas-ignore="true"
+              >
+                <X size={22} strokeWidth={2.2} />
+              </motion.button>
+
               {/* Green Checkmark Circle Symbol - Exactly Centered on the Top Horizontal Line */}
               <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 z-30 flex items-center justify-center pointer-events-none">
                 <div className="w-14 h-14 sm:w-16 sm:h-16 flex items-center justify-center">

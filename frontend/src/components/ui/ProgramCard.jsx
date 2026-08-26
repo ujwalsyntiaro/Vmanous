@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Building2, Calendar, CheckCircle2, ArrowRight, Edit2, Trash2, MapPin, Clock, Users } from 'lucide-react';
+import { Building2, Calendar, CheckCircle2, ArrowRight, Edit2, Trash2, MapPin, Clock, Users, Key } from 'lucide-react';
 import { isSummitActive } from '../../services/summitService';
 
 const ProgramCard = ({ summit, index = 0, isAdmin = false, isHistory = false, onRegister, onEdit, onDelete, onViewStudents }) => {
@@ -80,6 +80,13 @@ const ProgramCard = ({ summit, index = 0, isAdmin = false, isHistory = false, on
             <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-100/80 text-slate-700 border border-slate-200/80 font-semibold text-[11px] shadow-2xs">
               <MapPin size={13} className="text-emerald-600 flex-shrink-0" />
               <span className="truncate max-w-[200px]">{summit.address}</span>
+            </div>
+          )}
+
+          {isAdmin && summit.entryCode && (
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-amber-50 text-amber-800 border border-amber-200 font-mono font-bold text-[11px] shadow-2xs" title="Entry Code required by students">
+              <Key size={12} className="text-amber-600 flex-shrink-0" />
+              <span>Code: {summit.entryCode}</span>
             </div>
           )}
         </div>

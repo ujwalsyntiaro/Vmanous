@@ -33,24 +33,24 @@ const getPhotoBuffer = async (urlStr) => {
 const generatePassPDF = async (data) => {
   return new Promise(async (resolve, reject) => {
     try {
-      const passId = data.passCode || data.transactionId || data.passId || 'T2608231343366807015049';
-      const studentName = data.studentName || data.name || 'Ramesh Shahu';
-      const collegeName = (data.collegeName || 'VALLURUPALLI NAGESWARA RAO VIGNANA JYOTHI INSTITUTE OF ENGINEERING &TECHNOLOGY').toUpperCase();
-      const rawAddress = data.venueLocation || data.collegeAddress || data.city || 'Hyderabad';
+      const passId = data.transactionId || data.passCode || data.passId || 'T2608231343366807015049';
+      const studentName = data.studentName || data.name || 'Participant';
+      const collegeName = (data.collegeName || 'NATIONAL INSTITUTE OF TECHNOLOGY').toUpperCase();
+      const rawAddress = data.venueLocation || data.collegeAddress || data.city || 'Main Campus Auditorium';
       const collegeAddress = rawAddress.toLowerCase().replace(/\b[a-z]/g, c => c.toUpperCase());
-      const programTitle = data.programTitle || data.programInterest || 'AI Summit 2026';
-      const degree = data.degree || 'B.E.';
-      const branch = data.branch || data.specialization || 'Cloud Computing & DevOps';
-      const semester = data.year || data.semester || '5th Semester';
-      const bloodGroup = data.bloodGroup || 'A-';
-      const phone = data.phone || data.mobileNumber || '8523697412';
+      const programTitle = data.programTitle || data.programInterest || 'AI Summit Workshop 2026';
+      const degree = data.degree || 'B.Tech';
+      const branch = data.branch || data.specialization || 'Computer Science';
+      const semester = data.year || data.semester || '3rd Year';
+      const bloodGroup = data.bloodGroup || 'O+';
+      const phone = data.phone || data.mobileNumber || 'N/A';
       
-      let eventDateStr = '23 Aug 2026';
+      let eventDateStr = '24 Aug 2026';
       if (data.eventDate || data.startDate) {
         try {
           const d = new Date(data.eventDate || data.startDate);
           if (!isNaN(d.getTime())) {
-            eventDateStr = d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+            eventDateStr = d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'Asia/Kolkata' });
           }
         } catch (e) {}
       }
@@ -81,7 +81,7 @@ const generatePassPDF = async (data) => {
       let curY = 20;
 
       // 1. Fetch QR Code Buffer and Student Photo Buffer in Parallel
-      const qrDataText = `=== VMANOUS WORKSHOP PASS ===\nPass ID: ${passId}\nParticipant: ${studentName}\nEmail: ${data.email || 'N/A'}\nMobile: ${phone}\nCollege: ${collegeName}\nStatus: VERIFIED & PAID`;
+      const qrDataText = `=== VMANOUS WORKSHOP PASS ===\nPass ID: ${passId}\nParticipant: ${studentName}\nEmail: ${data.email || 'N/A'}\nMobile: ${phone}\nBlood Group: ${bloodGroup}\nCollege: ${collegeName}\nAddress: ${collegeAddress}\nDegree: ${degree}\nSpecialization: ${branch}\nSemester: ${semester}\nProgram: ${programTitle}\nTiming: ${timingStr}\nStatus: VERIFIED & PAID`;
       const [qrDataUrl, photoBuffer] = await Promise.all([
         QRCode.toDataURL(qrDataText, { width: 120, margin: 1 }),
         getPhotoBuffer(data.selfiePhotoUrl)
@@ -97,19 +97,19 @@ const generatePassPDF = async (data) => {
          .fillAndStroke('#ffffff', '#000000');
       doc.restore();
 
-      // 5. Top Center Checkmark Symbol (Overlapping Zig-Zag cleanly like Web Pass Image 2)
+      // 5. Top Center Checkmark Symbol (Centered on top border line matching Pass.jsx)
       doc.save();
-      // Mask Circle
-      doc.circle(180, 15, 20).fill('#ffffff');
-      // Green Arc Circle
+      // Mask Circle over border line
+      doc.circle(180, 10, 20).fill('#ffffff');
+      // Green Arc Circle with Gap at Top Right
       doc.lineWidth(3.5).strokeColor('#5cb85c')
-         .path('M 195 9 A 17 17 0 1 0 195 24')
+         .path('M 193 1 A 16 16 0 1 0 196 16')
          .stroke();
-      // Checkmark tick
+      // Checkmark tick extending out of circle
       doc.lineWidth(3.5).strokeColor('#5cb85c')
-         .moveTo(170, 16)
-         .lineTo(177, 24)
-         .lineTo(197, 4)
+         .moveTo(170, 11)
+         .lineTo(178, 19)
+         .lineTo(198, -1)
          .stroke();
       doc.restore();
 
@@ -243,19 +243,19 @@ const generatePassPDF = async (data) => {
       doc.font('Helvetica-Bold').fontSize(9.5).fillColor('#0f172a').text(semester, 240, boxY + 22, { width: boxW - 6, align: 'center' });
       doc.restore();
 
-      // 13. Dotted Ticket Tear Line & 180° Side Notch Cuts (50% reduced height)
+      // 13. Dotted Ticket Tear Line & Triangular Notch Cuts (< and >) matching Pass.jsx
       const dotY = boxY + boxH + 16;
       doc.save();
-      // Left side notch mask
-      doc.rect(8, dotY - 7, 4, 14).fill('#ffffff');
-      doc.path(`M 10,${dotY - 7} A 10,7 0 0,1 10,${dotY + 7}`)
+      // Left side triangular notch mask (<)
+      doc.rect(8, dotY - 9, 6, 18).fill('#ffffff');
+      doc.path(`M 10,${dotY - 9} L 18,${dotY} L 10,${dotY + 9}`)
          .lineWidth(1)
          .strokeColor('#000000')
          .stroke();
 
-      // Right side notch mask
-      doc.rect(348, dotY - 7, 4, 14).fill('#ffffff');
-      doc.path(`M 350,${dotY - 7} A 10,7 0 0,0 350,${dotY + 7}`)
+      // Right side triangular notch mask (>)
+      doc.rect(346, dotY - 9, 6, 18).fill('#ffffff');
+      doc.path(`M 350,${dotY - 9} L 342,${dotY} L 350,${dotY + 9}`)
          .lineWidth(1)
          .strokeColor('#000000')
          .stroke();

@@ -1,4 +1,5 @@
 const nodemailer = require('nodemailer');
+const QRCode = require('qrcode');
 const { generatePassPDF } = require('./pdfPassService');
 
 // Cached Persistent Transporter with Connection Pooling for Ultra-Fast Delivery
@@ -112,7 +113,7 @@ const sendCollegeRequestEmail = async (data) => {
 };
 
 /**
- * Function to send Workshop Entry Pass Email with attached PDF Pass to Student
+ * Function to send Workshop Entry Pass Email with matching Pass Card and attached PDF
  * @param {Object} data - Application & Pass Data
  */
 const sendStudentPassEmail = async (data) => {
@@ -125,84 +126,241 @@ const sendStudentPassEmail = async (data) => {
     return { success: false, error: 'No recipient email' };
   }
 
-  const passCode = data.passCode || 'PASS-' + Math.floor(100000 + Math.random() * 900000);
-  const studentName = data.studentName || 'Participant';
+  const passId = data.transactionId || data.passCode || data.passId || 'T' + Date.now();
+  const passCode = data.passCode || passId;
+  const studentName = data.studentName || data.name || 'Participant';
+  const collegeName = (data.collegeName || 'NATIONAL INSTITUTE OF TECHNOLOGY').toUpperCase();
+  const rawAddress = data.venueLocation || data.collegeAddress || data.city || 'Main Campus Auditorium';
+  const collegeAddress = rawAddress.toLowerCase().replace(/\b[a-z]/g, c => c.toUpperCase());
+  const programTitle = data.programTitle || data.programInterest || 'AI Summit Workshop 2026';
+  const degree = data.degree || 'B.Tech';
+  const branch = data.branch || data.specialization || 'Computer Science';
+  const semester = data.year || data.semester || '3rd Year';
+  const bloodGroup = data.bloodGroup || 'O+';
+  const phone = data.phone || data.mobileNumber || 'N/A';
 
-  console.log(`[Pass Email Dispatch] Sending PDF Pass to student inserted Gmail ID: ${recipientEmail}...`);
+  const bookingDate = data.createdAt ? new Date(data.createdAt) : new Date();
+  const eventDateStr = data.eventDate || data.startDate
+    ? new Date(data.eventDate || data.startDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Asia/Kolkata' })
+    : bookingDate.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Asia/Kolkata' });
+  const timingStr = data.timing || data.workshopTime || '10:00 AM - 04:00 PM';
+
+  console.log(`[Pass Email Dispatch] Sending Pass Card email to ${recipientEmail} with Transaction ID: ${passId}...`);
 
   try {
-    // 1. Generate PDF Pass Attachment Buffer
-    console.log(`[PDF Pass Generator] Generating PDF Pass for ${studentName} (${passCode})...`);
+    // 1. Generate QR Code Buffer
+    const qrDataText = `=== VMANOUS WORKSHOP PASS ===
+Pass ID: ${passId}
+Participant: ${studentName}
+Email: ${recipientEmail}
+Mobile: ${phone}
+Blood Group: ${bloodGroup}
+College: ${collegeName}
+Address: ${collegeAddress}
+Degree: ${degree}
+Specialization: ${branch}
+Semester: ${semester}
+Program: ${programTitle}
+Timing: ${timingStr}
+Status: VERIFIED & PAID
+Issued On: ${eventDateStr}
+=============================`;
+
+    const qrDataUrl = await QRCode.toDataURL(qrDataText, { width: 220, margin: 1 });
+    const qrBuffer = Buffer.from(qrDataUrl.split(',')[1], 'base64');
+
+    // 2. Generate Checkmark SVG Buffer for high-resolution email rendering
+    const checkmarkSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="80" height="80">
+  <circle cx="50" cy="50" r="46" fill="#ffffff" stroke="none" />
+  <path d="M 61 17 A 36 36 0 1 0 84 38" fill="none" stroke="#5cb85c" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" />
+  <path d="M 30 52 L 44 66 L 76 20" fill="none" stroke="#5cb85c" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" />
+</svg>`;
+    const checkmarkBuffer = Buffer.from(checkmarkSvg);
+
+    // 3. Generate PDF Pass Attachment Buffer
     const pdfBuffer = await generatePassPDF(data);
 
-    const now = new Date();
-    const bookingDateTime = now.toLocaleDateString('en-IN', {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric'
-    }) + ',  ' + now.toLocaleTimeString('en-IN', {
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: true
-    });
+    // 4. Build Email Attachments
+    const emailAttachments = [
+      {
+        filename: `VMANOUS_Workshop_Pass_${passCode}.pdf`,
+        content: pdfBuffer,
+        contentType: 'application/pdf'
+      },
+      {
+        filename: 'checkmark.png',
+        content: checkmarkBuffer,
+        contentType: 'image/svg+xml',
+        cid: 'pass-checkmark'
+      },
+      {
+        filename: 'qrcode.png',
+        content: qrBuffer,
+        contentType: 'image/png',
+        cid: 'pass-qrcode'
+      }
+    ];
 
-    const eventTitle = data.programTitle || 'AI Submit 2026';
-    const collegeName = data.collegeName || 'IIT Patna';
-    const eventDate = data.eventDate || data.startDate ? new Date(data.eventDate || data.startDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' }) : '10 September 2026';
-    const eventTime = data.timing || data.time || '10:00 AM to 6:00 PM';
-    const totalAmount = data.amountPaid ? `₹${Number(data.amountPaid).toLocaleString('en-IN')}` : '₹2,499';
+    const avatarUrl = data.selfiePhotoUrl || data.selfie || null;
 
-    // 2. Configure Email Options with Exact Requested User Pattern
+    // 5. Configure Email HTML matching Pass.jsx design exactly
     const mailOptions = {
       from: `"VMANOUS Team" <${senderEmail}>`,
       to: recipientEmail,
-      subject: `Registration Successful | ${eventTitle} – ${collegeName}`,
+      subject: `Registration Successful | ${programTitle} – ${collegeName}`,
       html: `
-        <div style="font-family: Arial, sans-serif; color: #222222; line-height: 1.6; font-size: 14px; max-width: 600px; padding: 10px;">
-          <p style="margin: 0 0 14px 0;">Dear ${studentName},</p>
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Workshop Pass</title>
+        </head>
+        <body style="margin: 0; padding: 20px 10px; background-color: #f8fafc; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+          
+          <div style="max-width: 440px; margin: 0 auto;">
+            
+            <!-- Header Success Info -->
+            <div style="text-align: center; margin-bottom: 20px;">
+              <h1 style="font-size: 19px; font-weight: 700; color: #0f172a; margin: 0 0 4px 0;">Registration Successful!</h1>
+              <p style="font-size: 13px; color: #64748b; margin: 0;">Your digital workshop pass has been generated.</p>
+            </div>
 
-          <p style="margin: 0 0 14px 0;">Greetings from the VMANOUS Team!</p>
+            <!-- Main Pass Card Container -->
+            <div style="background-color: #ffffff; border: 1px solid #000000; box-shadow: 0 2px 8px rgba(0,0,0,0.06); padding: 0; position: relative; margin-top: 25px;">
+              
+              <!-- Green Checkmark Icon (Centered on top border) -->
+              <div style="text-align: center; margin-top: -28px; margin-bottom: 5px;">
+                <img src="cid:pass-checkmark" width="56" height="56" alt="Success" style="display: inline-block; vertical-align: middle;" />
+              </div>
 
-          <p style="margin: 0 0 14px 0;">We are pleased to confirm your seat booking for ${eventTitle}, scheduled to be held at ${collegeName}.</p>
-          <ul style="margin: 0 0 16px 0; padding-left: 20px; list-style-type: disc;">
-            <li style="margin-bottom: 4px;">Booking Date & Time: ${bookingDateTime}</li>
-            <li style="margin-bottom: 4px;">Payment: ${totalAmount}</li>
-          </ul>
+              <!-- Top Pass Header: Payment Successful! & College Info -->
+              <div style="padding: 4px 16px 8px 16px; text-align: center;">
+                <h2 style="color: #5cb85c; font-size: 21px; font-weight: 600; margin: 0 0 8px 0; letter-spacing: -0.3px;">Payment Successful!</h2>
+                <h3 style="font-size: 14px; font-weight: 900; text-transform: uppercase; color: #1e293b; margin: 0 0 3px 0; line-height: 1.3; letter-spacing: 0.5px;">${collegeName}</h3>
+                <p style="font-size: 11px; font-weight: 600; color: #64748b; margin: 0 0 4px 0;">${collegeAddress}</p>
+                <p style="font-size: 11px; font-weight: 700; color: #94a3b8; letter-spacing: 1px; margin: 0;">${passId}</p>
+              </div>
 
-          <p style="margin: 0 0 8px 0;"><strong>Event Details:</strong></p>
-          <ul style="margin: 0 0 16px 0; padding-left: 20px; list-style-type: disc;">
-            <li style="margin-bottom: 4px;">Participant Name: ${studentName}</li>
-            <li style="margin-bottom: 4px;">College/Institute: ${collegeName}</li>
-            <li style="margin-bottom: 4px;">Event: ${eventTitle}</li>
-            <li style="margin-bottom: 4px;">Event Date: ${eventDate}</li>
-            <li style="margin-bottom: 4px;">Event Time: ${eventTime}</li>
-          </ul>
+              <!-- Participant Profile & Info Section -->
+              <div style="padding: 12px 16px; border-top: 1px solid #f1f5f9;">
+                <table style="width: 100%; border-collapse: collapse;">
+                  <tr>
+                    <td style="vertical-align: top; text-align: left;">
+                      <span style="display: inline-block; font-size: 10px; font-weight: 600; color: #059669; background-color: #ecfdf5; border: 1px solid #d1fae5; padding: 2px 8px; border-radius: 12px; margin-bottom: 6px;">
+                        ${programTitle}
+                      </span>
+                      <h4 style="font-size: 16px; font-weight: 700; color: #0f172a; margin: 0 0 8px 0;">${studentName}</h4>
+                      
+                      <table style="border-collapse: collapse;">
+                        <tr>
+                          <td style="padding-right: 18px;">
+                            <span style="font-size: 9px; font-weight: 700; color: #94a3b8; display: block; text-transform: capitalize;">Mobile Number</span>
+                            <span style="font-size: 11px; font-weight: 600; color: #334155;">${phone}</span>
+                          </td>
+                          <td>
+                            <span style="font-size: 9px; font-weight: 700; color: #94a3b8; display: block; text-transform: capitalize;">Blood Group</span>
+                            <span style="font-size: 11px; font-weight: 800; color: #0f172a;">${bloodGroup}</span>
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                    <td style="width: 85px; text-align: right; vertical-align: middle;">
+                      ${avatarUrl ? `
+                        <img src="${avatarUrl}" alt="${studentName}" width="78" height="78" style="border-radius: 50%; object-fit: cover; border: 2px solid #cbd5e1; display: block; margin-left: auto;" />
+                      ` : `
+                        <div style="width: 78px; height: 78px; border-radius: 50%; background-color: #f1f5f9; border: 2px solid #cbd5e1; text-align: center; line-height: 78px; display: inline-block; font-size: 24px; color: #94a3b8;">
+                          👤
+                        </div>
+                      `}
+                    </td>
+                  </tr>
+                </table>
+              </div>
 
-          <p style="margin: 0 0 14px 0;">Your payment of ${totalAmount} has been successfully received, and your seat has been reserved for the event.</p>
+              <!-- Thin Center Divider Line -->
+              <div style="height: 1px; background-color: #e2e8f0; width: 100%;"></div>
 
-          <p style="margin: 0 0 14px 0;">Please make sure to carry your registration/booking confirmation  Pass on the day of the event.</p>
+              <!-- Main Participant Academic Grid (3 Rounded Boxes) -->
+              <div style="padding: 10px 16px;">
+                <table style="width: 100%; border-collapse: separate; border-spacing: 6px 0;">
+                  <tr>
+                    <td style="background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 6px 4px; text-align: center; width: 33%;">
+                      <span style="font-size: 9px; color: #94a3b8; font-weight: 700; display: block;">Degree</span>
+                      <span style="font-size: 11px; font-weight: 700; color: #1e293b; display: block; margin-top: 2px;">${degree}</span>
+                    </td>
+                    <td style="background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 6px 4px; text-align: center; width: 33%;">
+                      <span style="font-size: 9px; color: #94a3b8; font-weight: 700; display: block;">Specialization</span>
+                      <span style="font-size: 10px; font-weight: 700; color: #1e293b; display: block; margin-top: 2px;">${branch}</span>
+                    </td>
+                    <td style="background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 6px 4px; text-align: center; width: 33%;">
+                      <span style="font-size: 9px; color: #94a3b8; font-weight: 700; display: block;">Semester</span>
+                      <span style="font-size: 11px; font-weight: 700; color: #1e293b; display: block; margin-top: 2px;">${semester}</span>
+                    </td>
+                  </tr>
+                </table>
+              </div>
 
-          <p style="margin: 0 0 14px 0;">We look forward to welcoming you to ${eventTitle} at ${collegeName} and hope you have an insightful and rewarding experience.</p>
+              <!-- Ticket Dashed Tear Line with Notches -->
+              <div style="position: relative; padding: 4px 0;">
+                <div style="border-bottom: 2px dashed #000000; margin: 0 10px;"></div>
+              </div>
 
-          <p style="margin: 20px 0 4px 0;">Best Regards,<br>
-          ${eventTitle} Team<br>
-          VMANOUS</p>
-        </div>
+              <!-- QR Code & Event Details Section -->
+              <div style="padding: 12px 16px 16px 16px;">
+                <table style="width: 100%; border-collapse: collapse;">
+                  <tr>
+                    <td style="vertical-align: top; text-align: left;">
+                      <div style="margin-bottom: 10px;">
+                        <span style="font-size: 9px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 2px;">
+                          📅 EVENT DATE
+                        </span>
+                        <span style="font-size: 12px; font-weight: 800; color: #0f172a;">${eventDateStr}</span>
+                      </div>
+
+                      <div style="margin-bottom: 12px;">
+                        <span style="font-size: 9px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 2px;">
+                          ⏰ WORKSHOP TIME
+                        </span>
+                        <span style="font-size: 12px; font-weight: 800; color: #0f172a;">${timingStr}</span>
+                      </div>
+
+                      <div>
+                        <span style="display: inline-block; font-size: 9px; font-weight: 700; color: #047857; background-color: #d1fae5; border: 1px solid #a7f3d0; padding: 3px 8px; border-radius: 12px; text-transform: uppercase; letter-spacing: 0.5px;">
+                          ● OFFICIAL PASS
+                        </span>
+                      </div>
+                    </td>
+
+                    <!-- QR Code with Corner Brackets -->
+                    <td style="width: 120px; text-align: right; vertical-align: middle;">
+                      <div style="display: inline-block; padding: 4px; border: 1px solid #000000; border-radius: 4px; background: #ffffff;">
+                        <img src="cid:pass-qrcode" width="112" height="112" alt="QR Code" style="display: block;" />
+                      </div>
+                    </td>
+                  </tr>
+                </table>
+              </div>
+
+            </div>
+
+            <!-- Footer Help Note -->
+            <p style="text-align: center; font-size: 11px; color: #94a3b8; margin-top: 16px;">
+              Please present this digital pass or the attached PDF pass at the campus auditorium gate on the event day.
+            </p>
+
+          </div>
+        </body>
+        </html>
       `,
-      attachments: [
-        {
-          filename: `VMANOUS_Workshop_Pass_${passCode}.pdf`,
-          content: pdfBuffer,
-          contentType: 'application/pdf'
-        }
-      ]
+      attachments: emailAttachments
     };
 
     const info = await transporter.sendMail(mailOptions);
-    console.log(`[Pass Email Success] PDF Pass email sent to ${recipientEmail}:`, info.messageId);
+    console.log(`[Pass Email Success] Full HTML Pass email dispatched to ${recipientEmail}:`, info.messageId);
     return { success: true, messageId: info.messageId };
   } catch (err) {
-    console.error('[Pass Email Error] Failed to send PDF pass email:', err);
+    console.error('[Pass Email Error] Failed to send HTML pass email:', err);
     return { success: false, error: err.message };
   }
 };

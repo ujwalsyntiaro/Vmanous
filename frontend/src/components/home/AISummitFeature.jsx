@@ -301,7 +301,7 @@ export const AISummitFeature = () => {
                 {/* Institution Row: College Name & Location */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-1">
+                    <label className="block text-xs sm:text-sm font-normal text-slate-700 mb-1">
                       College Name <span className="text-emerald-600">*</span>
                     </label>
                     <div className="relative flex items-center">
@@ -312,16 +312,16 @@ export const AISummitFeature = () => {
                         name="collegeName"
                         value={formData.collegeName}
                         onChange={handleChange}
-                        className={`w-full h-9 pl-10 pr-3.5 bg-slate-50/50 border rounded-md text-xs sm:text-sm text-slate-900 focus:bg-white focus:outline-none transition-all font-medium ${errors.collegeName ? 'border-red-500 ring-1 ring-red-500/20' : 'border-slate-200 focus:border-slate-800 focus:ring-2 focus:ring-slate-800/10'}`}
+                        className={`w-full h-9 pl-10 pr-3.5 bg-slate-50/50 border rounded-md text-xs sm:text-sm text-slate-900 placeholder:font-normal placeholder:text-slate-400 focus:bg-white focus:outline-none transition-all font-normal ${errors.collegeName ? 'border-red-500 ring-1 ring-red-500/20' : 'border-slate-200 focus:border-slate-800 focus:ring-2 focus:ring-slate-800/10'}`}
                       />
                     </div>
                     {errors.collegeName && (
-                      <p className="text-[11px] text-red-500 mt-1 font-medium">• {errors.collegeName}</p>
+                      <p className="text-[11px] text-red-500 mt-1 font-normal">• {errors.collegeName}</p>
                     )}
                   </div>
 
                   <div>
-                    <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-1">
+                    <label className="block text-xs sm:text-sm font-normal text-slate-700 mb-1">
                       College Address <span className="text-emerald-600">*</span>
                     </label>
                     <div className="relative flex items-center">
@@ -332,7 +332,7 @@ export const AISummitFeature = () => {
                         name="collegeAddress"
                         value={formData.collegeAddress}
                         onChange={handleChange}
-                        className="w-full h-9 pl-10 pr-3.5 bg-slate-50/50 border border-slate-200 rounded-md text-xs sm:text-sm text-slate-900 focus:bg-white focus:outline-none focus:border-slate-800 focus:ring-2 focus:ring-slate-800/10 transition-all font-medium"
+                        className="w-full h-9 pl-10 pr-3.5 bg-slate-50/50 border border-slate-200 rounded-md text-xs sm:text-sm text-slate-900 placeholder:font-normal placeholder:text-slate-400 focus:bg-white focus:outline-none focus:border-slate-800 focus:ring-2 focus:ring-slate-800/10 transition-all font-normal"
                       />
                     </div>
                   </div>
@@ -341,7 +341,7 @@ export const AISummitFeature = () => {
                 {/* Representative Row: Name & Role */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-1">
+                    <label className="block text-xs sm:text-sm font-normal text-slate-700 mb-1">
                       Representative Name <span className="text-emerald-600">*</span>
                     </label>
                     <div className="relative flex items-center">
@@ -352,16 +352,16 @@ export const AISummitFeature = () => {
                         name="repName"
                         value={formData.repName}
                         onChange={handleChange}
-                        className={`w-full h-9 pl-10 pr-3.5 bg-slate-50/50 border rounded-md text-xs sm:text-sm text-slate-900 focus:bg-white focus:outline-none transition-all font-medium ${errors.repName ? 'border-red-500 ring-1 ring-red-500/20' : 'border-slate-200 focus:border-slate-800 focus:ring-2 focus:ring-slate-800/10'}`}
+                        className={`w-full h-9 pl-10 pr-3.5 bg-slate-50/50 border rounded-md text-xs sm:text-sm text-slate-900 placeholder:font-normal placeholder:text-slate-400 focus:bg-white focus:outline-none transition-all font-normal ${errors.repName ? 'border-red-500 ring-1 ring-red-500/20' : 'border-slate-200 focus:border-slate-800 focus:ring-2 focus:ring-slate-800/10'}`}
                       />
                     </div>
                     {errors.repName && (
-                      <p className="text-[11px] text-red-500 mt-1 font-medium">• {errors.repName}</p>
+                      <p className="text-[11px] text-red-500 mt-1 font-normal">• {errors.repName}</p>
                     )}
                   </div>
 
                   <div className="relative" ref={roleDropdownRef}>
-                    <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-1">
+                    <label className="block text-xs sm:text-sm font-normal text-slate-700 mb-1">
                       Designation / Role <span className="text-emerald-600">*</span>
                     </label>
                     <div className="relative flex items-center">
@@ -369,17 +369,17 @@ export const AISummitFeature = () => {
                       <button
                         type="button"
                         onClick={() => setIsRoleOpen(!isRoleOpen)}
-                        className={`w-full h-9 pl-10 pr-10 bg-slate-50/50 border rounded-md text-xs sm:text-sm text-left font-semibold cursor-pointer flex items-center justify-between transition-all ${errors.repRole
+                        className={`w-full h-9 pl-10 pr-10 bg-slate-50/50 border rounded-md text-xs sm:text-sm text-left cursor-pointer flex items-center justify-between transition-all font-normal ${errors.repRole
                           ? 'border-red-500 ring-1 ring-red-500/20'
                           : isRoleOpen
                             ? 'border-slate-800 ring-2 ring-slate-800/10 bg-white'
                             : 'border-slate-200 hover:border-slate-400'
                           }`}
                       >
-                        <span className={formData.repRole ? 'text-slate-900 font-semibold' : 'text-slate-500 font-normal'}>
+                        <span className={formData.repRole ? 'text-slate-900 font-normal' : 'text-slate-400 font-normal'}>
                           {formData.repRole || 'Select Designation / Role'}
                         </span>
-                        <ChevronDown size={16} className={`text-slate-500 transition-transform duration-200 ${isRoleOpen ? 'rotate-180 text-slate-800' : ''}`} />
+                        <ChevronDown size={16} className={`text-slate-400 transition-transform duration-200 ${isRoleOpen ? 'rotate-180 text-slate-800' : ''}`} />
                       </button>
                     </div>
 
@@ -404,8 +404,8 @@ export const AISummitFeature = () => {
                                   setIsRoleOpen(false);
                                 }}
                                 className={`w-full px-4 py-2.5 text-xs sm:text-sm text-left flex items-center justify-between transition-colors cursor-pointer ${isSelected
-                                  ? 'bg-emerald-50 text-emerald-700 font-bold'
-                                  : 'text-slate-700 hover:bg-emerald-50/80 hover:text-emerald-700 font-medium'
+                                  ? 'bg-emerald-50 text-emerald-700 font-medium'
+                                  : 'text-slate-700 hover:bg-emerald-50/80 hover:text-emerald-700 font-normal'
                                   }`}
                               >
                                 <span>{role}</span>
@@ -418,7 +418,7 @@ export const AISummitFeature = () => {
                     </AnimatePresence>
 
                     {errors.repRole && (
-                      <p className="text-[11px] text-red-500 mt-1 font-medium">• {errors.repRole}</p>
+                      <p className="text-[11px] text-red-500 mt-1 font-normal">• {errors.repRole}</p>
                     )}
                   </div>
                 </div>
@@ -426,7 +426,7 @@ export const AISummitFeature = () => {
                 {/* Contact Row: Email, Contact Number & WhatsApp */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-1">
+                    <label className="block text-xs sm:text-sm font-normal text-slate-700 mb-1">
                       Official Email <span className="text-emerald-600">*</span>
                     </label>
                     <div className="relative flex items-center">
@@ -438,16 +438,16 @@ export const AISummitFeature = () => {
                         placeholder="name@college.edu"
                         value={formData.email}
                         onChange={handleChange}
-                        className={`w-full h-9 pl-10 pr-3.5 bg-slate-50/50 border rounded-md text-xs sm:text-sm text-slate-900 focus:bg-white focus:outline-none transition-all font-medium ${errors.email ? 'border-red-500 ring-1 ring-red-500/20' : 'border-slate-200 focus:border-slate-800 focus:ring-2 focus:ring-slate-800/10'}`}
+                        className={`w-full h-9 pl-10 pr-3.5 bg-slate-50/50 border rounded-md text-xs sm:text-sm text-slate-900 placeholder:font-normal placeholder:text-slate-400 focus:bg-white focus:outline-none transition-all font-normal ${errors.email ? 'border-red-500 ring-1 ring-red-500/20' : 'border-slate-200 focus:border-slate-800 focus:ring-2 focus:ring-slate-800/10'}`}
                       />
                     </div>
                     {errors.email && (
-                      <p className="text-[11px] text-red-500 mt-1 font-medium">• {errors.email}</p>
+                      <p className="text-[11px] text-red-500 mt-1 font-normal">• {errors.email}</p>
                     )}
                   </div>
 
                   <div>
-                    <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-1">
+                    <label className="block text-xs sm:text-sm font-normal text-slate-700 mb-1">
                       Contact Number <span className="text-emerald-600">*</span>
                     </label>
                     <div className="relative flex items-center">
@@ -459,19 +459,19 @@ export const AISummitFeature = () => {
                         placeholder="10-digit number"
                         value={formData.phone}
                         onChange={handleChange}
-                        className={`w-full h-9 pl-10 pr-3.5 bg-slate-50/50 border rounded-md text-xs sm:text-sm text-slate-900 focus:bg-white focus:outline-none transition-all font-medium ${errors.phone ? 'border-red-500 ring-1 ring-red-500/20' : 'border-slate-200 focus:border-slate-800 focus:ring-2 focus:ring-slate-800/10'}`}
+                        className={`w-full h-9 pl-10 pr-3.5 bg-slate-50/50 border rounded-md text-xs sm:text-sm text-slate-900 placeholder:font-normal placeholder:text-slate-400 focus:bg-white focus:outline-none transition-all font-normal ${errors.phone ? 'border-red-500 ring-1 ring-red-500/20' : 'border-slate-200 focus:border-slate-800 focus:ring-2 focus:ring-slate-800/10'}`}
                       />
                     </div>
                     {errors.phone && (
-                      <p className="text-[11px] text-red-500 mt-1 font-medium">• {errors.phone}</p>
+                      <p className="text-[11px] text-red-500 mt-1 font-normal">• {errors.phone}</p>
                     )}
                   </div>
                 </div>
 
-                {/* WhatsApp Number & Description Row */}
+                {/* WhatsApp Number */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-1">
+                    <label className="block text-xs sm:text-sm font-normal text-slate-700 mb-1">
                       WhatsApp Number <span className="text-emerald-600">*</span>
                     </label>
                     <div className="relative flex items-center">
@@ -483,29 +483,30 @@ export const AISummitFeature = () => {
                         placeholder="10-digit WhatsApp number"
                         value={formData.whatsapp}
                         onChange={handleChange}
-                        className={`w-full h-9 pl-10 pr-3.5 bg-slate-50/50 border rounded-md text-xs sm:text-sm text-slate-900 focus:bg-white focus:outline-none transition-all font-medium ${errors.whatsapp ? 'border-red-500 ring-1 ring-red-500/20' : 'border-slate-200 focus:border-slate-800 focus:ring-2 focus:ring-slate-800/10'}`}
+                        className={`w-full h-9 pl-10 pr-3.5 bg-slate-50/50 border rounded-md text-xs sm:text-sm text-slate-900 placeholder:font-normal placeholder:text-slate-400 focus:bg-white focus:outline-none transition-all font-normal ${errors.whatsapp ? 'border-red-500 ring-1 ring-red-500/20' : 'border-slate-200 focus:border-slate-800 focus:ring-2 focus:ring-slate-800/10'}`}
                       />
                     </div>
                     {errors.whatsapp && (
-                      <p className="text-[11px] text-red-500 mt-1 font-medium">• {errors.whatsapp}</p>
+                      <p className="text-[11px] text-red-500 mt-1 font-normal">• {errors.whatsapp}</p>
                     )}
                   </div>
+                </div>
 
-                  <div>
-                    <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-1">
-                      Description
-                    </label>
-                    <div className="relative flex items-center">
-                      <FileText size={16} className="absolute left-3.5 text-slate-400" />
-                      <input
-                        type="text"
-                        name="description"
-                        placeholder="Expected dates, student count, notes..."
-                        value={formData.description || ''}
-                        onChange={handleChange}
-                        className="w-full h-9 pl-10 pr-3.5 bg-slate-50/50 border border-slate-200 rounded-md text-xs sm:text-sm text-slate-900 focus:bg-white focus:outline-none focus:border-slate-800 focus:ring-2 focus:ring-slate-800/10 transition-all font-medium"
-                      />
-                    </div>
+                {/* Description */}
+                <div>
+                  <label className="block text-xs sm:text-sm font-normal text-slate-700 mb-1">
+                    Description
+                  </label>
+                  <div className="relative flex">
+                    <FileText size={16} className="absolute left-3.5 top-2 text-slate-400 pointer-events-none" />
+                    <textarea
+                      rows={2}
+                      name="description"
+                      placeholder="Expected dates, student count, notes..."
+                      value={formData.description || ''}
+                      onChange={handleChange}
+                      className="w-full h-[54px] pl-10 pr-3.5 py-1.5 bg-slate-50/50 border border-slate-200 rounded-md text-xs sm:text-sm text-slate-900 placeholder:font-normal placeholder:text-slate-400 focus:bg-white focus:outline-none focus:border-slate-800 focus:ring-2 focus:ring-slate-800/10 transition-all font-normal resize-none"
+                    />
                   </div>
                 </div>
 

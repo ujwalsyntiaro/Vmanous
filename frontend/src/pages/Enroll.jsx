@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import Container from '../components/ui/Container';
 import ProgramCard from '../components/ui/ProgramCard';
+import EntryCodeModal from '../components/enroll/EntryCodeModal';
 import { ENROLLMENT_FAQS } from '../constants/enrollment';
 import { getSummits, fetchSummitsAsync, isSummitActive } from '../services/summitService';
 
@@ -35,9 +36,29 @@ export const Enroll = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [openFAQIndex, setOpenFAQIndex] = useState(null);
   const [upcomingSummits, setUpcomingSummits] = useState([]);
+  const [selectedSummitForModal, setSelectedSummitForModal] = useState(null);
+  const [isEntryModalOpen, setIsEntryModalOpen] = useState(false);
 
   const handleRegisterClick = (summit) => {
-    navigate('/application', { state: { programInterest: summit.title, summitDetails: summit } });
+    if (summit.entryCode) {
+      // Check if already verified in this browser session
+      const isAlreadyVerified = typeof window !== 'undefined' && sessionStorage.getItem(`verified_entry_summit_${summit.id}`) === 'true';
+      if (isAlreadyVerified) {
+        navigate('/application', { state: { programInterest: summit.title, summitDetails: summit, entryCodeVerified: true } });
+        return;
+      }
+
+      setSelectedSummitForModal(summit);
+      setIsEntryModalOpen(true);
+    } else {
+      // Free/Open Summit without Entry Code
+      navigate('/application', { state: { programInterest: summit.title, summitDetails: summit } });
+    }
+  };
+
+  const handleEntryCodeVerified = (summit) => {
+    setIsEntryModalOpen(false);
+    navigate('/application', { state: { programInterest: summit.title, summitDetails: summit, entryCodeVerified: true } });
   };
 
   useEffect(() => {
@@ -170,7 +191,13 @@ export const Enroll = () => {
         </Container>
       </section>
 
-
+      {/* 05 ENTRY CODE VERIFICATION MODAL */}
+      <EntryCodeModal
+        isOpen={isEntryModalOpen}
+        onClose={() => setIsEntryModalOpen(false)}
+        summit={selectedSummitForModal}
+        onSuccess={handleEntryCodeVerified}
+      />
     </div>
   );
 };

@@ -354,59 +354,80 @@ export const fetchSummitsAsync = async () => {
 };
 
 export const addSummit = async (summit) => {
-  const newSummit = { ...summit, id: Date.now() };
-  const summits = getSummits();
-  summits.unshift(newSummit);
-  saveSummits(summits);
+  const normalizedCode = summit.entryCode ? String(summit.entryCode).trim().toUpperCase() : null;
+  const summitData = { ...summit, entryCode: normalizedCode };
 
-  if (typeof window !== 'undefined') {
-    window.dispatchEvent(new CustomEvent('summits_updated'));
-  }
-
-  // Sync with MySQL Database
+  // Sync with MySQL Database first for validation
   try {
     const res = await fetch("/api/v1/summits", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(summit),
+      body: JSON.stringify(summitData),
     });
     const data = await res.json();
-    if (data.success && data.data) {
-      const current = getSummits();
-      const updated = current.map(s => s.id === newSummit.id ? { ...data.data, enrolledCount: 0 } : s);
-      saveSummits(updated);
-      if (typeof window !== 'undefined') {
-        window.dispatchEvent(new CustomEvent('summits_updated'));
-      }
+    if (!res.ok || !data.success) {
+      return { success: false, error: data.error || "Failed to create workshop" };
     }
+
+    const createdSummit = data.data;
+    const summits = getSummits();
+    summits.unshift(createdSummit);
+    saveSummits(summits);
+    broadcastSummitUpdate();
+
+    return { success: true, data: createdSummit };
   } catch (err) {
     console.error("Summit API error:", err);
+    return { success: false, error: err.message || "Network error creating workshop" };
   }
-
-  return newSummit;
 };
 
-export const updateSummit = (id, updatedSummit) => {
-  const summits = getSummits();
-  const index = summits.findIndex((s) => s.id === id);
-  if (index !== -1) {
-    summits[index] = { ...updatedSummit, id };
-    saveSummits(summits);
+export const updateSummit = async (id, updatedSummit) => {
+  const normalizedCode = updatedSummit.entryCode ? String(updatedSummit.entryCode).trim().toUpperCase() : null;
+  const summitData = { ...updatedSummit, entryCode: normalizedCode };
 
-    // Sync with MySQL Database
-    try {
-      fetch(`/api/v1/summits/${id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(updatedSummit),
-      }).catch((err) => console.log("Summit PUT notice:", err));
-    } catch (err) {
-      console.error("Summit update error:", err);
+  try {
+    const res = await fetch(`/api/v1/summits/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(summitData),
+    });
+    const data = await res.json();
+    if (!res.ok || !data.success) {
+      return { success: false, error: data.error || "Failed to update workshop" };
     }
 
-    return true;
+    const summits = getSummits();
+    const index = summits.findIndex((s) => s.id === id || Number(s.id) === Number(id));
+    if (index !== -1) {
+      summits[index] = { ...data.data, id };
+      saveSummits(summits);
+      broadcastSummitUpdate();
+    }
+    return { success: true, data: data.data };
+  } catch (err) {
+    console.error("Summit update error:", err);
+    return { success: false, error: err.message || "Network error updating workshop" };
   }
-  return false;
+};
+
+export const verifyEntryCodeAsync = async (summitId, entryCode) => {
+  try {
+    const res = await fetch("/api/v1/summits/verify-entry-code", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ summitId, entryCode }),
+    });
+    const data = await res.json();
+    return data;
+  } catch (err) {
+    console.error("Entry code verify error:", err);
+    return {
+      success: false,
+      valid: false,
+      error: "Network error verifying entry code. Please try again."
+    };
+  }
 };
 
 export const deleteSummit = (id) => {

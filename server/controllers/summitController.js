@@ -134,6 +134,21 @@ const createSummit = async (req, res) => {
       ? `${baseDuration.replace(/\s*\(\d+\s*(?:hrs|hours)\)/i, '')} (${validData.totalHours} Hrs)`
       : baseDuration;
 
+    const normalizedEntryCode = validData.entryCode ? String(validData.entryCode).trim().toUpperCase() : null;
+
+    // Check for duplicate entry code across other summits
+    if (normalizedEntryCode) {
+      const existingWithCode = await prisma.summit.findFirst({
+        where: { entryCode: normalizedEntryCode }
+      });
+      if (existingWithCode) {
+        return res.status(400).json({
+          success: false,
+          error: `Entry code '${normalizedEntryCode}' is already assigned to "${existingWithCode.college || existingWithCode.title}". Please use a unique code.`
+        });
+      }
+    }
+
     const newSummit = await prisma.summit.create({
       data: {
         title: validData.title || "New Workshop",
@@ -154,13 +169,14 @@ const createSummit = async (req, res) => {
         date: validData.date || "",
         seatCapacity: Number(validData.seatCapacity || 100),
         status: validData.status || "Registration Open",
+        entryCode: normalizedEntryCode || null,
         features: Array.isArray(validData.features) ? validData.features : []
       }
     });
     res.status(201).json({ success: true, data: { ...newSummit, totalHours: validData.totalHours || '' } });
   } catch (error) {
     console.error('Error creating summit:', error);
-    res.status(500).json({ success: false, error: 'Create failed' });
+    res.status(500).json({ success: false, error: error.message || 'Create failed' });
   }
 };
 
@@ -184,6 +200,24 @@ const updateSummit = async (req, res) => {
       ? `${baseDuration.replace(/\s*\(\d+\s*(?:hrs|hours)\)/i, '')} (${validData.totalHours} Hrs)`
       : baseDuration;
 
+    const normalizedEntryCode = validData.entryCode ? String(validData.entryCode).trim().toUpperCase() : null;
+
+    // Check for duplicate entry code across other summits
+    if (normalizedEntryCode) {
+      const existingWithCode = await prisma.summit.findFirst({
+        where: {
+          entryCode: normalizedEntryCode,
+          NOT: { id: Number(id) }
+        }
+      });
+      if (existingWithCode) {
+        return res.status(400).json({
+          success: false,
+          error: `Entry code '${normalizedEntryCode}' is already assigned to "${existingWithCode.college || existingWithCode.title}". Please use a unique code.`
+        });
+      }
+    }
+
     const updated = await prisma.summit.update({
       where: { id: Number(id) },
       data: {
@@ -205,13 +239,14 @@ const updateSummit = async (req, res) => {
         date: validData.date,
         seatCapacity: Number(validData.seatCapacity),
         status: validData.status,
+        entryCode: normalizedEntryCode || null,
         features: Array.isArray(validData.features) ? validData.features : []
       }
     });
     res.json({ success: true, data: { ...updated, totalHours: validData.totalHours || '' } });
   } catch (error) {
     console.error('Error updating summit:', error);
-    res.status(500).json({ success: false, error: 'Update failed' });
+    res.status(500).json({ success: false, error: error.message || 'Update failed' });
   }
 };
 
@@ -231,9 +266,56 @@ const deleteSummit = async (req, res) => {
   }
 };
 
+const verifyEntryCode = async (req, res) => {
+  try {
+    const { summitId, entryCode } = req.body;
+    if (!summitId) {
+      return res.status(400).json({ success: false, valid: false, error: 'Summit ID is required' });
+    }
+
+    const summit = await prisma.summit.findUnique({
+      where: { id: Number(summitId) }
+    });
+
+    if (!summit) {
+      return res.status(404).json({ success: false, valid: false, error: 'Workshop / Summit not found' });
+    }
+
+    // If summit does not require an entry code
+    if (!summit.entryCode) {
+      return res.status(200).json({
+        success: true,
+        valid: true,
+        message: 'No entry code required'
+      });
+    }
+
+    const submittedCode = String(entryCode || '').trim().toUpperCase();
+    const actualCode = String(summit.entryCode).trim().toUpperCase();
+
+    if (submittedCode === actualCode) {
+      return res.status(200).json({
+        success: true,
+        valid: true,
+        message: 'Entry code verified successfully'
+      });
+    } else {
+      return res.status(400).json({
+        success: false,
+        valid: false,
+        error: 'Invalid Entry Code. Please enter the valid code provided by your college/institution.'
+      });
+    }
+  } catch (error) {
+    console.error('Error verifying entry code:', error);
+    res.status(500).json({ success: false, valid: false, error: 'Server error verifying entry code' });
+  }
+};
+
 module.exports = {
   getSummits,
   createSummit,
   updateSummit,
-  deleteSummit
+  deleteSummit,
+  verifyEntryCode
 };
