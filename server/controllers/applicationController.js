@@ -95,10 +95,10 @@ const createApplication = async (req, res) => {
 
     const status = paymentStatus || 'Paid';
     const isPaid = status === 'Paid';
-    const totalPaid = isPaid ? Number(amountPaid || 2358.82) : 0;
-    const baseAmount = isPaid ? Number((totalPaid / 1.18).toFixed(2)) : 0;
-    const gstAmount = isPaid ? Number((totalPaid - baseAmount).toFixed(2)) : 0;
-    const feeAmount = isPaid ? Number(platformFee || 50) : 0;
+    const totalPaid = isPaid ? (amountPaid !== undefined && amountPaid !== null && !isNaN(Number(amountPaid)) ? Number(amountPaid) : 0) : 0;
+    const baseAmount = req.body.baseAmount !== undefined && req.body.baseAmount !== null ? Number(req.body.baseAmount) : (isPaid && totalPaid > 0 ? Number((totalPaid / 1.18).toFixed(2)) : 0);
+    const gstAmount = req.body.gstAmount !== undefined && req.body.gstAmount !== null ? Number(req.body.gstAmount) : (isPaid && totalPaid > 0 ? Number((totalPaid - baseAmount).toFixed(2)) : 0);
+    const feeAmount = req.body.platformFee !== undefined && req.body.platformFee !== null ? Number(req.body.platformFee) : 0;
     const txnId = transactionId || `TXN_${isPaid ? '' : 'FAIL_'}${Math.floor(10000000 + Math.random() * 90000000)}`;
     const finalPassCode = isPaid ? (passCode || `PASS-${(collegeName || 'VM').slice(0, 4).toUpperCase()}-${Math.floor(100 + Math.random() * 900)}`) : null;
 

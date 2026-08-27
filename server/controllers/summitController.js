@@ -43,6 +43,12 @@ const isCollegeMatch = (colA, colB) => {
 
 const getSummits = async (req, res) => {
   try {
+    res.set({
+      'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+      'Pragma': 'no-cache',
+      'Expires': '0'
+    });
+
     let summits = await prisma.summit.findMany({
       orderBy: { createdAt: 'desc' },
       include: { applications: true }
@@ -87,7 +93,7 @@ const getSummits = async (req, res) => {
       const seatCapacity = summit.seatCapacity !== undefined ? Number(summit.seatCapacity) : 100;
       const isCompleted = summit.status === 'Event Completed' || summit.status === 'Completed';
       const isFull = matched.length >= seatCapacity;
-      const isClosed = summit.status === 'Closed' || isFull;
+      const isClosed = summit.status === 'Closed' || summit.status === 'Registration Closed' || isFull;
       const dynamicStatus = isCompleted
         ? summit.status
         : (isClosed ? 'Registration Closed' : (summit.status === 'Filling Fast' ? 'Filling Fast' : 'Registration Open'));
@@ -221,26 +227,26 @@ const updateSummit = async (req, res) => {
     const updated = await prisma.summit.update({
       where: { id: Number(id) },
       data: {
-        title: validData.title,
-        subtitle: validData.subtitle,
-        type: validData.type,
-        college: validData.college,
-        address: validData.address,
-        price: Number(validData.price),
-        originalPrice: Number(validData.originalPrice),
-        taxRate: Number(validData.taxRate),
-        taxMode: validData.taxMode,
-        processingFee: Number(validData.processingFee),
-        processingFeeType: validData.processingFeeType,
+        title: validData.title !== undefined ? validData.title : undefined,
+        subtitle: validData.subtitle !== undefined ? validData.subtitle : undefined,
+        type: validData.type !== undefined ? validData.type : undefined,
+        college: validData.college !== undefined ? validData.college : undefined,
+        address: validData.address !== undefined ? validData.address : undefined,
+        price: validData.price !== undefined && validData.price !== null && validData.price !== '' ? Number(validData.price) : undefined,
+        originalPrice: validData.originalPrice !== undefined && validData.originalPrice !== null && validData.originalPrice !== '' ? Number(validData.originalPrice) : undefined,
+        taxRate: validData.taxRate !== undefined && validData.taxRate !== null && validData.taxRate !== '' ? Number(validData.taxRate) : undefined,
+        taxMode: validData.taxMode !== undefined ? validData.taxMode : undefined,
+        processingFee: validData.processingFee !== undefined && validData.processingFee !== null && validData.processingFee !== '' ? Number(validData.processingFee) : undefined,
+        processingFeeType: validData.processingFeeType !== undefined ? validData.processingFeeType : undefined,
         duration: durationWithHours,
-        time: validData.time,
-        startDate: validData.startDate,
-        endDate: validData.endDate,
-        date: validData.date,
-        seatCapacity: Number(validData.seatCapacity),
-        status: validData.status,
+        time: validData.time !== undefined ? validData.time : undefined,
+        startDate: validData.startDate !== undefined ? validData.startDate : undefined,
+        endDate: validData.endDate !== undefined ? validData.endDate : undefined,
+        date: validData.date !== undefined ? validData.date : undefined,
+        seatCapacity: validData.seatCapacity !== undefined && validData.seatCapacity !== null && validData.seatCapacity !== '' ? Number(validData.seatCapacity) : undefined,
+        status: validData.status !== undefined ? validData.status : undefined,
         entryCode: normalizedEntryCode || null,
-        features: Array.isArray(validData.features) ? validData.features : []
+        features: validData.features !== undefined ? (Array.isArray(validData.features) ? validData.features : []) : undefined
       }
     });
     res.json({ success: true, data: { ...updated, totalHours: validData.totalHours || '' } });

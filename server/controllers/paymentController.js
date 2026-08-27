@@ -55,7 +55,7 @@ const createPaymentOrder = async (req, res) => {
       amountPaid
     } = req.body;
 
-    const totalAmountInINR = Number(amountPaid) || 2358.82;
+    const totalAmountInINR = (amountPaid !== undefined && amountPaid !== null && !isNaN(Number(amountPaid))) ? Number(amountPaid) : 1999;
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
     const baseUrl = getCashfreeBaseUrl();
     const headers = getCashfreeHeaders();
@@ -208,7 +208,11 @@ const verifyPaymentStatus = async (req, res) => {
       selfiePhotoUrl: pendingOrderData.selfiePhotoUrl || formData?.selfie || formData?.selfiePhotoUrl || formData?.photoPreview || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=300',
       programTitle: pendingOrderData.programTitle || formData?.programInterest || formData?.programTitle || 'AI Summit Workshop 2026',
       summitId: pendingOrderData.summitId || formData?.summitId || null,
-      amountPaid: Number(pendingOrderData.amountPaid || formData?.totalAmount || formData?.amountPaid || 2358.82)
+      amountPaid: (pendingOrderData.amountPaid !== undefined && pendingOrderData.amountPaid !== null)
+        ? Number(pendingOrderData.amountPaid)
+        : (formData?.totalAmount !== undefined && formData?.totalAmount !== null
+          ? Number(formData.totalAmount)
+          : (formData?.amountPaid !== undefined && formData?.amountPaid !== null ? Number(formData.amountPaid) : 0))
     };
 
     const baseUrl = getCashfreeBaseUrl();
@@ -257,7 +261,7 @@ const verifyPaymentStatus = async (req, res) => {
       orderStatus = apiErr.response?.data?.order_status || apiErr.response?.data?.code || 'STATUS_CHECK_FAILED';
     }
 
-    const totalPaid = Number(orderDetails.amountPaid || 2358.82);
+    const totalPaid = (orderDetails.amountPaid !== undefined && orderDetails.amountPaid !== null && !isNaN(Number(orderDetails.amountPaid))) ? Number(orderDetails.amountPaid) : 0;
 
     // Lookup summit to calculate dynamic GST and base amounts
     let dynamicBase = 0;

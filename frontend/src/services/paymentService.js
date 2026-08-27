@@ -31,9 +31,9 @@ export const initiateCashfreePayment = async (formData, summitDetails = null) =>
       summitId: formData.summitId ? Number(formData.summitId) : (summitDetails?.id ? Number(summitDetails.id) : null),
       baseAmount: formData.baseAmount !== undefined ? Number(formData.baseAmount) : null,
       gstAmount: formData.gstAmount !== undefined ? Number(formData.gstAmount) : null,
-      platformFee: formData.platformFee !== undefined ? Number(formData.platformFee) : null,
-      amountPaid:
-        Number(formData.totalAmount || formData.amountPaid) || 2358.82,
+      amountPaid: (formData.totalAmount !== undefined && formData.totalAmount !== null)
+        ? Number(formData.totalAmount)
+        : (formData.amountPaid !== undefined && formData.amountPaid !== null ? Number(formData.amountPaid) : 1999),
     };
 
     if (typeof window !== "undefined") {

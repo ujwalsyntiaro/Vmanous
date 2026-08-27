@@ -230,12 +230,16 @@ export const getSummits = () => {
     }
 
     const computed = computeCountForSummit(s);
-    const finalEnrolledCount = computed;
+    // Prioritize server enrolledCount from database, merging with any local computed count
+    const serverEnrolled = (s.enrolledCount !== undefined && s.enrolledCount !== null && !isNaN(Number(s.enrolledCount)))
+      ? Number(s.enrolledCount)
+      : (Array.isArray(s.applications) ? s.applications.filter(a => a.paymentStatus === 'Paid' || !a.paymentStatus).length : 0);
+    const finalEnrolledCount = Math.max(serverEnrolled, computed);
 
     const cap = s.seatCapacity !== undefined ? Number(s.seatCapacity) : 100;
     const isCompleted = s.status === 'Event Completed' || s.status === 'Completed';
     const isFull = finalEnrolledCount >= cap;
-    const isClosed = s.status === 'Closed' || isFull;
+    const isClosed = s.status === 'Closed' || s.status === 'Registration Closed' || isFull;
     const finalStatus = isCompleted
       ? s.status
       : (isClosed ? 'Registration Closed' : (s.status === 'Filling Fast' ? 'Filling Fast' : 'Registration Open'));
@@ -339,10 +343,17 @@ export const saveSummits = (summits) => {
 
 export const fetchSummitsAsync = async () => {
   try {
-    const res = await fetch("/api/v1/summits");
+    const res = await fetch(`/api/v1/summits?_t=${Date.now()}`, {
+      cache: 'no-store',
+      headers: {
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0'
+      }
+    });
     if (res.ok) {
       const data = await res.json();
-      if (data.success && Array.isArray(data.data) && data.data.length > 0) {
+      if (data.success && Array.isArray(data.data)) {
         saveSummits(data.data);
         return getSummits();
       }

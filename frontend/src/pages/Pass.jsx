@@ -119,10 +119,10 @@ export const Pass = () => {
           twelfthPercentage: matched.marksTwelfth ? String(matched.marksTwelfth).replace("%", "") : "83",
           appliedDate: matched.createdAt,
           paymentStatus: matched.paymentStatus || "Paid",
-          amountPaid: matched.amountPaid || 2359,
-          baseAmount: matched.baseAmount || 1999,
-          gstAmount: matched.gstAmount || 360,
-          platformFee: matched.platformFee || 99,
+          amountPaid: (matched.amountPaid !== undefined && matched.amountPaid !== null) ? matched.amountPaid : 0,
+          baseAmount: (matched.baseAmount !== undefined && matched.baseAmount !== null) ? matched.baseAmount : 0,
+          gstAmount: (matched.gstAmount !== undefined && matched.gstAmount !== null) ? matched.gstAmount : 0,
+          platformFee: (matched.platformFee !== undefined && matched.platformFee !== null) ? matched.platformFee : 0,
           transactionId: matched.transactionId || matched.passCode,
         });
         setPaymentId(matched.passCode || matched.transactionId);

@@ -82,13 +82,24 @@ export const Enroll = () => {
       };
     }
 
+    const handleVisibilityOrFocus = () => {
+      if (document.visibilityState === 'visible') {
+        loadSummits();
+      }
+    };
+
+    window.addEventListener("visibilitychange", handleVisibilityOrFocus);
+    window.addEventListener("focus", handleVisibilityOrFocus);
+
     const syncInterval = setInterval(() => {
       loadSummits();
-    }, 5000);
+    }, 4000);
 
     return () => {
       window.removeEventListener("summits_updated", loadSummits);
       window.removeEventListener("applications_updated", loadSummits);
+      window.removeEventListener("visibilitychange", handleVisibilityOrFocus);
+      window.removeEventListener("focus", handleVisibilityOrFocus);
       if (bc) bc.close();
       clearInterval(syncInterval);
     };

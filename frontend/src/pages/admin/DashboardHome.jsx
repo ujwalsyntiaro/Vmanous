@@ -843,7 +843,7 @@ const DashboardHome = () => {
                         {app.paymentStatus === "Paid" ? (
                           <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800">
                             <CheckCircle2 size={12} />
-                            Paid (₹{app.amountPaid || 2359})
+                            Paid ({app.amountPaid === 0 ? 'FREE' : `₹${app.amountPaid !== undefined && app.amountPaid !== null ? app.amountPaid : 0}`})
                           </span>
                         ) : app.paymentStatus === "Failed" ? (
                           <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-rose-100 text-rose-800">
@@ -951,7 +951,7 @@ const DashboardHome = () => {
                   <div className="pt-2 flex items-center justify-center sm:justify-start gap-2">
                     {selectedApp.paymentStatus === "Paid" ? (
                       <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800">
-                        Paid (₹{selectedApp.amountPaid || 2359})
+                        Paid ({selectedApp.amountPaid === 0 ? 'FREE' : `₹${selectedApp.amountPaid !== undefined && selectedApp.amountPaid !== null ? selectedApp.amountPaid : 0}`})
                       </span>
                     ) : (
                       <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-100 text-rose-800">

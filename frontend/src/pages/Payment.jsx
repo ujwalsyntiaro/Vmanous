@@ -71,16 +71,93 @@ export const Payment = () => {
     e.preventDefault();
     setIsProcessing(true);
 
+    if (isFree || totalAmount === 0) {
+      // 1. Direct 100% Free Workshop Registration (No payment gateway needed)
+      const txnId = `TXN_FREE_${Date.now()}_${Math.floor(1000 + Math.random() * 9000)}`;
+      const collegeCode = ((summitDetails?.college || formData.institution || 'VM').replace(/[^a-zA-Z0-9]/g, '').slice(0, 4).toUpperCase()) || 'VM';
+      const passCode = `PASS-${collegeCode}-${Math.floor(1000 + Math.random() * 9000)}`;
+
+      const freeApplicationData = {
+        studentName: fullName,
+        email: formData.email,
+        phone: formData.phone || formData.mobileNumber || '',
+        programTitle: summitDetails?.title || formData.programInterest || '',
+        collegeName: summitDetails?.college || formData.institution || '',
+        venueLocation: summitDetails?.address || formData.collegeAddress || '',
+        branch: formData.branch || formData.specialization || '',
+        year: formData.semester || formData.year || formData.yearOfStudy || '',
+        bloodGroup: formData.bloodGroup || null,
+        degree: formData.degree || formData.qualification || '',
+        marksTenth: formData.tenthPercentage ? String(formData.tenthPercentage) : '',
+        marksTwelfth: formData.twelfthPercentage ? String(formData.twelfthPercentage) : '',
+        selfiePhotoUrl: formData.photoPreview || formData.selfie || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=300',
+        paymentStatus: 'Paid',
+        verificationStatus: 'Verified',
+        transactionId: txnId,
+        amountPaid: 0,
+        baseAmount: 0,
+        gstAmount: 0,
+        platformFee: 0,
+        passCode: passCode,
+        summitId: summitDetails?.id ? Number(summitDetails.id) : null
+      };
+
+      try {
+        addApplication(freeApplicationData, summitDetails);
+
+        addStudent({
+          studentName: fullName,
+          email: formData.email,
+          phone: formData.phone || formData.mobileNumber || '',
+          collegeName: summitDetails?.college || formData.institution || '',
+          programTitle: summitDetails?.title || formData.programInterest || '',
+          passCode: passCode,
+          paymentStatus: 'Paid',
+          attendance: { day1: false, day2: false },
+          enrolledAt: new Date().toISOString()
+        });
+
+        setTimeout(() => {
+          setIsProcessing(false);
+          navigate('/pass', {
+            state: {
+              formData: {
+                ...formData,
+                fullName,
+                appliedDate: new Date().toISOString(),
+                paymentStatus: 'Paid',
+                amountPaid: 0,
+                baseAmount: 0,
+                gstAmount: 0,
+                platformFee: 0,
+                transactionId: txnId,
+                passCode: passCode
+              },
+              paymentId: txnId,
+              passCode: passCode
+            }
+          });
+        }, 600);
+      } catch (err) {
+        console.error('Free registration error:', err);
+        setIsProcessing(false);
+        alert('Could not complete free registration. Please try again.');
+      }
+      return;
+    }
+
+    // 2. Paid Workshop Registration via Cashfree PG
     try {
       const result = await initiateCashfreePayment({
         ...formData,
         programInterest: summitDetails?.title || formData.programInterest || '',
         institution: summitDetails?.college || formData.institution || '',
         collegeAddress: summitDetails?.address || formData.collegeAddress || '',
-        baseAmount: isFree ? 0 : basePrice,
-        gstAmount: isFree ? 0 : taxAmount,
-        platformFee: isFree ? 0 : processingFee,
+        baseAmount: basePrice,
+        gstAmount: taxAmount,
+        platformFee: processingFee,
         totalAmount: totalAmount,
+        amountPaid: totalAmount,
         summitId: summitDetails?.id || formData.summitId || null,
       }, summitDetails);
 
@@ -401,7 +478,7 @@ export const Payment = () => {
 
                 {/* Non-Refundable Fee Notice */}
                 <div className="mb-4 text-[11px] font-normal text-slate-600 px-1">
-                  <span>Note: The registration fee is non-refundable after payment.</span>
+                  <span>{isFree ? 'This workshop registration is completely free of charge.' : 'Note: The registration fee is non-refundable after payment.'}</span>
                 </div>
 
                 {/* Pay & Submit Button Aligned Right with Hover Zoom Effect */}
@@ -413,16 +490,16 @@ export const Payment = () => {
                     type="button"
                     onClick={handleConfirm}
                     disabled={isProcessing}
-                    className="px-6 py-2 bg-white border border-slate-700 text-slate-900 font-medium rounded-md hover:border-emerald-600 hover:text-emerald-600 hover:bg-emerald-50/40 transition-colors duration-200 flex items-center justify-center gap-2 text-sm cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed shadow-xs group"
+                    className="px-6 py-2.5 bg-white border border-slate-700 text-slate-900 font-medium rounded-md hover:border-emerald-600 hover:text-emerald-600 hover:bg-emerald-50/40 transition-colors duration-200 flex items-center justify-center gap-2 text-sm cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed shadow-xs group"
                   >
                     {isProcessing ? (
                       <>
                         <div className="w-3.5 h-3.5 border-2 border-slate-700/30 border-t-slate-900 rounded-full animate-spin" />
-                        <span>Processing Payment...</span>
+                        <span>{isFree ? 'Completing Registration...' : 'Processing Payment...'}</span>
                       </>
                     ) : (
                       <>
-                        <span>Pay Now</span>
+                        <span>{isFree ? 'Confirm Free Registration' : `Pay ₹${totalAmount.toLocaleString('en-IN')}`}</span>
                         <ArrowRight size={16} className="transform group-hover:translate-x-1 transition-transform duration-200" />
                       </>
                     )}
@@ -430,7 +507,7 @@ export const Payment = () => {
                 </div>
 
                 <div className="text-center text-xs text-slate-400 font-medium">
-                  Payments are 100% encrypted and safe
+                  {isFree ? 'Direct Free Registration via VMANOUS' : 'Payments are 100% encrypted and safe'}
                 </div>
               </div>
             </div>
