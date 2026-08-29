@@ -40,7 +40,9 @@ import ManageWorkshops from './pages/admin/ManageWorkshops';
 import ManageAttendance from './pages/admin/ManageAttendance';
 import ManageSettings from './pages/admin/ManageSettings';
 import ManageGallery from './pages/admin/ManageGallery';
+import ManageCertificates from './pages/admin/ManageCertificates';
 import PlaceholderPage from './components/admin/PlaceholderPage';
+
 
 const App = () => {
   return (
@@ -95,7 +97,8 @@ const App = () => {
             <Route path="gallery" element={<ManageGallery />} />
 
             {/* Certificates */}
-            <Route path="certificates" element={<PlaceholderPage title="Certificates Management" />} />
+            <Route path="certificates" element={<ManageCertificates />} />
+
 
             {/* Platform */}
             <Route path="settings" element={<ManageSettings />} />

@@ -68,8 +68,26 @@ model Application {
   gstAmount            Float?
   platformFee          Float?   @default(0)
   passCode             String?
+  certificate          Certificate?
   createdAt            DateTime @default(now())
   updatedAt            DateTime @updatedAt
+}
+
+model Certificate {
+  id              String       @id @default(uuid())
+  certificateCode String       @unique
+  applicationId   String       @unique
+  application     Application  @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  studentName     String
+  email           String
+  collegeName     String
+  workshopTitle   String
+  workshopDate    String?
+  status          String       @default("Sent") // "Sent", "Failed", "Pending"
+  errorMessage    String?      @db.Text
+  sentAt          DateTime?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
 }
 
 model PaymentTransaction {

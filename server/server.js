@@ -24,6 +24,8 @@ app.use('/api/v1/applications', require('./routes/applicationRoutes'));
 app.use('/api/v1/summits', require('./routes/summitRoutes'));
 app.use('/api/v1/students', require('./routes/studentRoutes'));
 app.use('/api/v1/payments', require('./routes/paymentRoutes'));
+app.use('/api/v1/certificates', require('./routes/certificateRoutes'));
+
 
 const { sendCollegeRequestEmail } = require('./services/emailService');
 

@@ -365,4 +365,135 @@ Issued On: ${eventDateStr}
   }
 };
 
-module.exports = { sendCollegeRequestEmail, sendStudentPassEmail };
+/**
+ * Function to send Workshop Certificate of Completion Email with attached PDF Certificate
+ * @param {Object} data - Student & Certificate Data
+ */
+const sendWorkshopCertificateEmail = async (data) => {
+
+  const transporter = getTransporter();
+  const senderEmail = process.env.EMAIL_USER || 'vmanous.com@gmail.com';
+  const recipientEmail = (data.email || '').trim();
+
+  // Basic email syntax validation
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!recipientEmail || !emailRegex.test(recipientEmail)) {
+    console.warn('[Certificate Email Error] Invalid or missing student email address:', recipientEmail);
+    return { success: false, error: 'Invalid Gmail address / Format error' };
+  }
+
+  const studentName = data.studentName || data.name || 'Participant';
+  const collegeName = data.collegeName || 'National Institute of Technology';
+  const workshopTitle = data.workshopTitle || data.programTitle || 'AI & Machine Learning Workshop';
+  const certificateCode = data.certificateCode || `VM-CERT-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
+  const dateStr = data.workshopDate || data.eventDate || 'August 2026';
+
+  console.log(`[Certificate Email Dispatch] Sending Certificate email to ${recipientEmail} for student ${studentName}...`);
+
+  try {
+    const emailAttachments = [];
+
+    if (data.pdfBuffer) {
+      emailAttachments.push({
+        filename: `VMANOUS_Certificate_${studentName.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`,
+        content: data.pdfBuffer,
+        contentType: 'application/pdf'
+      });
+    }
+
+    const mailOptions = {
+      from: `"VMANOUS Academy" <${senderEmail}>`,
+      to: recipientEmail,
+      subject: `🎓 Certificate of Completion | ${workshopTitle} – ${studentName}`,
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Workshop Certificate</title>
+        </head>
+        <body style="margin: 0; padding: 24px 10px; background-color: #f1f5f9; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+          <div style="max-width: 560px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
+            
+            <!-- Gold & Blue Header Banner -->
+            <div style="background: linear-gradient(135deg, #0B1B3D 0%, #1e3a8a 100%); padding: 28px 24px; text-align: center; color: #ffffff;">
+              <p style="font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: #C59B27; margin: 0 0 6px 0;">
+                ⚡ VMANOUS ACADEMY OF ARTIFICIAL INTELLIGENCE
+              </p>
+              <h1 style="font-size: 22px; font-weight: 800; margin: 0 0 6px 0; letter-spacing: 0.5px;">
+                Certificate of Completion
+              </h1>
+              <p style="font-size: 13px; color: #cbd5e1; margin: 0;">
+                Official Digital Credential & Verification
+              </p>
+            </div>
+
+            <!-- Body Content -->
+            <div style="padding: 28px 24px;">
+              <p style="font-size: 15px; color: #334155; margin: 0 0 16px 0;">
+                Dear <strong>${studentName}</strong>,
+              </p>
+              <p style="font-size: 14px; line-height: 1.6; color: #475569; margin: 0 0 20px 0;">
+                Congratulations! We are pleased to issue your official <strong>Certificate of Completion</strong> for actively participating in and completing the intensive hands-on workshop:
+              </p>
+
+              <!-- Highlight Box -->
+              <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-left: 4px solid #C59B27; border-radius: 8px; padding: 16px; margin-bottom: 24px;">
+                <p style="font-size: 15px; font-weight: 700; color: #0F172A; margin: 0 0 6px 0;">
+                  ${workshopTitle}
+                </p>
+                <p style="font-size: 13px; color: #64748B; margin: 0 0 4px 0;">
+                  🏛️ <strong>Venue / College:</strong> ${collegeName}
+                </p>
+                <p style="font-size: 13px; color: #64748B; margin: 0 0 4px 0;">
+                  📅 <strong>Date:</strong> ${dateStr}
+                </p>
+                <p style="font-size: 12px; font-weight: 700; color: #2563EB; margin: 6px 0 0 0;">
+                  🆔 <strong>Certificate ID:</strong> ${certificateCode}
+                </p>
+              </div>
+
+              <p style="font-size: 13px; color: #475569; line-height: 1.5; margin: 0 0 20px 0;">
+                Your verified PDF certificate is attached directly to this email. You can download, print, or attach it to your LinkedIn profile and resume.
+              </p>
+
+              <div style="text-align: center; margin: 24px 0;">
+                <span style="display: inline-block; background-color: #0B1B3D; color: #ffffff; padding: 10px 24px; border-radius: 6px; font-size: 13px; font-weight: 700; text-decoration: none;">
+                  ✓ Verified by VMANOUS Certification Authority
+                </span>
+              </div>
+
+              <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 24px 0 16px 0;" />
+
+              <p style="font-size: 11px; color: #94a3b8; text-align: center; margin: 0;">
+                This is an automated certification email. For any queries, please reach out to support@vmanous.com.
+              </p>
+            </div>
+
+          </div>
+        </body>
+        </html>
+      `,
+      attachments: emailAttachments
+    };
+
+    const info = await transporter.sendMail(mailOptions);
+    console.log(`[Certificate Email Success] Certificate email dispatched to ${recipientEmail}:`, info.messageId);
+    return { success: true, messageId: info.messageId, certificateCode };
+  } catch (err) {
+    console.error('[Certificate Email Error] Failed to send certificate email:', err.message);
+    let errMsg = 'Mail not delivered / SMTP Error';
+    if (err.message.includes('Invalid login') || err.message.includes('auth')) {
+      errMsg = 'Mail server authentication issue';
+    } else if (err.message.includes('recipient') || err.message.includes('No recipients') || err.message.includes('550') || err.message.includes('mailbox')) {
+      errMsg = 'Mail not delivered / Invalid Gmail';
+    } else {
+      errMsg = `Mail not delivered: ${err.message.slice(0, 50)}`;
+    }
+    return { success: false, error: errMsg };
+  }
+};
+
+module.exports = { sendCollegeRequestEmail, sendStudentPassEmail, sendWorkshopCertificateEmail };
+
