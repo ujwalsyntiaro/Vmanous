@@ -277,12 +277,7 @@ export const isSummitActive = (summit) => {
     return false;
   }
 
-  // 2. If status is active (Registration Open, Filling Fast, Registration Closed), return true
-  if (!summit.status || summit.status === 'Registration Open' || summit.status === 'Filling Fast' || summit.status === 'Registration Closed') {
-    return true;
-  }
-
-  // 3. Date Completed / Expired Validation
+  // 2. Date Completed / Expired Validation (Must happen before blindly trusting text status)
   const now = new Date();
   now.setHours(0, 0, 0, 0); // Start of today
 
@@ -302,14 +297,16 @@ export const isSummitActive = (summit) => {
       return new Date(parts[2], parts[1] - 1, parts[0]);
     }
 
-    // Range e.g. "Aug 20-25, 2026" or "Aug 20 - 25, 2026"
+    // Range e.g. "Aug 20-25, 2026" or "Aug 20 - 25, 2026" or "Aug 24, 2026"
+    // Fix: Capture the start day correctly instead of discarding it
     const rangeMatch = str.match(
-      /([A-Za-z]+)\s+\d+(?:\s*-\s*(\d+))?,\s*(\d{4})/,
+      /([A-Za-z]+)\s+(\d+)(?:\s*-\s*(\d+))?,\s*(\d{4})/,
     );
     if (rangeMatch) {
       const month = rangeMatch[1];
-      const endDay = rangeMatch[2] || "28";
-      const year = rangeMatch[3];
+      const startDay = rangeMatch[2]; // e.g. 24
+      const endDay = rangeMatch[3] || startDay; // if no end day provided, fallback to start day
+      const year = rangeMatch[4];
       const parsedRange = new Date(`${month} ${endDay}, ${year}`);
       if (!isNaN(parsedRange.getTime())) return parsedRange;
     }
@@ -325,8 +322,13 @@ export const isSummitActive = (summit) => {
   if (eventDate) {
     eventDate.setHours(23, 59, 59, 999);
     if (eventDate < now) {
-      return false; // Event date is in the past -> move to Past Records / Inactive
+      return false; // Event date is strictly in the past -> move to Past Records / Inactive
     }
+  }
+
+  // 3. If date validation passes (event is in future/today), check text status
+  if (!summit.status || summit.status === 'Registration Open' || summit.status === 'Filling Fast' || summit.status === 'Registration Closed') {
+    return true;
   }
 
   return true;
