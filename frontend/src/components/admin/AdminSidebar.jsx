@@ -66,8 +66,8 @@ const AdminSidebar = ({ isMobileOpen, setIsMobileOpen }) => {
                   className={({ isActive }) =>
                     `flex items-center gap-2.5 px-3 py-2 text-sm font-medium rounded-md transition-all duration-200 ${
                       isActive
-                        ? 'bg-gray-200 text-gray-900 font-semibold'
-                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                        ? 'bg-emerald-50 text-emerald-700 font-bold border-r-2 border-emerald-500 rounded-r-none'
+                        : 'text-slate-600 hover:text-emerald-700 hover:bg-emerald-50/50'
                     }`
                   }
                   onClick={() => setIsMobileOpen(false)}

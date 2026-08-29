@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import {
   Award,
   Search,
@@ -23,7 +23,8 @@ import {
   CheckSquare,
   Square,
   ShieldCheck,
-  FileCheck
+  FileCheck,
+  ChevronDown
 } from 'lucide-react';
 import {
   fetchWorkshopsForCertificates,
@@ -36,6 +37,53 @@ const MONTH_NAMES = [
   'January', 'February', 'March', 'April', 'May', 'June',
   'July', 'August', 'September', 'October', 'November', 'December'
 ];
+
+const CustomSelect = ({ value, onChange, options, defaultLabel }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  return (
+    <div className="relative" ref={dropdownRef}>
+      <div 
+        onClick={() => setIsOpen(!isOpen)}
+        className={`w-full pl-2.5 pr-8 py-2.5 bg-slate-50 border rounded-md text-xs font-semibold text-slate-800 transition cursor-pointer flex items-center justify-between ${isOpen ? 'border-emerald-500 ring-2 ring-emerald-500/20' : 'border-slate-200 hover:border-emerald-400'}`}
+      >
+        <span className="truncate">{value === 'All' ? defaultLabel : value}</span>
+        <ChevronDown className={`w-4 h-4 text-slate-500 absolute right-2.5 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+      </div>
+      
+      {isOpen && (
+        <div className="absolute z-50 w-full mt-1 bg-white border border-slate-200 rounded-lg shadow-lg overflow-y-auto max-h-60 py-1">
+          <div
+            onClick={() => { onChange('All'); setIsOpen(false); }}
+            className={`px-3 py-1.5 text-xs font-semibold cursor-pointer transition ${value === 'All' ? 'bg-emerald-50 text-emerald-700' : 'text-slate-700 hover:bg-emerald-50 hover:text-emerald-700'}`}
+          >
+            {defaultLabel}
+          </div>
+          {options.map((opt) => (
+            <div
+              key={opt}
+              onClick={() => { onChange(opt); setIsOpen(false); }}
+              className={`px-3 py-1.5 text-xs font-semibold cursor-pointer transition ${value === opt ? 'bg-emerald-50 text-emerald-700' : 'text-slate-700 hover:bg-emerald-50 hover:text-emerald-700'}`}
+            >
+              {opt}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
 
 const ManageCertificates = () => {
   const [workshops, setWorkshops] = useState([]);
@@ -368,10 +416,10 @@ const ManageCertificates = () => {
   };
 
   return (
-    <div className="p-4 md:p-5 max-w-[1600px] mx-auto space-y-4 animate-fadeIn">
+    <div className="max-w-[1600px] mx-auto space-y-4 animate-fadeIn">
       {/* Toast Notification */}
       {notification && (
-        <div className={`p-3 px-4 rounded-xl flex items-center justify-between border shadow-md ${notification.type === 'success'
+        <div className={`p-3 px-4 rounded-md flex items-center justify-between border shadow-md ${notification.type === 'success'
           ? 'bg-emerald-50 text-emerald-900 border-emerald-300'
           : 'bg-rose-50 text-rose-900 border-rose-300'
           }`}>
@@ -396,13 +444,13 @@ const ManageCertificates = () => {
       {!selectedWorkshop ? (
         <>
           {/* Top Page Header (Compact) */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-3.5 px-4 rounded-xl border border-slate-200 shadow-sm">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-8">
             <div className="flex items-center space-x-3">
-              <div className="w-9 h-9 rounded-lg bg-gradient-to-tr from-[#0B1B3D] to-[#2563EB] flex items-center justify-center text-white shadow-sm shrink-0">
+              <div className="w-9 h-9 rounded-lg bg-gradient-to-tr from-[#0B1B3D] to-emerald-600 flex items-center justify-center text-white shadow-sm shrink-0">
                 <Award className="w-5 h-5 text-amber-300" />
               </div>
               <div>
-                <h1 className="text-lg md:text-xl font-bold text-slate-900 tracking-tight leading-tight">
+                <h1 className="text-xl md:text-2xl font-bold text-slate-900 tracking-tight leading-tight">
                   Manage Certificates
                 </h1>
                 <p className="text-xs text-slate-500 mt-0.5 line-clamp-1">
@@ -424,10 +472,10 @@ const ManageCertificates = () => {
           {/* Dynamic Filter Bar & Workshop Live Counter Box */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-3.5">
             {/* Filter Controls Card (8 cols) */}
-            <div className="lg:col-span-8 bg-white p-3.5 px-4 rounded-xl border border-slate-200 shadow-sm space-y-3">
+            <div className="lg:col-span-9 space-y-3">
               <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-                <div className="flex items-center space-x-1.5 text-slate-800 font-bold text-xs">
-                  <Filter className="w-3.5 h-3.5 text-[#2563EB]" />
+                <div className="flex items-center space-x-1.5 text-slate-800 font-bold text-lg">
+                  <Filter className="w-5 h-5 text-emerald-500" />
                   <span>Workshop Filter</span>
                 </div>
 
@@ -445,41 +493,33 @@ const ManageCertificates = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2.5">
                 {/* Year Select */}
                 <div>
-                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+                  <label className="block text-xs font-bold text-slate-500 mb-1">
                     Year
                   </label>
-                  <select
+                  <CustomSelect
                     value={selectedYear}
-                    onChange={(e) => setSelectedYear(e.target.value)}
-                    className="w-full px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold text-slate-800 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition cursor-pointer"
-                  >
-                    <option value="All">All Years</option>
-                    {availableYears.map(yr => (
-                      <option key={yr} value={yr}>{yr}</option>
-                    ))}
-                  </select>
+                    onChange={setSelectedYear}
+                    options={availableYears}
+                    defaultLabel="All Years"
+                  />
                 </div>
 
                 {/* Month Select */}
                 <div>
-                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+                  <label className="block text-xs font-bold text-slate-500 mb-1">
                     Month
                   </label>
-                  <select
+                  <CustomSelect
                     value={selectedMonth}
-                    onChange={(e) => setSelectedMonth(e.target.value)}
-                    className="w-full px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold text-slate-800 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition cursor-pointer"
-                  >
-                    <option value="All">All Months</option>
-                    {availableMonths.map(m => (
-                      <option key={m} value={m}>{m}</option>
-                    ))}
-                  </select>
+                    onChange={setSelectedMonth}
+                    options={availableMonths}
+                    defaultLabel="All Months"
+                  />
                 </div>
 
                 {/* Exact Date Picker (Optional, Min: Aug 2026) */}
                 <div>
-                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+                  <label className="block text-xs font-bold text-slate-500 mb-1">
                     Date <span className="text-slate-400 font-normal lowercase">(optional)</span>
                   </label>
                   <input
@@ -488,23 +528,23 @@ const ManageCertificates = () => {
                     max={dateInputConstraints.max || undefined}
                     value={selectedDate}
                     onChange={(e) => setSelectedDate(e.target.value)}
-                    className="w-full px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold text-slate-800 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition cursor-pointer"
+                    className="w-full px-2.5 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold text-slate-800 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition cursor-pointer"
                   />
                 </div>
 
                 {/* Search Text */}
                 <div>
-                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+                  <label className="block text-xs font-bold text-slate-500 mb-1">
                     Search College
                   </label>
                   <div className="relative">
-                    <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2" />
+                    <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" />
                     <input
                       type="text"
                       placeholder="e.g. Pune, COEP..."
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      className="w-full pl-8 pr-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium text-slate-800 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition"
+                      className="w-full pl-8 pr-2.5 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium text-slate-800 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition"
                     />
                   </div>
                 </div>
@@ -512,10 +552,10 @@ const ManageCertificates = () => {
             </div>
 
             {/* Dynamic Workshop Counter Box (4 cols) - Clean White with Charcoal Border */}
-            <div className="lg:col-span-4 bg-white p-3.5 px-4 rounded-xl shadow-sm flex flex-col justify-between border-2 border-slate-700 relative overflow-hidden">
+            <div className="lg:col-span-3 bg-white p-3.5 px-4 rounded-md shadow-sm flex flex-col justify-between border border-slate-200 relative overflow-hidden">
               <div>
                 <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-800 bg-slate-100 px-2.5 py-0.5 rounded-full border border-slate-300">
+                  <span className="text-xs font-bold text-slate-800 bg-slate-100 px-2.5 py-0.5 rounded-full border border-slate-300">
                     Live Workshop Count
                   </span>
                   <Award className="w-4 h-4 text-slate-700" />
@@ -526,7 +566,7 @@ const ManageCertificates = () => {
               </div>
 
               <div className="mt-2.5 flex items-baseline space-x-2">
-                <span className="text-3xl lg:text-4xl font-black text-slate-900 tracking-tight">
+                <span className="text-3xl lg:text-4xl font-medium text-slate-900 tracking-tight">
                   {counterInfo.count}
                 </span>
                 <span className="text-xs font-bold text-slate-600">
@@ -539,8 +579,8 @@ const ManageCertificates = () => {
           {/* College Workshops Grid */}
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <h2 className="text-base font-bold text-slate-900 flex items-center space-x-2">
-                <Building2 className="w-4 h-4 text-[#2563EB]" />
+              <h2 className="text-lg font-bold text-slate-900 flex items-center space-x-2">
+                <Building2 className="w-5 h-5 text-emerald-500" />
                 <span>Colleges & Workshop Batches</span>
               </h2>
               <span className="text-[11px] font-bold text-slate-500 bg-slate-100 px-2.5 py-0.5 rounded-full">
@@ -549,12 +589,12 @@ const ManageCertificates = () => {
             </div>
 
             {isLoadingWorkshops ? (
-              <div className="bg-white p-10 rounded-xl border border-slate-200 text-center space-y-2">
+              <div className="bg-white p-10 rounded-md border border-slate-200 text-center space-y-2">
                 <RefreshCw className="w-6 h-6 text-blue-600 animate-spin mx-auto" />
                 <p className="text-slate-600 font-medium text-xs">Loading workshops & enrollment database...</p>
               </div>
             ) : filteredWorkshops.length === 0 ? (
-              <div className="bg-white p-10 rounded-xl border border-dashed border-slate-300 text-center space-y-2">
+              <div className="bg-white p-10 rounded-md border border-dashed border-slate-300 text-center space-y-2">
                 <div className="w-10 h-10 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mx-auto">
                   <Filter className="w-5 h-5" />
                 </div>
@@ -580,7 +620,7 @@ const ManageCertificates = () => {
                   return (
                     <div
                       key={workshop.id}
-                      className="bg-white rounded-xl border border-slate-200 hover:border-blue-400 hover:shadow-md transition-all p-4 flex flex-col justify-between group cursor-pointer"
+                      className="bg-white rounded-md border border-slate-200 hover:border-emerald-400 hover:shadow-md transition-all p-4 flex flex-col justify-between group cursor-pointer"
                       onClick={() => handleSelectWorkshop(workshop)}
                     >
                       <div className="space-y-2.5">
@@ -602,7 +642,7 @@ const ManageCertificates = () => {
 
                         {/* College & Title */}
                         <div>
-                          <h3 className="text-sm font-bold text-slate-900 group-hover:text-blue-600 transition line-clamp-1">
+                          <h3 className="text-sm font-bold text-slate-900 group-hover:text-emerald-600 transition line-clamp-1">
                             {workshop.college || 'Institution Workshop'}
                           </h3>
                           <p className="text-xs text-slate-500 font-medium line-clamp-1 mt-0.5">
@@ -625,7 +665,7 @@ const ManageCertificates = () => {
                           </div>
                           <div className="text-right">
                             <span className="text-slate-400 font-medium block text-[10px] uppercase">Eligible</span>
-                            <span className="font-bold text-blue-600 text-xs">
+                            <span className="font-bold text-emerald-600 text-xs">
                               {enrolled} Paid
                             </span>
                           </div>
@@ -634,11 +674,11 @@ const ManageCertificates = () => {
 
                       {/* Action Button */}
                       <div className="mt-3 pt-2 border-t border-slate-100 flex items-center justify-between">
-                        <span className="text-xs font-bold text-blue-600 group-hover:translate-x-0.5 transition flex items-center space-x-1">
+                        <span className="text-xs font-bold text-emerald-600 group-hover:translate-x-0.5 transition flex items-center space-x-1">
                           <span>View Enrolled Students</span>
                           <ChevronRight className="w-3.5 h-3.5" />
                         </span>
-                        <div className="w-6 h-6 rounded-md bg-blue-50 text-blue-600 flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition">
+                        <div className="w-6 h-6 rounded-md bg-emerald-50 text-emerald-600 flex items-center justify-center group-hover:bg-emerald-600 group-hover:text-white transition">
                           <Award className="w-3.5 h-3.5" />
                         </div>
                       </div>
@@ -653,7 +693,7 @@ const ManageCertificates = () => {
         /* Enrolled Students Detail View (Compact & Clean) */
         <div className="space-y-3.5">
           {/* Header with Back Button */}
-          <div className="bg-white p-3.5 px-4 rounded-xl border border-slate-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="bg-white p-3.5 px-4 rounded-md border border-slate-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="flex items-center space-x-3">
               <button
                 onClick={() => setSelectedWorkshop(null)}
@@ -695,7 +735,7 @@ const ManageCertificates = () => {
               <button
                 onClick={handleSendCertificates}
                 disabled={isSendingBulk || selectedStudentIds.length === 0}
-                className="inline-flex items-center space-x-1.5 px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-xs rounded-xl shadow-md shadow-blue-500/20 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                className="inline-flex items-center space-x-1.5 px-4 py-2 bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white font-bold text-xs rounded-md shadow-md shadow-emerald-500/20 transition disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isSendingBulk ? (
                   <>
@@ -713,7 +753,7 @@ const ManageCertificates = () => {
           </div>
 
           {/* Student Search & Select All Header */}
-          <div className="bg-white p-3 px-4 rounded-xl border border-slate-200 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-2.5">
+          <div className="bg-white p-3 px-4 rounded-md border border-slate-200 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-2.5">
             <div className="flex items-center space-x-2.5 w-full sm:w-auto">
               <button
                 onClick={handleToggleSelectAll}
@@ -740,13 +780,13 @@ const ManageCertificates = () => {
                 placeholder="Search by name, gmail, pass ID..."
                 value={studentSearchQuery}
                 onChange={(e) => setStudentSearchQuery(e.target.value)}
-                className="w-full pl-8 pr-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium text-slate-800 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition"
+                className="w-full pl-8 pr-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium text-slate-800 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition"
               />
             </div>
           </div>
 
           {/* Enrolled Students Table */}
-          <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+          <div className="bg-white rounded-md border border-slate-200 shadow-sm overflow-hidden">
 
             {isLoadingStudents ? (
               <div className="p-16 text-center space-y-3">
@@ -765,11 +805,11 @@ const ManageCertificates = () => {
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse">
                   <thead>
-                    <tr className="bg-slate-50 border-b border-slate-200 text-[11px] font-bold text-slate-600 uppercase tracking-wider">
+                    <tr className="bg-slate-50 border-b border-slate-200 text-xs font-bold text-slate-600">
                       <th className="py-3.5 px-4 w-12 text-center">
                         <button onClick={handleToggleSelectAll} className="p-1">
                           {selectedStudentIds.length === filteredStudents.length && filteredStudents.length > 0 ? (
-                            <CheckSquare className="w-4 h-4 text-blue-600" />
+                            <CheckSquare className="w-4 h-4 text-emerald-600" />
                           ) : (
                             <Square className="w-4 h-4 text-slate-400" />
                           )}
@@ -798,10 +838,10 @@ const ManageCertificates = () => {
                           <td className="py-3.5 px-4 text-center">
                             <button
                               onClick={() => handleToggleStudent(student.id)}
-                              className="p-1 text-slate-400 hover:text-blue-600"
+                              className="p-1 text-slate-400 hover:text-emerald-600"
                             >
                               {isSelected ? (
-                                <CheckSquare className="w-4 h-4 text-blue-600" />
+                                <CheckSquare className="w-4 h-4 text-emerald-600" />
                               ) : (
                                 <Square className="w-4 h-4 text-slate-300" />
                               )}
@@ -892,7 +932,7 @@ const ManageCertificates = () => {
                           <td className="py-3.5 px-4 text-right space-x-2">
                             <button
                               onClick={() => setPreviewStudent(student)}
-                              className="inline-flex items-center space-x-1 px-2.5 py-1.5 bg-slate-100 hover:bg-blue-50 hover:text-blue-600 text-slate-700 rounded-lg text-xs font-semibold transition"
+                              className="inline-flex items-center space-x-1 px-2.5 py-1.5 bg-slate-100 hover:bg-emerald-50 hover:text-emerald-600 text-slate-700 rounded-lg text-xs font-semibold transition"
                               title="Preview Dummy Certificate"
                             >
                               <Eye className="w-3.5 h-3.5" />
@@ -906,7 +946,7 @@ const ManageCertificates = () => {
                                 ? 'bg-rose-100 hover:bg-rose-200 text-rose-700'
                                 : isSent
                                   ? 'bg-slate-100 hover:bg-slate-200 text-slate-700'
-                                  : 'bg-blue-50 hover:bg-blue-100 text-blue-700'
+                                  : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-700'
                                 }`}
                               title="Dispatch / Resend Certificate"
                             >
@@ -932,7 +972,7 @@ const ManageCertificates = () => {
             {/* Modal Header */}
             <div className="flex items-center justify-between pb-3 border-b border-slate-100">
               <div className="flex items-center space-x-2">
-                <ShieldCheck className="w-5 h-5 text-blue-600" />
+                <ShieldCheck className="w-5 h-5 text-emerald-600" />
                 <h3 className="text-lg font-bold text-slate-900">Certificate Live Preview</h3>
               </div>
               <button
@@ -944,7 +984,7 @@ const ManageCertificates = () => {
             </div>
 
             {/* Dummy Certificate Visual Rendering (3:2 Landscape Layout) */}
-            <div className="bg-[#FCFCFD] border-4 border-[#0B1B3D] p-8 rounded-xl relative shadow-md text-center space-y-6 overflow-hidden">
+            <div className="bg-[#FCFCFD] border-4 border-[#0B1B3D] p-8 rounded-md relative shadow-md text-center space-y-6 overflow-hidden">
               {/* Inner Gold Border */}
               <div className="absolute inset-2 border border-[#C59B27] pointer-events-none rounded-lg"></div>
 
@@ -1031,7 +1071,7 @@ const ManageCertificates = () => {
                 href={getCertificatePdfUrl(previewStudent.id)}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center space-x-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 font-semibold text-xs rounded-xl transition"
+                className="inline-flex items-center space-x-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 font-semibold text-xs rounded-md transition"
               >
                 <Download className="w-4 h-4" />
                 <span>Download PDF</span>
@@ -1039,7 +1079,7 @@ const ManageCertificates = () => {
 
               <button
                 onClick={() => setPreviewStudent(null)}
-                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs rounded-xl shadow-sm transition"
+                className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs rounded-md shadow-sm transition"
               >
                 Close Preview
               </button>
