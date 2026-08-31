@@ -54,14 +54,14 @@ const CustomSelect = ({ value, onChange, options, defaultLabel }) => {
 
   return (
     <div className="relative" ref={dropdownRef}>
-      <div 
+      <div
         onClick={() => setIsOpen(!isOpen)}
         className={`w-full pl-2.5 pr-8 py-2.5 bg-slate-50 border rounded-md text-xs font-semibold text-slate-800 transition cursor-pointer flex items-center justify-between ${isOpen ? 'border-emerald-500 ring-2 ring-emerald-500/20' : 'border-slate-200 hover:border-emerald-400'}`}
       >
         <span className="truncate">{value === 'All' ? defaultLabel : value}</span>
         <ChevronDown className={`w-4 h-4 text-slate-500 absolute right-2.5 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </div>
-      
+
       {isOpen && (
         <div className="absolute z-50 w-full mt-1 bg-white border border-slate-200 rounded-lg shadow-lg overflow-y-auto max-h-60 py-1">
           <div
@@ -983,85 +983,47 @@ const ManageCertificates = () => {
               </button>
             </div>
 
-            {/* Dummy Certificate Visual Rendering (3:2 Landscape Layout) */}
-            <div className="bg-[#FCFCFD] border-4 border-[#0B1B3D] p-8 rounded-md relative shadow-md text-center space-y-6 overflow-hidden">
-              {/* Inner Gold Border */}
-              <div className="absolute inset-2 border border-[#C59B27] pointer-events-none rounded-lg"></div>
+            {/* New Certificate Visual Rendering */}
+            <div
+              className="relative w-full overflow-hidden rounded-md border border-slate-200 shadow-md bg-white mx-auto [container-type:inline-size]"
+              style={{ aspectRatio: '841.89 / 595.28', backgroundImage: 'url(/VMANOUS_Certificate_Final.png)', backgroundSize: 'cover', backgroundPosition: 'center' }}
+            >
+              {/* Precise white masks to hide only the placeholder text without hiding logos or lines */}
+              {/* SRN Mask - Wider to cover text on the left, but not so wide to hit VMANOUS */}
+              <div className="absolute top-[4%] right-[4%] w-[28%] h-[9%] bg-white z-0"></div>
+              {/* Name & Line Mask - Tall enough to completely hide 'Name of Candidates' and the original line */}
+              <div className="absolute top-[37%] left-[20%] w-[60%] h-[15%] bg-white z-0"></div>
+              {/* Paragraph Mask */}
+              <div className="absolute top-[56%] left-[12%] w-[76%] h-[16%] bg-white z-0"></div>
 
-              {/* Header Logo & Academy */}
-              <div className="relative z-10">
-                <p className="text-[11px] font-bold tracking-widest text-[#0B1B3D] uppercase">
-                  ⚡ VMANOUS ACADEMY OF ARTIFICIAL INTELLIGENCE & RESEARCH
+              {/* SRN and Issue Date (Top Right) */}
+              <div className="absolute top-[5.5%] right-[7%] text-right space-y-0.5 z-10">
+                <p className="font-bold text-black" style={{ fontSize: '1.2cqi' }}>
+                  SRN : {previewStudent.certificate ? previewStudent.certificate.certificateCode : 'VM-CERT-2026-001'}
                 </p>
-                <div className="w-28 h-0.5 bg-[#C59B27] mx-auto mt-1"></div>
+                <p className="font-medium text-black" style={{ fontSize: '1.2cqi' }}>
+                  Issue Date: {new Date().toLocaleDateString('en-GB')}
+                </p>
               </div>
 
-              {/* Title */}
-              <div className="relative z-10 space-y-1">
-                <h2 className="text-2xl md:text-3xl font-extrabold text-[#0B1B3D] tracking-wide font-serif">
-                  CERTIFICATE OF COMPLETION
-                </h2>
-                <p className="text-xs text-slate-500 tracking-wider">
-                  This is proudly presented to
-                </p>
-              </div>
-
-              {/* Recipient Student Name */}
-              <div className="relative z-10">
-                <h1 className="text-2xl md:text-4xl font-extrabold text-[#0F172A] tracking-wider uppercase">
+              {/* Student Name (Center) */}
+              <div className="absolute top-[37%] left-[20%] w-[60%] h-[15%] flex flex-col justify-end z-10">
+                <h1 
+                  className="text-black text-center leading-none mb-[1%]" 
+                  style={{ fontFamily: "'Great Vibes', cursive", fontSize: '6cqi', fontWeight: '400' }}
+                >
                   {previewStudent.studentName}
                 </h1>
-                <div className="w-48 h-0.5 bg-[#C59B27] mx-auto mt-2"></div>
               </div>
 
-              {/* Workshop Description */}
-              <div className="relative z-10 max-w-xl mx-auto">
-                <p className="text-xs md:text-sm text-slate-700 leading-relaxed">
-                  For successfully participating in and completing the intensive National Hands-on Workshop on{' '}
-                  <strong className="text-slate-900">
-                    "{selectedWorkshop ? selectedWorkshop.title : 'Generative AI & Machine Learning'}"
-                  </strong>{' '}
-                  conducted at{' '}
-                  <strong className="text-slate-900">
-                    {selectedWorkshop ? selectedWorkshop.college : previewStudent.collegeName}
-                  </strong>{' '}
-                  on {selectedWorkshop ? (selectedWorkshop.date || selectedWorkshop.startDate) : 'August 2026'}.
+              {/* Description Body Paragraph */}
+              <div className="absolute top-[56%] left-[15%] w-[70%] text-center z-10 flex items-center justify-center h-[16%]">
+                <p
+                  className="text-[#334155] leading-relaxed uppercase"
+                  style={{ fontSize: '1.45cqi', fontFamily: "'Cinzel', serif", letterSpacing: '0.12em', fontWeight: '500' }}
+                >
+                  FOR SUCCESSFULLY COMPLETING THE AI SUMMIT ON {selectedWorkshop ? (selectedWorkshop.date || selectedWorkshop.startDate) : 'AUG 24, 2026'}, WITH A TOTAL DURATION OF {selectedWorkshop ? selectedWorkshop.duration || '30' : '30'} HOURS, AND DEMONSTRATING ACTIVE PARTICIPATION IN EXPLORING AI TECHNOLOGIES, INDUSTRY INSIGHTS, AND PRACTICAL APPLICATIONS.
                 </p>
-              </div>
-
-              {/* Bottom Badges, Seal & QR Verification */}
-              <div className="relative z-10 pt-4 flex items-center justify-between border-t border-slate-200/80">
-                {/* Golden Seal Badge */}
-                <div className="flex flex-col items-center">
-                  <div className="w-14 h-14 rounded-full bg-amber-100 border-2 border-[#C59B27] flex flex-col items-center justify-center text-[8px] font-bold text-[#0B1B3D] shadow-sm">
-                    <span>OFFICIAL</span>
-                    <span className="text-[#C59B27]">★★★</span>
-                    <span>SEAL</span>
-                  </div>
-                  <span className="text-[9px] font-bold text-slate-500 mt-1">Verified Authority</span>
-                </div>
-
-                {/* Signature */}
-                <div className="text-center">
-                  <div className="font-serif italic text-lg font-bold text-slate-800 -mb-1">
-                    Anurag S.
-                  </div>
-                  <div className="w-32 h-0.5 bg-slate-300 mx-auto"></div>
-                  <p className="text-[10px] font-bold text-slate-900 mt-1">Authorized Director</p>
-                  <p className="text-[8px] text-slate-400">VMANOUS AI Program</p>
-                </div>
-
-                {/* QR Code & ID */}
-                <div className="text-right">
-                  <div className="inline-block p-1 bg-white border border-slate-300 rounded">
-                    <div className="w-12 h-12 bg-slate-100 flex items-center justify-center text-[10px] text-slate-400 font-mono">
-                      QR CODE
-                    </div>
-                  </div>
-                  <p className="text-[9px] font-bold text-slate-700 mt-1">
-                    ID: {previewStudent.certificate ? previewStudent.certificate.certificateCode : 'VM-CERT-2026-001'}
-                  </p>
-                </div>
               </div>
             </div>
 
