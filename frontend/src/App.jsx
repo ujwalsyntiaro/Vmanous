@@ -75,14 +75,16 @@ const App = () => {
           <Route path="/refund-policy" element={<RefundPolicy />} />
         </Route>
 
-        {/* Admin/CPanel Login Gateway (Public) */}
-        <Route path="/cpanel/login" element={<AdminLogin />} />
-        <Route path="/admin/login" element={<Navigate to="/cpanel/login" replace />} />
-        <Route path="/admin" element={<Navigate to="/cpanel" replace />} />
+        {/* Admin/VPanel Login Gateway (Public) */}
+        <Route path="/vpanel/login" element={<AdminLogin />} />
+        <Route path="/cpanel/login" element={<Navigate to="/vpanel/login" replace />} />
+        <Route path="/admin/login" element={<Navigate to="/vpanel/login" replace />} />
+        <Route path="/cpanel/*" element={<Navigate to="/vpanel" replace />} />
+        <Route path="/admin" element={<Navigate to="/vpanel" replace />} />
 
-        {/* Protected CPanel Dashboard Routes */}
+        {/* Protected VPanel Dashboard Routes */}
         <Route element={<ProtectedAdminRoute />}>
-          <Route path="/cpanel" element={<AdminLayout />}>
+          <Route path="/vpanel" element={<AdminLayout />}>
             <Route index element={<DashboardHome />} />
 
             {/* Programs */}

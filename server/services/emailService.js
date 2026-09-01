@@ -498,42 +498,69 @@ const sendWorkshopCertificateEmail = async (data) => {
 module.exports = { sendCollegeRequestEmail, sendStudentPassEmail, sendWorkshopCertificateEmail };
 
 /**
- * Function to send OTP Email to Admin for Reschedule/Postpone Verification
+ * Function to send OTP Email to Admin for Preponed/Reschedule/Postpone Verification
  */
-const sendAdminOtpEmail = async (otp, summitDetails, email = 'am@vmanous.com') => {
+const sendAdminOtpEmail = async (otp, summitDetails = {}, email = 'am@vmanous.com') => {
   const transporter = getTransporter();
   const senderEmail = process.env.EMAIL_USER || 'vmanous.com@gmail.com';
-  const recipientEmail = email;
+  const recipientEmail = (email || 'am@vmanous.com').trim();
+  const actionStatus = summitDetails.scheduleStatus || summitDetails.status || 'Schedule Change';
 
   const mailOptions = {
     from: `"VMANOUS Security" <${senderEmail}>`,
     to: recipientEmail,
-    subject: `Security OTP: Authorize Workshop Schedule Change`,
+    subject: `🔐 Security OTP: Authorize Workshop ${actionStatus} (${summitDetails.title || 'Summit'})`,
     html: `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 10px;">
-        <h2 style="color: #0f172a; border-bottom: 2px solid #2563eb; padding-bottom: 10px;">
-          🔐 Authorize Schedule Change
-        </h2>
-        <p style="font-size: 14px; color: #475569;">
-          An attempt was made to change the schedule of the workshop: <strong>${summitDetails.title || 'Workshop'}</strong> at <strong>${summitDetails.college || 'Institution'}</strong>.
-        </p>
-        <div style="margin: 20px 0; text-align: center;">
-          <span style="font-size: 32px; font-weight: bold; letter-spacing: 5px; color: #1e3a8a; background-color: #f1f5f9; padding: 10px 20px; border-radius: 8px;">
-            ${otp}
-          </span>
+      <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; border: 1px solid #e2e8f0; border-radius: 12px; background-color: #ffffff; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);">
+        <div style="background: linear-gradient(135deg, #0B1B3D 0%, #1e3a8a 100%); padding: 20px; text-align: center; color: #ffffff; border-radius: 8px 8px 0 0;">
+          <h2 style="margin: 0; font-size: 20px; font-weight: 700; letter-spacing: 0.5px;">
+            🔐 VMANOUS Admin Security Authorization
+          </h2>
+          <p style="margin: 6px 0 0 0; font-size: 13px; opacity: 0.9;">Workshop ${actionStatus} Request</p>
         </div>
-        <p style="font-size: 13px; color: #dc2626;">
-          If you did not initiate this change, please ignore this email.
-        </p>
+        
+        <div style="padding: 24px 20px; border: 1px solid #e2e8f0; border-top: none; border-radius: 0 0 8px 8px;">
+          <p style="font-size: 14px; color: #334155; margin-top: 0;">
+            An administrative request has been made to mark the workshop as <strong>${actionStatus}</strong>.
+          </p>
+          
+          <div style="background-color: #f8fafc; border-left: 4px solid #2563eb; padding: 14px 16px; margin: 16px 0; border-radius: 4px;">
+            <p style="margin: 0 0 6px 0; font-size: 13px; color: #1e293b;"><strong>Workshop:</strong> ${summitDetails.title || 'AI Summit'}</p>
+            <p style="margin: 0 0 6px 0; font-size: 13px; color: #1e293b;"><strong>College / Venue:</strong> ${summitDetails.college || 'Partner Institution'}</p>
+            <p style="margin: 0 0 6px 0; font-size: 13px; color: #1e293b;"><strong>New Date:</strong> ${summitDetails.date || summitDetails.startDate || 'N/A'}</p>
+            <p style="margin: 0; font-size: 13px; color: #1e293b;"><strong>Timing:</strong> ${summitDetails.time || 'N/A'}</p>
+          </div>
+
+          <p style="font-size: 13px; color: #475569; text-align: center; margin-bottom: 8px;">
+            Enter the 6-digit One-Time Password (OTP) in the VPanel modal to authorize this update:
+          </p>
+
+          <div style="margin: 18px 0; text-align: center;">
+            <span style="font-size: 34px; font-weight: 800; letter-spacing: 8px; color: #1e3a8a; background-color: #eff6ff; border: 2px dashed #93c5fd; padding: 12px 28px; border-radius: 10px; display: inline-block; font-family: monospace;">
+              ${otp}
+            </span>
+          </div>
+
+          <p style="font-size: 12px; color: #64748b; text-align: center; margin: 10px 0 0 0;">
+            ⏳ This OTP is valid for <strong>10 minutes</strong>. Do not share this code with anyone.
+          </p>
+
+          <hr style="border: none; border-top: 1px solid #f1f5f9; margin: 20px 0;" />
+
+          <p style="font-size: 11px; color: #94a3b8; margin: 0; text-align: center;">
+            If you did not initiate this change in the VMANOUS VPanel, please secure your account immediately.
+          </p>
+        </div>
       </div>
     `
   };
 
   try {
-    await transporter.sendMail(mailOptions);
+    const info = await transporter.sendMail(mailOptions);
+    console.log(`[Admin OTP] Sent successfully to ${recipientEmail}:`, info.messageId);
     return { success: true };
   } catch (err) {
-    console.error('Failed to send Admin OTP:', err);
+    console.error(`[Admin OTP Error] Failed to send Admin OTP to ${recipientEmail}:`, err);
     return { success: false, error: err.message };
   }
 };

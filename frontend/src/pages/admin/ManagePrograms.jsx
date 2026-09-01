@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Edit2, Trash2, Calendar, Clock, MapPin, CheckCircle2, Building2, LayoutGrid, List, Receipt, DollarSign, History, Users, ChevronDown, Download, X, Search, Key, AlertCircle } from 'lucide-react';
+import { Plus, Edit2, Trash2, Calendar, Clock, MapPin, CheckCircle2, Building2, LayoutGrid, List, Receipt, DollarSign, History, Users, ChevronDown, Download, X, Search, Key, AlertCircle, Lock, ShieldCheck } from 'lucide-react';
 import { getSummits, fetchSummitsAsync, addSummit, updateSummit, deleteSummit, formatEventDates, isSummitActive, isCollegeMatch } from '../../services/summitService';
 import { getApplications, saveApplications } from '../../services/applicationService';
 import ProgramCard from '../../components/ui/ProgramCard';
@@ -34,8 +34,8 @@ const parseTimeStr = (timeStr) => {
 };
 
 const ManagePrograms = () => {
-  const [summits, setSummits] = useState(() => getSummits());
-  const [applications, setApplications] = useState(() => getApplications());
+  const [summits, setSummits] = useState([]);
+  const [applications, setApplications] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isRescheduleModalOpen, setIsRescheduleModalOpen] = useState(false);
   const [editingId, setEditingId] = useState(null);
@@ -50,6 +50,12 @@ const ManagePrograms = () => {
   const [rescheduleEmail, setRescheduleEmail] = useState('');
   const [rescheduleStep, setRescheduleStep] = useState('email');
   const [rescheduleEmailError, setRescheduleEmailError] = useState('');
+  const [rescheduleData, setRescheduleData] = useState({
+    actionType: 'Rescheduled',
+    date: '',
+    startDate: '',
+    endDate: ''
+  });
 
   const [formData, setFormData] = useState({
     title: "",
@@ -308,30 +314,50 @@ const ManagePrograms = () => {
 
   const handleInputChange = async (e) => {
     setFormError("");
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
 
-    // If selecting Reschedule/Postpone and editing an existing summit
-    if (e.target.name === "scheduleStatus" && (e.target.value === "Rescheduled" || e.target.value === "Postponed") && editingId) {
+    // If selecting Preponed/Rescheduled/Postponed and editing an existing summit
+    if (name === "scheduleStatus" && ["Preponed", "Rescheduled", "Postponed"].includes(value) && editingId) {
+      setRescheduleData({
+        actionType: value,
+        date: formData.date || '',
+        startDate: formData.startDate || '',
+        endDate: formData.endDate || ''
+      });
       setRescheduleStep('email');
-      setRescheduleEmail('');
+      setRescheduleEmail('am@vmanous.com');
       setRescheduleEmailError('');
       setOtpValue('');
       setIsRescheduleModalOpen(true);
-    } else if (e.target.name === "scheduleStatus" && (e.target.value === "Rescheduled" || e.target.value === "Postponed")) {
+    } else if (name === "scheduleStatus" && ["Preponed", "Rescheduled", "Postponed"].includes(value)) {
       // If creating a new summit, just open modal but don't send API (no editingId)
+      setRescheduleData({
+        actionType: value,
+        date: formData.date || '',
+        startDate: formData.startDate || '',
+        endDate: formData.endDate || ''
+      });
       setIsRescheduleModalOpen(true);
     }
   };
 
   const handleSendOtp = async () => {
     setRescheduleEmailError('');
-    if (!rescheduleEmail) {
+    const targetEmail = (rescheduleEmail || 'am@vmanous.com').trim();
+    if (!targetEmail) {
       setRescheduleEmailError("Please enter an email address.");
       return;
     }
 
-    if (rescheduleEmail.toLowerCase() !== 'am@vmanous.com') {
-      setRescheduleEmailError("Invalid email address. Please enter the authorized admin email.");
+    if (targetEmail.toLowerCase() !== 'am@vmanous.com') {
+      setRescheduleEmailError("Invalid email address. Please enter the authorized admin email (am@vmanous.com).");
+      return;
+    }
+
+    // Validate proposed dates
+    if (!rescheduleData.date && !rescheduleData.startDate) {
+      setRescheduleEmailError("Please provide a new Summit Date or Start Date for this schedule update.");
       return;
     }
 
@@ -341,24 +367,28 @@ const ManagePrograms = () => {
     const days = parseInt(formData.durationDays) || 1;
     const duration = `${days}-Day Live Workshop`;
     const timeStr = `${formData.startTime || "10:00"} ${formData.startAmPm || "AM"} - ${formData.endTime || "05:00"} ${formData.endAmPm || "PM"}`;
-    const finalEndDate = formData.endDate || formData.startDate;
-    const formattedDate = formData.startDate || formData.endDate ? formatEventDates(formData.startDate, finalEndDate) : formData.date;
+    const finalEndDate = rescheduleData.endDate || rescheduleData.startDate;
+    const formattedDate = rescheduleData.startDate || rescheduleData.endDate 
+      ? formatEventDates(rescheduleData.startDate, finalEndDate) 
+      : (rescheduleData.date || formData.date);
 
     const summitData = {
       ...formData,
-      scheduleStatus: formData.scheduleStatus,
-      status: formData.scheduleStatus, // Update main status too
+      scheduleStatus: rescheduleData.actionType,
+      status: rescheduleData.actionType, // Update main status too
       totalHours: formData.totalHours ? String(formData.totalHours).trim() : "",
       duration: duration,
       time: timeStr,
       date: formattedDate,
+      startDate: rescheduleData.startDate || formData.startDate,
+      endDate: rescheduleData.endDate || formData.endDate,
     };
 
     try {
-      const res = await fetch('/api/summits/send-reschedule-otp', {
+      const res = await fetch('/api/v1/summits/send-reschedule-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ summitId: editingId, newData: summitData, email: rescheduleEmail })
+        body: JSON.stringify({ summitId: editingId, newData: summitData, email: targetEmail })
       });
       const data = await res.json();
       if (data.success) {
@@ -376,30 +406,61 @@ const ManagePrograms = () => {
 
   const handleVerifyOtp = async () => {
     if (!editingId) {
-      // If it's a new workshop, just close modal and let them save normally
+      // If it's a new workshop, update local dates and close
+      const finalEndDate = rescheduleData.endDate || rescheduleData.startDate;
+      const formattedDate = rescheduleData.startDate || rescheduleData.endDate 
+        ? formatEventDates(rescheduleData.startDate, finalEndDate) 
+        : rescheduleData.date;
+
+      setFormData(prev => ({
+        ...prev,
+        scheduleStatus: rescheduleData.actionType,
+        status: rescheduleData.actionType,
+        date: formattedDate,
+        startDate: rescheduleData.startDate,
+        endDate: rescheduleData.endDate
+      }));
       setIsRescheduleModalOpen(false);
       return;
     }
 
     if (!otpValue || otpValue.trim() === '') {
-      alert("Please enter the OTP.");
+      alert("Please enter the 6-digit OTP.");
       return;
     }
 
     setIsVerifyingOtp(true);
     try {
-      const res = await fetch('/api/summits/verify-reschedule-otp', {
+      const res = await fetch('/api/v1/summits/verify-reschedule-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ summitId: editingId, otp: otpValue, message: "Workshop schedule has been updated." })
+        body: JSON.stringify({
+          summitId: editingId,
+          otp: otpValue.trim(),
+          message: `Workshop schedule has been updated to ${rescheduleData.actionType || 'Rescheduled'}.`
+        })
       });
       const data = await res.json();
 
       if (data.success) {
-        alert(data.message || 'Rescheduled successfully and emails sent!');
+        const finalEndDate = rescheduleData.endDate || rescheduleData.startDate;
+        const formattedDate = rescheduleData.startDate || rescheduleData.endDate 
+          ? formatEventDates(rescheduleData.startDate, finalEndDate) 
+          : (rescheduleData.date || formData.date);
+
+        setFormData(prev => ({
+          ...prev,
+          scheduleStatus: rescheduleData.actionType,
+          status: rescheduleData.actionType,
+          date: formattedDate,
+          startDate: rescheduleData.startDate || prev.startDate,
+          endDate: rescheduleData.endDate || prev.endDate
+        }));
+
+        alert(data.message || `Workshop marked as ${rescheduleData.actionType || 'Rescheduled'} and new date applied successfully!`);
         setIsRescheduleModalOpen(false);
         setOtpValue('');
-        loadSummits();
+        await loadSummits();
         setIsModalOpen(false); // Close main edit modal
       } else {
         alert(data.error || 'Failed to verify OTP.');
@@ -440,8 +501,8 @@ const ManagePrograms = () => {
     const formattedDate = formData.date
       ? formData.date
       : (formData.startDate || formData.endDate
-          ? formatEventDates(formData.startDate, finalEndDate)
-          : "");
+        ? formatEventDates(formData.startDate, finalEndDate)
+        : "");
 
     const featStr = typeof formData.features === 'string' ? formData.features : '';
     const normalizedEntryCode = formData.entryCode ? String(formData.entryCode).trim().toUpperCase() : "";
@@ -1124,20 +1185,52 @@ const ManagePrograms = () => {
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                      Summit Date
-                    </label>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <label className="block text-xs font-semibold text-slate-700">
+                        Summit Date
+                      </label>
+                      {editingId && (
+                        <span className="text-[10px] text-amber-800 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded font-bold flex items-center gap-1">
+                          <Lock size={10} className="text-amber-600" /> Locked
+                        </span>
+                      )}
+                    </div>
                     <DateInput
                       name="date"
                       value={formData.date || ''}
                       onChange={handleInputChange}
-                      className="w-full h-10 px-3 border border-slate-200 rounded-md focus:border-[#2D73B4] focus:ring-2 focus:ring-[#2D73B4]/15 outline-none text-xs font-medium text-slate-800 bg-white placeholder:text-slate-400 transition-all shadow-2xs"
+                      disabled={!!editingId}
+                      className={`w-full h-10 px-3 border rounded-md outline-none text-xs font-medium transition-all shadow-2xs ${
+                        editingId
+                          ? 'border-slate-200 bg-slate-100/90 text-slate-500 cursor-not-allowed select-none'
+                          : 'border-slate-200 bg-white focus:border-[#2D73B4] focus:ring-2 focus:ring-[#2D73B4]/15 text-slate-800'
+                      }`}
                       placeholder="DD/MM/YYYY"
+                    />
+                    {editingId && (
+                      <p className="text-[10px] text-slate-400 mt-1">
+                        Locked during edit. Change <strong>Schedule Status</strong> (Preponed/Rescheduled/Postponed) to update date.
+                      </p>
+                    )}
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                      Seats Limit / Capacity <span className="text-rose-500">*</span>
+                    </label>
+                    <input
+                      type="number"
+                      min="1"
+                      required
+                      name="seatCapacity"
+                      value={formData.seatCapacity}
+                      onChange={handleInputChange}
+                      className="w-full h-10 px-3 border border-slate-200 rounded-md focus:border-[#2D73B4] focus:ring-2 focus:ring-[#2D73B4]/15 outline-none text-xs font-semibold text-slate-800 placeholder:text-slate-400 transition-all shadow-2xs"
+                      placeholder="Seats Limit"
                     />
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                   <div>
                     <label className="block text-xs font-semibold text-slate-700 mb-1.5">
                       Start Date <span className="text-rose-500">*</span>
@@ -1163,6 +1256,9 @@ const ManagePrograms = () => {
                       placeholder="DD/MM/YYYY"
                     />
                   </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs font-semibold text-slate-700 mb-1.5">
                       Schedule Status
@@ -1175,29 +1271,12 @@ const ManagePrograms = () => {
                         className="w-full h-10 pl-3 pr-8 border border-slate-200 rounded-md focus:border-[#2D73B4] focus:ring-2 focus:ring-[#2D73B4]/15 outline-none text-xs font-medium text-slate-800 bg-white appearance-none cursor-pointer transition-all shadow-2xs"
                       >
                         <option value="Scheduled">Scheduled</option>
+                        <option value="Preponed">Preponed</option>
                         <option value="Rescheduled">Rescheduled</option>
                         <option value="Postponed">Postponed</option>
                       </select>
                       <ChevronDown className="w-4 h-4 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                     </div>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                      Seats Limit / Capacity <span className="text-rose-500">*</span>
-                    </label>
-                    <input
-                      type="number"
-                      min="1"
-                      required
-                      name="seatCapacity"
-                      value={formData.seatCapacity}
-                      onChange={handleInputChange}
-                      className="w-full h-10 px-3 border border-slate-200 rounded-md focus:border-[#2D73B4] focus:ring-2 focus:ring-[#2D73B4]/15 outline-none text-xs font-semibold text-slate-800 placeholder:text-slate-400 transition-all shadow-2xs"
-                      placeholder="Seats Limit"
-                    />
                   </div>
                   <div>
                     <label className="block text-xs font-semibold text-slate-700 mb-1.5">
@@ -1221,20 +1300,18 @@ const ManagePrograms = () => {
                 </div>
 
                 {/* Section 5: Features List */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                      Features (One per line)
-                    </label>
-                    <textarea
-                      name="features"
-                      value={formData.features}
-                      onChange={handleInputChange}
-                      rows="3"
-                      className="w-full p-3 border border-slate-200 rounded-md focus:border-[#2D73B4] focus:ring-2 focus:ring-[#2D73B4]/15 outline-none text-xs font-medium text-slate-800 placeholder:text-slate-400 transition-all resize shadow-2xs"
-                      placeholder="Features (One per line)"
-                    />
-                  </div>
+                <div className="w-full">
+                  <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                    Features (One per line)
+                  </label>
+                  <textarea
+                    name="features"
+                    value={formData.features}
+                    onChange={handleInputChange}
+                    rows="3"
+                    className="w-full max-w-full min-w-[160px] p-3 border border-slate-200 rounded-md focus:border-[#2D73B4] focus:ring-2 focus:ring-[#2D73B4]/15 outline-none text-xs font-medium text-slate-800 placeholder:text-slate-400 transition-colors resize shadow-2xs box-border"
+                    placeholder="Features (One per line)"
+                  />
                 </div>
               </form>
             </div>
@@ -1346,13 +1423,40 @@ const ManagePrograms = () => {
                   const q = historySearchQuery.toLowerCase();
                   const name = (app.studentName || app.name || "").toLowerCase();
                   const email = (app.email || "").toLowerCase();
-                  const phone = (app.phone || "").toLowerCase();
-                  const passCode = (app.passCode || "").toLowerCase();
-                  return name.includes(q) || email.includes(q) || phone.includes(q) || passCode.includes(q);
+                  return (
+                    (app.studentName && app.studentName.toLowerCase().includes(q)) ||
+                    (app.name && app.name.toLowerCase().includes(q)) ||
+                    (app.email && app.email.toLowerCase().includes(q)) ||
+                    (app.phone && app.phone.includes(q)) ||
+                    (app.passCode && app.passCode.toLowerCase().includes(q))
+                  );
                 });
 
                 return (
                   <>
+                    {/* Search & Export Toolbar */}
+                    <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-slate-50 p-3 rounded-xl border border-slate-200/80">
+                      <div className="relative flex-1 w-full">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={15} />
+                        <input
+                          type="text"
+                          placeholder="Search student by name, email, phone, passcode..."
+                          value={historySearchQuery}
+                          onChange={(e) => setHistorySearchQuery(e.target.value)}
+                          className="w-full pl-9 pr-4 py-1.5 text-xs bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2D73B4]/15 focus:border-[#2D73B4] font-medium"
+                        />
+                      </div>
+                      <button
+                        onClick={() => exportAttendeesToExcel(filteredAttendees, `${(historyModalSummit.title || 'Summit').replace(/\s+/g, '_')}_Attendees`)}
+                        disabled={filteredAttendees.length === 0}
+                        className="px-3.5 py-1.5 bg-[#2D73B4] text-white text-xs font-bold rounded-lg hover:bg-blue-700 transition-colors shadow-2xs flex items-center gap-1.5 shrink-0 disabled:opacity-50 cursor-pointer"
+                      >
+                        <Download size={13} />
+                        <span>Export Excel</span>
+                      </button>
+                    </div>
+
+                    {/* Stats Header */}
                     <div className="flex items-center justify-between pb-2 border-b border-slate-200">
                       <div className="flex items-center gap-2">
                         <Users size={16} className="text-emerald-600" />
@@ -1419,22 +1523,82 @@ const ManagePrograms = () => {
         </div>
       )}
 
-      {/* Reschedule Subscription Modal UI */}
+      {/* Reschedule / Security OTP Modal UI */}
       {isRescheduleModalOpen && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-lg shadow-2xl w-[400px] border-2 border-purple-500 p-8 flex flex-col items-center animate-in zoom-in-95 duration-200 relative">
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/50 backdrop-blur-xs p-4">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-[440px] border border-slate-200 p-6 flex flex-col animate-in zoom-in-95 duration-200 relative">
             <button
               onClick={() => setIsRescheduleModalOpen(false)}
-              className="absolute top-3 right-3 text-slate-400 hover:text-slate-600 cursor-pointer"
+              className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 p-1 rounded-md hover:bg-slate-100 transition-colors cursor-pointer"
             >
               <X size={18} />
             </button>
 
-            {rescheduleStep === 'email' && editingId ? (
-              <>
-                <div className="w-full mb-5 mt-4">
-                  <label className="block text-sm text-[#2e4c8f] font-semibold mb-1.5 ml-1">
-                    Enter email to receive OTP
+            {/* Modal Title & Action Badge */}
+            <div className="text-center mb-4">
+              <div className="w-11 h-11 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center mx-auto mb-2 border border-emerald-200 shadow-2xs">
+                <ShieldCheck size={24} />
+              </div>
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-blue-50 text-[#2D73B4] border border-blue-200 mb-1">
+                <span>Action: {rescheduleData.actionType || 'Rescheduled'}</span>
+              </div>
+              <h4 className="text-base font-bold text-slate-900">
+                Authorize Schedule & Date Update
+              </h4>
+              <p className="text-xs text-slate-500 font-medium mt-0.5">
+                {formData.title || 'AI Summit Workshop'}
+              </p>
+            </div>
+
+            {rescheduleStep === 'email' ? (
+              <div className="space-y-3.5">
+                {/* Date Inputs in Reschedule Modal */}
+                <div className="bg-slate-50 p-3 rounded-lg border border-slate-200 space-y-2.5">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                      New Summit Date <span className="text-rose-500">*</span>
+                    </label>
+                    <DateInput
+                      name="rescheduleSummitDate"
+                      value={rescheduleData.date || ''}
+                      onChange={(e) => setRescheduleData(prev => ({ ...prev, date: e.target.value }))}
+                      className="w-full h-9 px-3 border border-slate-200 rounded-md focus:border-[#2D73B4] focus:ring-2 focus:ring-[#2D73B4]/15 outline-none text-xs font-medium text-slate-800 bg-white placeholder:text-slate-400"
+                      placeholder="DD/MM/YYYY"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                        New Start Date
+                      </label>
+                      <DateInput
+                        name="rescheduleStartDate"
+                        value={rescheduleData.startDate || ''}
+                        onChange={(e) => setRescheduleData(prev => ({ ...prev, startDate: e.target.value }))}
+                        className="w-full h-9 px-2.5 border border-slate-200 rounded-md focus:border-[#2D73B4] focus:ring-2 focus:ring-[#2D73B4]/15 outline-none text-xs font-medium text-slate-800 bg-white placeholder:text-slate-400"
+                        placeholder="DD/MM/YYYY"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                        New End Date
+                      </label>
+                      <DateInput
+                        name="rescheduleEndDate"
+                        value={rescheduleData.endDate || ''}
+                        onChange={(e) => setRescheduleData(prev => ({ ...prev, endDate: e.target.value }))}
+                        className="w-full h-9 px-2.5 border border-slate-200 rounded-md focus:border-[#2D73B4] focus:ring-2 focus:ring-[#2D73B4]/15 outline-none text-xs font-medium text-slate-800 bg-white placeholder:text-slate-400"
+                        placeholder="DD/MM/YYYY"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Email Verification Box */}
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">
+                    Authorized Admin Webmail
                   </label>
                   <input
                     type="email"
@@ -1445,60 +1609,69 @@ const ManagePrograms = () => {
                     }}
                     disabled={isSendingOtp}
                     placeholder="am@vmanous.com"
-                    className={`w-full h-11 px-3 border ${rescheduleEmailError ? 'border-red-400 focus:border-red-400 focus:ring-red-400' : 'border-gray-300 focus:border-purple-400 focus:ring-purple-400'} rounded-md outline-none focus:ring-1 transition-colors shadow-sm text-center text-sm`}
+                    className={`w-full h-10 px-3 border ${rescheduleEmailError ? 'border-red-400 focus:border-red-400 focus:ring-red-400' : 'border-slate-200 focus:border-[#2D73B4] focus:ring-[#2D73B4]/15'} rounded-md outline-none focus:ring-2 transition-colors text-center text-xs font-semibold text-slate-800 bg-slate-50`}
                   />
                   {rescheduleEmailError && (
-                    <p className="text-red-500 text-xs mt-1.5 text-center font-medium animate-in fade-in slide-in-from-top-1">{rescheduleEmailError}</p>
+                    <p className="text-red-500 text-[11px] mt-1 text-center font-medium">{rescheduleEmailError}</p>
                   )}
                 </div>
+
                 <button
                   onClick={handleSendOtp}
                   disabled={isSendingOtp || !rescheduleEmail}
-                  className="w-full py-2.5 bg-[#dbe4ff] text-[#3b5998] font-bold text-sm rounded-full hover:bg-[#c7d6ff] transition-colors mb-5 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center gap-2"
+                  className="w-full h-10.5 bg-[#2D73B4] text-white font-bold text-xs rounded-lg hover:bg-blue-700 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center gap-2 shadow-sm"
                 >
                   {isSendingOtp ? (
                     <>
-                      <div className="w-4 h-4 border-2 border-[#3b5998] border-t-transparent rounded-full animate-spin"></div>
-                      Sending...
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      <span>Sending OTP...</span>
                     </>
-                  ) : "Send OTP"}
+                  ) : `Send OTP to ${rescheduleEmail || 'am@vmanous.com'}`}
                 </button>
-              </>
+              </div>
             ) : (
-              <>
-                <div className="w-full mb-5 mt-4">
-                  <label className="block text-sm text-[#2e4c8f] font-semibold mb-1.5 ml-1">
-                    {isSendingOtp ? `Sending OTP to ${rescheduleEmail || 'am@vmanous.com'}...` : `Enter OTP sent to ${rescheduleEmail || 'am@vmanous.com'}`}
+              <div className="space-y-3.5">
+                <div className="p-3 bg-blue-50/70 border border-blue-100 rounded-lg text-center">
+                  <p className="text-xs text-[#2D73B4] font-semibold">
+                    Proposed New Date: {rescheduleData.date || rescheduleData.startDate || 'N/A'}
+                  </p>
+                  <p className="text-[11px] text-slate-500 mt-0.5">
+                    6-digit code has been sent to <strong>{rescheduleEmail || 'am@vmanous.com'}</strong>
+                  </p>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1 text-center">
+                    Enter 6-Digit OTP
                   </label>
                   <input
                     type="text"
                     value={otpValue}
                     onChange={(e) => setOtpValue(e.target.value)}
-                    disabled={isSendingOtp || isVerifyingOtp}
-                    placeholder="6-digit OTP"
-                    className="w-full h-11 px-3 border border-gray-300 rounded-md outline-none focus:border-purple-400 focus:ring-1 focus:ring-purple-400 transition-colors shadow-sm text-center tracking-widest text-lg font-mono font-bold"
+                    disabled={isVerifyingOtp}
+                    placeholder="• • • • • •"
+                    className="w-full h-11 px-3 border border-slate-300 rounded-lg outline-none focus:border-[#2D73B4] focus:ring-2 focus:ring-[#2D73B4]/15 transition-colors shadow-2xs text-center tracking-widest text-xl font-mono font-extrabold text-slate-900 bg-white"
                     maxLength={6}
                   />
                 </div>
 
                 <button
                   onClick={handleVerifyOtp}
-                  disabled={isVerifyingOtp || isSendingOtp}
-                  className="w-full py-2.5 bg-[#dbe4ff] text-[#3b5998] font-bold text-sm rounded-full hover:bg-[#c7d6ff] transition-colors mb-5 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center gap-2"
+                  disabled={isVerifyingOtp || !otpValue}
+                  className="w-full h-10.5 bg-emerald-600 text-white font-bold text-xs rounded-lg hover:bg-emerald-700 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center gap-2 shadow-sm"
                 >
                   {isVerifyingOtp ? (
                     <>
-                      <div className="w-4 h-4 border-2 border-[#3b5998] border-t-transparent rounded-full animate-spin"></div>
-                      Verifying...
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      <span>Verifying OTP & Updating...</span>
                     </>
-                  ) : "Verify OTP"}
+                  ) : `Verify OTP & Apply ${rescheduleData.actionType || 'Schedule Update'}`}
                 </button>
-              </>
+              </div>
             )}
 
-            <p className="text-[10px] text-center text-[#5c729c] px-4 leading-relaxed">
-              Your details are securely verified by Vmanous. Never share your OTP.<br />
-              <a href="#" className="underline hover:text-[#2e4c8f]">Learn about our privacy policy</a>
+            <p className="text-[10px] text-center text-slate-400 mt-4 leading-relaxed">
+              Protected by VMANOUS Security Gateway. Never share your OTP.
             </p>
           </div>
         </div>

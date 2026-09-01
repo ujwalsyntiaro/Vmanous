@@ -22,7 +22,7 @@ const AdminLogin = () => {
       setIsLoading(false);
 
       if (res.success) {
-        navigate('/cpanel');
+        navigate('/vpanel');
       } else {
         setError(res.error || 'Invalid credentials');
       }
@@ -39,17 +39,17 @@ const AdminLogin = () => {
         initial={{ opacity: 0, y: 20, scale: 0.97 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ duration: 0.4 }}
-        className="w-full max-w-md bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 shadow-xl shadow-slate-200/60 relative z-10"
+        className="w-full max-w-[390px] bg-white border border-slate-200 rounded-xl p-5 sm:p-6 shadow-xl shadow-slate-200/60 relative z-10"
       >
         {/* Header Icon & Title */}
-        <div className="text-center mb-8">
-          <div className="w-14 h-14 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-emerald-200 shadow-sm">
-            <ShieldCheck size={30} />
+        <div className="text-center mb-5">
+          <div className="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center mx-auto mb-2.5 border border-emerald-200 shadow-sm">
+            <ShieldCheck size={26} />
           </div>
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-            VMANOUS CPanel Gateway
+          <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">
+            VPanel Gateway
           </h2>
-          <p className="text-slate-500 text-xs sm:text-sm mt-1.5 font-medium">
+          <p className="text-slate-500 text-xs sm:text-sm mt-1 font-medium">
             Enter your credentials to access the management portal
           </p>
         </div>
@@ -59,53 +59,53 @@ const AdminLogin = () => {
           <motion.div
             initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mb-5 p-3.5 bg-red-50 border border-red-200 rounded-xl flex items-center gap-3 text-red-700 text-xs font-semibold"
+            className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2.5 text-red-700 text-xs font-semibold"
           >
-            <AlertCircle size={18} className="shrink-0 text-red-600" />
+            <AlertCircle size={16} className="shrink-0 text-red-600" />
             <span>{error}</span>
           </motion.div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-5">
+        <form onSubmit={handleSubmit} className="space-y-4">
           {/* Admin ID / Email Field */}
           <div>
-            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+            <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5">
               Admin ID / Email
             </label>
             <div className="relative flex items-center">
-              <Mail size={18} className="absolute left-3.5 text-slate-400 pointer-events-none" />
+              <Mail size={16} className="absolute left-3.5 text-slate-400 pointer-events-none" />
               <input
                 required
                 type="text"
                 value={id}
                 onChange={(e) => setId(e.target.value)}
                 placeholder="Enter Admin ID or Email"
-                className="w-full h-12 pl-11 pr-4 bg-slate-50/70 border border-slate-200 rounded-xl text-sm text-slate-900 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/10 transition-all font-medium"
+                className="w-full h-10 pl-10 pr-3.5 bg-slate-50/70 border border-slate-200 rounded-lg text-sm text-slate-900 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/10 transition-all font-medium"
               />
             </div>
           </div>
 
           {/* Password Field */}
           <div>
-            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+            <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5">
               Password
             </label>
             <div className="relative flex items-center">
-              <Lock size={18} className="absolute left-3.5 text-slate-400 pointer-events-none" />
+              <Lock size={16} className="absolute left-3.5 text-slate-400 pointer-events-none" />
               <input
                 required
                 type={showPassword ? 'text' : 'password'}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Enter Password"
-                className="w-full h-12 pl-11 pr-11 bg-slate-50/70 border border-slate-200 rounded-xl text-sm text-slate-900 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/10 transition-all font-medium"
+                className="w-full h-10 pl-10 pr-10 bg-slate-50/70 border border-slate-200 rounded-lg text-sm text-slate-900 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/10 transition-all font-medium"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3.5 text-slate-400 hover:text-slate-700 transition-colors p-1"
+                className="absolute right-2.5 text-slate-400 hover:text-slate-700 transition-colors p-1 cursor-pointer"
               >
-                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
               </button>
             </div>
           </div>
@@ -114,23 +114,23 @@ const AdminLogin = () => {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full h-12 bg-white border-2 border-emerald-600 text-emerald-700 hover:bg-emerald-50/60 font-extrabold rounded-xl text-sm transition-all duration-200 shadow-sm flex items-center justify-center gap-2 cursor-pointer disabled:opacity-75 disabled:cursor-not-allowed group mt-2"
+            className="w-full h-11 bg-white border-2 border-emerald-600 text-emerald-700 hover:bg-emerald-50/60 font-bold rounded-lg text-sm transition-all duration-200 shadow-sm flex items-center justify-center gap-2 cursor-pointer disabled:opacity-75 disabled:cursor-not-allowed group mt-1.5"
           >
             {isLoading ? (
               <span>Authenticating...</span>
             ) : (
               <>
                 <span>Sign In to Dashboard</span>
-                <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+                <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
               </>
             )}
           </button>
         </form>
 
         {/* Footer info */}
-        <div className="mt-8 pt-4 border-t border-slate-100 text-center">
+        <div className="mt-5 pt-3 border-t border-slate-100 text-center">
           <p className="text-[11px] text-slate-400 font-medium">
-            Authorized Personnel Only • VMANOUS AI Security Gateway
+            Authorized Personnel Only • VPanel Security Gateway
           </p>
         </div>
       </motion.div>

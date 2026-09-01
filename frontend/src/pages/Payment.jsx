@@ -212,7 +212,7 @@ export const Payment = () => {
     setTimeout(() => {
       setIsProcessing(false);
       alert("Payment Attempt Failed! The failed transaction history lead has been saved to MySQL Database.");
-      navigate('/cpanel/applications');
+      navigate('/vpanel/applications');
     }, 1000);
   };
 

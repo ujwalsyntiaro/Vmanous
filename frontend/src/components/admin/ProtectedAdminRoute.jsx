@@ -6,7 +6,7 @@ const ProtectedAdminRoute = () => {
   const isAuthenticated = isAdminLoggedIn();
 
   if (!isAuthenticated) {
-    return <Navigate to="/cpanel/login" replace />;
+    return <Navigate to="/vpanel/login" replace />;
   }
 
   return <Outlet />;

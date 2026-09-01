@@ -116,31 +116,14 @@ export const getSummits = () => {
       }
 
       // 2. College match
-      if (isCollegeMatch(a.collegeName, s.college)) {
+      if (s.college && isCollegeMatch(a.collegeName, s.college)) {
         return true;
       }
 
-      // 3. Program Title match
-      const progTitle = (a.programTitle || "").trim().toLowerCase();
-      if (
-        progTitle &&
-        sumTitle &&
-        (progTitle === sumTitle ||
-          progTitle.includes(sumTitle) ||
-          sumTitle.includes(progTitle))
-      ) {
-        return true;
-      }
-
-      // 4. Default fallback: Assign unspecified/general applications to Flagship Card 1 (or G H Raisoni)
-      if (Number(s.id) === 1 || (s.college && s.college.toUpperCase().includes("RAISONI"))) {
-        const matchesOtherCollege = [
-          "kdk", "d y patil", "dypatil", "iit", "dtu", "delhi technological"
-        ].some(colKey => (a.collegeName || "").toLowerCase().includes(colKey));
-
-        if (!matchesOtherCollege) {
-          return true;
-        }
+      // 3. Fallback exact title match ONLY if summit has no specific college set
+      if (!s.college) {
+        const progTitle = (a.programTitle || "").trim().toLowerCase();
+        return Boolean(progTitle && sumTitle && progTitle === sumTitle);
       }
 
       return false;
@@ -189,20 +172,13 @@ export const getSummits = () => {
         return true;
       }
 
-      // 3. Fallback for Flagship Card 1 (G H Raisoni)
-      if (Number(s.id) === 1 || (s.college && s.college.toUpperCase().includes("RAISONI"))) {
-        const matchesOtherCollege = [
-          "kdk", "d y patil", "dypatil", "iit", "dtu", "delhi technological", "priyadarshini", "priyadhrshini", "pce", "palloti"
-        ].some(colKey => (a.collegeName || "").toLowerCase().includes(colKey));
-
-        if (!matchesOtherCollege) {
-          return true;
-        }
+      // 3. Fallback exact title match ONLY if summit has no specific college set
+      if (!s.college) {
+        const progTitle = (a.programTitle || "").trim().toLowerCase();
+        return Boolean(progTitle && sumTitle && progTitle === sumTitle);
       }
 
-      // 4. Fallback exact title match ONLY if summit has no specific college set
-      const progTitle = (a.programTitle || "").trim().toLowerCase();
-      return Boolean(progTitle && sumTitle && progTitle === sumTitle);
+      return false;
     });
 
     return matched.length;

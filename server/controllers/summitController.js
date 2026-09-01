@@ -78,20 +78,13 @@ const getSummits = async (req, res) => {
           return true;
         }
 
-        // 3. Fallback for Flagship Card 1 (G H Raisoni)
-        if (Number(summit.id) === 1 || (summit.college && summit.college.toUpperCase().includes('RAISONI'))) {
-          const matchesOtherCollege = [
-            'kdk', 'd y patil', 'dypatil', 'iit', 'dtu', 'delhi technological', 'priyadarshini', 'priyadhrshini', 'pce', 'palloti'
-          ].some(colKey => (app.collegeName || '').toLowerCase().includes(colKey));
-
-          if (!matchesOtherCollege) {
-            return true;
-          }
+        // 3. Fallback exact title match ONLY if summit has no specific college set
+        if (!summit.college) {
+          const progTitle = (app.programTitle || '').trim().toLowerCase();
+          return Boolean(progTitle && sumTitle && progTitle === sumTitle);
         }
 
-        // 4. Fallback exact title match ONLY if summit has no specific college set
-        const progTitle = (app.programTitle || '').trim().toLowerCase();
-        return Boolean(progTitle && sumTitle && progTitle === sumTitle);
+        return false;
       });
 
       const seatCapacity = summit.seatCapacity !== undefined ? Number(summit.seatCapacity) : 100;
@@ -373,22 +366,54 @@ const verifyRescheduleOtp = async (req, res) => {
       return res.status(400).json({ success: false, error: 'OTP has expired' });
     }
 
-    if (storedData.otp !== String(otp)) {
-      return res.status(400).json({ success: false, error: 'Invalid OTP' });
+    if (storedData.otp !== String(otp).trim()) {
+      return res.status(400).json({ success: false, error: 'Invalid OTP. Please check your webmail (am@vmanous.com) and enter the correct 6-digit code.' });
     }
 
     const { newData } = storedData;
+    const baseDuration = newData.duration || "1-Day Live Workshop";
+    const durationWithHours = newData.totalHours
+      ? `${baseDuration.replace(/\s*\(\d+\s*(?:hrs|hours)\)/i, '')} (${newData.totalHours} Hrs)`
+      : baseDuration;
+
+    const normalizedEntryCode = newData.entryCode ? String(newData.entryCode).trim().toUpperCase() : undefined;
+
     const updated = await prisma.summit.update({
       where: { id: Number(summitId) },
-      data: newData
+      data: {
+        title: newData.title !== undefined ? newData.title : undefined,
+        subtitle: newData.subtitle !== undefined ? newData.subtitle : undefined,
+        type: newData.type !== undefined ? newData.type : undefined,
+        college: newData.college !== undefined ? newData.college : undefined,
+        address: newData.address !== undefined ? newData.address : undefined,
+        price: newData.price !== undefined && newData.price !== null && newData.price !== '' ? Number(newData.price) : undefined,
+        originalPrice: newData.originalPrice !== undefined && newData.originalPrice !== null && newData.originalPrice !== '' ? Number(newData.originalPrice) : undefined,
+        taxRate: newData.taxRate !== undefined && newData.taxRate !== null && newData.taxRate !== '' ? Number(newData.taxRate) : undefined,
+        taxMode: newData.taxMode !== undefined ? newData.taxMode : undefined,
+        processingFee: newData.processingFee !== undefined && newData.processingFee !== null && newData.processingFee !== '' ? Number(newData.processingFee) : undefined,
+        processingFeeType: newData.processingFeeType !== undefined ? newData.processingFeeType : undefined,
+        duration: durationWithHours,
+        time: newData.time !== undefined ? newData.time : undefined,
+        startDate: newData.startDate !== undefined ? newData.startDate : undefined,
+        endDate: newData.endDate !== undefined ? newData.endDate : undefined,
+        date: newData.date !== undefined ? newData.date : undefined,
+        seatCapacity: newData.seatCapacity !== undefined && newData.seatCapacity !== null && newData.seatCapacity !== '' ? Number(newData.seatCapacity) : undefined,
+        status: (newData.scheduleStatus || newData.status) !== undefined ? (newData.scheduleStatus || newData.status) : undefined,
+        entryCode: normalizedEntryCode || undefined,
+        features: newData.features !== undefined ? (Array.isArray(newData.features) ? newData.features : []) : undefined
+      }
     });
 
     otpStore.delete(String(summitId));
 
-    res.json({ success: true, data: updated });
+    res.json({
+      success: true,
+      message: `Workshop successfully marked as ${updated.status || 'Updated'}!`,
+      data: { ...updated, totalHours: newData.totalHours || '' }
+    });
   } catch (error) {
     console.error('Error verifying OTP:', error);
-    res.status(500).json({ success: false, error: 'Server error verifying OTP' });
+    res.status(500).json({ success: false, error: error.message || 'Server error verifying OTP' });
   }
 };
 

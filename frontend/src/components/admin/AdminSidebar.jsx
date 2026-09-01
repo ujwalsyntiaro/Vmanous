@@ -25,16 +25,16 @@ const AdminSidebar = ({ isMobileOpen, setIsMobileOpen }) => {
 
   const handleLogout = () => {
     logoutAdmin();
-    navigate('/cpanel/login');
+    navigate('/vpanel/login');
   };
 
   const navigation = [
-    { name: 'Dashboard', path: '/cpanel', icon: LayoutDashboard, exact: true, hasDividerAfter: true },
-    { name: 'Onboard AI Summit', path: '/cpanel/ai-summits', icon: Calendar, hasDividerAfter: true },
-    { name: 'Applications / Reports', path: '/cpanel/applications', icon: FileText, hasDividerAfter: true },
-    { name: 'Manage Gallery', path: '/cpanel/gallery', icon: Image, hasDividerAfter: true },
-    { name: 'Manage Certificates', path: '/cpanel/certificates', icon: Award, hasDividerAfter: true },
-    { name: 'Settings', path: '/cpanel/settings', icon: Settings },
+    { name: 'Dashboard', path: '/vpanel', icon: LayoutDashboard, exact: true, hasDividerAfter: true },
+    { name: 'Onboard AI Summit', path: '/vpanel/ai-summits', icon: Calendar, hasDividerAfter: true },
+    { name: 'Applications / Reports', path: '/vpanel/applications', icon: FileText, hasDividerAfter: true },
+    { name: 'Manage Gallery', path: '/vpanel/gallery', icon: Image, hasDividerAfter: true },
+    { name: 'Manage Certificates', path: '/vpanel/certificates', icon: Award, hasDividerAfter: true },
+    { name: 'Settings', path: '/vpanel/settings', icon: Settings },
   ];
 
   const SidebarContent = () => (

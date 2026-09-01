@@ -369,18 +369,18 @@ export const AISummitFeature = () => {
                       <button
                         type="button"
                         onClick={() => setIsRoleOpen(!isRoleOpen)}
-                        className={`w-full h-9 pl-10 pr-10 bg-slate-50/50 border rounded-md text-xs sm:text-sm text-left cursor-pointer flex items-center justify-between transition-all font-normal ${errors.repRole
+                        className={`w-full h-9 pl-10 pr-8 bg-slate-50/50 border rounded-md text-xs sm:text-sm text-left cursor-pointer flex items-center transition-all font-normal ${errors.repRole
                           ? 'border-red-500 ring-1 ring-red-500/20'
                           : isRoleOpen
                             ? 'border-slate-800 ring-2 ring-slate-800/10 bg-white'
                             : 'border-slate-200 hover:border-slate-400'
                           }`}
                       >
-                        <span className={formData.repRole ? 'text-slate-900 font-normal' : 'text-slate-400 font-normal'}>
+                        <span className={`truncate ${formData.repRole ? 'text-slate-900 font-normal' : 'text-slate-400 font-normal'}`}>
                           {formData.repRole || 'Select Designation / Role'}
                         </span>
-                        <ChevronDown size={16} className={`text-slate-400 transition-transform duration-200 ${isRoleOpen ? 'rotate-180 text-slate-800' : ''}`} />
                       </button>
+                      <ChevronDown size={16} className={`absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 transition-transform duration-200 ${isRoleOpen ? 'rotate-180 text-slate-800' : ''}`} />
                     </div>
 
                     <AnimatePresence>
@@ -456,7 +456,7 @@ export const AISummitFeature = () => {
                         required
                         type="tel"
                         name="phone"
-                        placeholder="10-digit number"
+                        placeholder="Contact Number"
                         value={formData.phone}
                         onChange={handleChange}
                         className={`w-full h-9 pl-10 pr-3.5 bg-slate-50/50 border rounded-md text-xs sm:text-sm text-slate-900 placeholder:font-normal placeholder:text-slate-400 focus:bg-white focus:outline-none transition-all font-normal ${errors.phone ? 'border-red-500 ring-1 ring-red-500/20' : 'border-slate-200 focus:border-slate-800 focus:ring-2 focus:ring-slate-800/10'}`}
@@ -480,7 +480,7 @@ export const AISummitFeature = () => {
                         required
                         type="tel"
                         name="whatsapp"
-                        placeholder="10-digit WhatsApp number"
+                        placeholder="WhatsApp Number"
                         value={formData.whatsapp}
                         onChange={handleChange}
                         className={`w-full h-9 pl-10 pr-3.5 bg-slate-50/50 border rounded-md text-xs sm:text-sm text-slate-900 placeholder:font-normal placeholder:text-slate-400 focus:bg-white focus:outline-none transition-all font-normal ${errors.whatsapp ? 'border-red-500 ring-1 ring-red-500/20' : 'border-slate-200 focus:border-slate-800 focus:ring-2 focus:ring-slate-800/10'}`}
@@ -497,17 +497,14 @@ export const AISummitFeature = () => {
                   <label className="block text-xs sm:text-sm font-normal text-slate-700 mb-1">
                     Description
                   </label>
-                  <div className="relative flex">
-                    <FileText size={16} className="absolute left-3.5 top-2 text-slate-400 pointer-events-none" />
-                    <textarea
-                      rows={2}
-                      name="description"
-                      placeholder="Expected dates, student count, notes..."
-                      value={formData.description || ''}
-                      onChange={handleChange}
-                      className="w-full h-[54px] pl-10 pr-3.5 py-1.5 bg-slate-50/50 border border-slate-200 rounded-md text-xs sm:text-sm text-slate-900 placeholder:font-normal placeholder:text-slate-400 focus:bg-white focus:outline-none focus:border-slate-800 focus:ring-2 focus:ring-slate-800/10 transition-all font-normal resize-none"
-                    />
-                  </div>
+                  <textarea
+                    rows={3}
+                    name="description"
+                    placeholder="Expected dates, student count, notes..."
+                    value={formData.description || ''}
+                    onChange={handleChange}
+                    className="w-full max-w-full min-w-[160px] p-3 border border-slate-200 rounded-md bg-slate-50/50 focus:bg-white focus:outline-none focus:border-slate-800 focus:ring-2 focus:ring-slate-800/10 text-xs sm:text-sm text-slate-900 placeholder:font-normal placeholder:text-slate-400 transition-colors resize shadow-2xs box-border"
+                  />
                 </div>
 
                 {/* Submit Action CTA */}

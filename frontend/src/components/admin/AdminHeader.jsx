@@ -8,7 +8,7 @@ const AdminHeader = ({ setIsMobileOpen }) => {
 
   const handleLogout = () => {
     logoutAdmin();
-    navigate('/cpanel/login');
+    navigate('/vpanel/login');
   };
 
   return (
@@ -21,9 +21,9 @@ const AdminHeader = ({ setIsMobileOpen }) => {
           <Menu size={24} />
         </button>
 
-        {/* Breadcrumb Placeholder */}
+        {/* Breadcrumb */}
         <div className="hidden sm:flex items-center text-sm font-medium text-gray-500">
-          <span>CPanel</span>
+          <span>VPanel</span>
           <span className="mx-2">/</span>
           <span className="text-vmanous-navy-dark">Dashboard</span>
         </div>
