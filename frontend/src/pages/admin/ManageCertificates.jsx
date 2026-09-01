@@ -1010,7 +1010,7 @@ const ManageCertificates = () => {
               <div className="absolute top-[37%] left-[20%] w-[60%] h-[15%] flex flex-col justify-end z-10">
                 <h1 
                   className="text-black text-center leading-none mb-[1%]" 
-                  style={{ fontFamily: "'Great Vibes', cursive", fontSize: '6cqi', fontWeight: '400' }}
+                  style={{ fontFamily: "'Brittany', 'Brittany Signature', cursive", fontSize: '4.5cqi', fontWeight: '400' }}
                 >
                   {previewStudent.studentName}
                 </h1>

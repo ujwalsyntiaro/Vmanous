@@ -494,7 +494,7 @@ const ManageApplications = () => {
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-gray-50/80 border-b border-gray-100 text-[11px] font-bold uppercase tracking-wider text-slate-500">
+              <tr className="bg-gray-50/80 border-b border-gray-100 text-[11px] font-bold tracking-wider text-slate-500">
                 <th className="py-3.5 px-4">Student</th>
                 <th className="py-3.5 px-4">College & Venue</th>
                 <th className="py-3.5 px-4">Program</th>
