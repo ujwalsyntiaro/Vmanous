@@ -216,6 +216,7 @@ const sendBulkCertificates = async (req, res) => {
         collegeName: (app.summit && app.summit.college) || app.collegeName,
         workshopTitle: (app.summit && app.summit.title) || app.programTitle,
         workshopDate: (app.summit && (app.summit.date || app.summit.startDate)) || 'August 2026',
+        duration: (app.summit && app.summit.duration) || '30',
         certificateCode: certCode
       };
 
@@ -309,6 +310,7 @@ const previewCertificatePdf = async (req, res) => {
       collegeName: (app.summit && app.summit.college) || app.collegeName,
       workshopTitle: (app.summit && app.summit.title) || app.programTitle,
       workshopDate: (app.summit && (app.summit.date || app.summit.startDate)) || 'August 2026',
+      duration: (app.summit && app.summit.duration) || '30',
       certificateCode: `VM-CERT-${new Date().getFullYear()}-${app.id.slice(0, 4).toUpperCase()}`
     };
 

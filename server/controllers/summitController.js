@@ -1,4 +1,8 @@
 const prisma = require('../config/prisma');
+const { sendAdminOtpEmail } = require('../services/emailService');
+
+const otpStore = new Map();
+
 
 const isCollegeMatch = (colA, colB) => {
   if (!colA || !colB) return false;
@@ -272,6 +276,40 @@ const deleteSummit = async (req, res) => {
   }
 };
 
+const sendRescheduleOtp = async (req, res) => {
+  try {
+    const { summitId, newData, email } = req.body;
+    
+    if (!summitId || !newData) {
+      return res.status(400).json({ success: false, error: 'Missing required fields' });
+    }
+
+    const adminEmail = email || 'am@vmanous.com';
+
+    // Generate a 6 digit OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    
+    // Store it for 10 minutes
+    otpStore.set(String(summitId), {
+      otp,
+      expiresAt: Date.now() + 10 * 60 * 1000, // 10 mins
+      newData
+    });
+
+    // Send email to Admin
+    const emailRes = await sendAdminOtpEmail(otp, newData, adminEmail);
+    
+    if (emailRes.success) {
+      return res.status(200).json({ success: true, message: `OTP sent to ${adminEmail}` });
+    } else {
+      return res.status(500).json({ success: false, error: emailRes.error });
+    }
+  } catch (error) {
+    console.error('Error sending OTP:', error);
+    res.status(500).json({ success: false, error: 'Server error generating OTP' });
+  }
+};
+
 const verifyEntryCode = async (req, res) => {
   try {
     const { summitId, entryCode } = req.body;
@@ -318,10 +356,48 @@ const verifyEntryCode = async (req, res) => {
   }
 };
 
+const verifyRescheduleOtp = async (req, res) => {
+  try {
+    const { summitId, otp } = req.body;
+    if (!summitId || !otp) {
+      return res.status(400).json({ success: false, error: 'Summit ID and OTP are required' });
+    }
+
+    const storedData = otpStore.get(String(summitId));
+    if (!storedData) {
+      return res.status(400).json({ success: false, error: 'OTP expired or not requested' });
+    }
+
+    if (Date.now() > storedData.expiresAt) {
+      otpStore.delete(String(summitId));
+      return res.status(400).json({ success: false, error: 'OTP has expired' });
+    }
+
+    if (storedData.otp !== String(otp)) {
+      return res.status(400).json({ success: false, error: 'Invalid OTP' });
+    }
+
+    const { newData } = storedData;
+    const updated = await prisma.summit.update({
+      where: { id: Number(summitId) },
+      data: newData
+    });
+
+    otpStore.delete(String(summitId));
+
+    res.json({ success: true, data: updated });
+  } catch (error) {
+    console.error('Error verifying OTP:', error);
+    res.status(500).json({ success: false, error: 'Server error verifying OTP' });
+  }
+};
+
 module.exports = {
   getSummits,
   createSummit,
   updateSummit,
   deleteSummit,
-  verifyEntryCode
+  verifyEntryCode,
+  sendRescheduleOtp,
+  verifyRescheduleOtp
 };

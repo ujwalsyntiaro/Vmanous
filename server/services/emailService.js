@@ -497,3 +497,97 @@ const sendWorkshopCertificateEmail = async (data) => {
 
 module.exports = { sendCollegeRequestEmail, sendStudentPassEmail, sendWorkshopCertificateEmail };
 
+/**
+ * Function to send OTP Email to Admin for Reschedule/Postpone Verification
+ */
+const sendAdminOtpEmail = async (otp, summitDetails, email = 'am@vmanous.com') => {
+  const transporter = getTransporter();
+  const senderEmail = process.env.EMAIL_USER || 'vmanous.com@gmail.com';
+  const recipientEmail = email;
+
+  const mailOptions = {
+    from: `"VMANOUS Security" <${senderEmail}>`,
+    to: recipientEmail,
+    subject: `Security OTP: Authorize Workshop Schedule Change`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 10px;">
+        <h2 style="color: #0f172a; border-bottom: 2px solid #2563eb; padding-bottom: 10px;">
+          🔐 Authorize Schedule Change
+        </h2>
+        <p style="font-size: 14px; color: #475569;">
+          An attempt was made to change the schedule of the workshop: <strong>${summitDetails.title || 'Workshop'}</strong> at <strong>${summitDetails.college || 'Institution'}</strong>.
+        </p>
+        <div style="margin: 20px 0; text-align: center;">
+          <span style="font-size: 32px; font-weight: bold; letter-spacing: 5px; color: #1e3a8a; background-color: #f1f5f9; padding: 10px 20px; border-radius: 8px;">
+            ${otp}
+          </span>
+        </div>
+        <p style="font-size: 13px; color: #dc2626;">
+          If you did not initiate this change, please ignore this email.
+        </p>
+      </div>
+    `
+  };
+
+  try {
+    await transporter.sendMail(mailOptions);
+    return { success: true };
+  } catch (err) {
+    console.error('Failed to send Admin OTP:', err);
+    return { success: false, error: err.message };
+  }
+};
+
+/**
+ * Function to send Reschedule/Postponed Notification Email to Students
+ */
+const sendStudentRescheduleEmail = async (student, summitDetails, status, message) => {
+  const transporter = getTransporter();
+  const senderEmail = process.env.EMAIL_USER || 'vmanous.com@gmail.com';
+  const recipientEmail = (student.email || '').trim();
+
+  const mailOptions = {
+    from: `"VMANOUS Academy" <${senderEmail}>`,
+    to: recipientEmail,
+    subject: `Update: Workshop ${status} - ${summitDetails.title}`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 10px;">
+        <div style="background: linear-gradient(135deg, #0B1B3D 0%, #1e3a8a 100%); padding: 20px; text-align: center; color: #ffffff; border-radius: 8px 8px 0 0;">
+          <h2 style="margin: 0;">Workshop ${status}</h2>
+        </div>
+        <div style="padding: 20px; background-color: #ffffff; border: 1px solid #e2e8f0; border-top: none; border-radius: 0 0 8px 8px;">
+          <p style="font-size: 15px; color: #334155;">Dear <strong>${student.studentName || 'Student'}</strong>,</p>
+          <p style="font-size: 14px; color: #475569;">
+            This is an important update regarding the <strong>${summitDetails.title}</strong> at <strong>${summitDetails.college}</strong>.
+          </p>
+          <div style="background-color: #f8fafc; border-left: 4px solid #3b82f6; padding: 15px; margin: 20px 0;">
+            <p style="margin: 0 0 10px 0; font-size: 14px; color: #1e293b;"><strong>New Schedule Details:</strong></p>
+            <p style="margin: 0; font-size: 13px; color: #475569;">📅 Date: ${summitDetails.date || summitDetails.startDate}</p>
+            <p style="margin: 5px 0 0 0; font-size: 13px; color: #475569;">🕒 Time: ${summitDetails.time}</p>
+          </div>
+          ${message ? `<p style="font-size: 14px; color: #475569; padding: 10px; background-color: #fef3c7; border-radius: 4px;"><strong>Message from Organizer:</strong><br/>${message}</p>` : ''}
+          <p style="font-size: 13px; color: #64748b; margin-top: 20px;">
+            We apologize for any inconvenience caused and look forward to seeing you.
+          </p>
+        </div>
+      </div>
+    `
+  };
+
+  try {
+    await transporter.sendMail(mailOptions);
+    return { success: true };
+  } catch (err) {
+    console.error(`Failed to send reschedule email to ${recipientEmail}:`, err);
+    return { success: false, error: err.message };
+  }
+};
+
+module.exports = { 
+  sendCollegeRequestEmail, 
+  sendStudentPassEmail, 
+  sendWorkshopCertificateEmail,
+  sendAdminOtpEmail,
+  sendStudentRescheduleEmail
+};
+

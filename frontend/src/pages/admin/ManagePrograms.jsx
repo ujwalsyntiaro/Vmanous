@@ -37,11 +37,19 @@ const ManagePrograms = () => {
   const [summits, setSummits] = useState(() => getSummits());
   const [applications, setApplications] = useState(() => getApplications());
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isRescheduleModalOpen, setIsRescheduleModalOpen] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [viewMode, setViewMode] = useState("grid");
   const [historyModalSummit, setHistoryModalSummit] = useState(null);
   const [historySearchQuery, setHistorySearchQuery] = useState("");
   const [formError, setFormError] = useState("");
+
+  const [otpValue, setOtpValue] = useState('');
+  const [isSendingOtp, setIsSendingOtp] = useState(false);
+  const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
+  const [rescheduleEmail, setRescheduleEmail] = useState('');
+  const [rescheduleStep, setRescheduleStep] = useState('email');
+  const [rescheduleEmailError, setRescheduleEmailError] = useState('');
 
   const [formData, setFormData] = useState({
     title: "",
@@ -68,6 +76,7 @@ const ManagePrograms = () => {
     processingFee: 0,
     processingFeeType: "Percentage",
     features: "",
+    scheduleStatus: "Scheduled",
   });
 
   const loadSummits = async () => {
@@ -244,6 +253,7 @@ const ManagePrograms = () => {
       processingFee: 0,
       processingFeeType: "Percentage",
       features: "",
+      scheduleStatus: "Scheduled",
     });
     setIsModalOpen(true);
   };
@@ -284,6 +294,7 @@ const ManagePrograms = () => {
       processingFee: (summit.processingFee !== undefined && summit.processingFee !== null) ? summit.processingFee : 0,
       processingFeeType: (summit.processingFeeType && summit.processingFeeType !== 'Fixed') ? summit.processingFeeType : "Percentage",
       features: (summit.features || []).join("\n"),
+      scheduleStatus: summit.scheduleStatus || "Scheduled",
     });
     setIsModalOpen(true);
   };
@@ -295,9 +306,110 @@ const ManagePrograms = () => {
     }
   };
 
-  const handleInputChange = (e) => {
+  const handleInputChange = async (e) => {
     setFormError("");
     setFormData({ ...formData, [e.target.name]: e.target.value });
+
+    // If selecting Reschedule/Postpone and editing an existing summit
+    if (e.target.name === "scheduleStatus" && (e.target.value === "Rescheduled" || e.target.value === "Postponed") && editingId) {
+      setRescheduleStep('email');
+      setRescheduleEmail('');
+      setRescheduleEmailError('');
+      setOtpValue('');
+      setIsRescheduleModalOpen(true);
+    } else if (e.target.name === "scheduleStatus" && (e.target.value === "Rescheduled" || e.target.value === "Postponed")) {
+      // If creating a new summit, just open modal but don't send API (no editingId)
+      setIsRescheduleModalOpen(true);
+    }
+  };
+
+  const handleSendOtp = async () => {
+    setRescheduleEmailError('');
+    if (!rescheduleEmail) {
+      setRescheduleEmailError("Please enter an email address.");
+      return;
+    }
+
+    if (rescheduleEmail.toLowerCase() !== 'am@vmanous.com') {
+      setRescheduleEmailError("Invalid email address. Please enter the authorized admin email.");
+      return;
+    }
+    
+    setIsSendingOtp(true);
+
+    // Calculate derived data for API
+    const days = parseInt(formData.durationDays) || 1;
+    const duration = `${days}-Day Live Workshop`;
+    const timeStr = `${formData.startTime || "10:00"} ${formData.startAmPm || "AM"} - ${formData.endTime || "05:00"} ${formData.endAmPm || "PM"}`;
+    const finalEndDate = formData.endDate || formData.startDate;
+    const formattedDate = formData.startDate || formData.endDate ? formatEventDates(formData.startDate, finalEndDate) : formData.date;
+
+    const summitData = {
+      ...formData,
+      scheduleStatus: formData.scheduleStatus,
+      status: formData.scheduleStatus, // Update main status too
+      totalHours: formData.totalHours ? String(formData.totalHours).trim() : "",
+      duration: duration,
+      time: timeStr,
+      date: formattedDate,
+    };
+
+    try {
+      const res = await fetch('/api/summits/send-reschedule-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ summitId: editingId, newData: summitData, email: rescheduleEmail })
+      });
+      const data = await res.json();
+      if (data.success) {
+        setRescheduleStep('otp');
+      } else {
+        alert(data.error || 'Failed to send OTP.');
+      }
+    } catch (err) {
+      console.error('Failed to send OTP', err);
+      alert('Error sending OTP.');
+    } finally {
+      setIsSendingOtp(false);
+    }
+  };
+
+  const handleVerifyOtp = async () => {
+    if (!editingId) {
+      // If it's a new workshop, just close modal and let them save normally
+      setIsRescheduleModalOpen(false);
+      return;
+    }
+
+    if (!otpValue || otpValue.trim() === '') {
+      alert("Please enter the OTP.");
+      return;
+    }
+
+    setIsVerifyingOtp(true);
+    try {
+      const res = await fetch('/api/summits/verify-reschedule-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ summitId: editingId, otp: otpValue, message: "Workshop schedule has been updated." })
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        alert(data.message || 'Rescheduled successfully and emails sent!');
+        setIsRescheduleModalOpen(false);
+        setOtpValue('');
+        loadSummits();
+        setIsModalOpen(false); // Close main edit modal
+      } else {
+        alert(data.error || 'Failed to verify OTP.');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Error verifying OTP.');
+    } finally {
+      setIsVerifyingOtp(false);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -360,6 +472,7 @@ const ManagePrograms = () => {
       processingFee: Number(formData.processingFee),
       processingFeeType: formData.processingFeeType || "Percentage",
       features: featStr.split("\n").filter((f) => f.trim() !== ""),
+      scheduleStatus: formData.scheduleStatus || "Scheduled",
     };
 
     let result;
@@ -1009,7 +1122,7 @@ const ManagePrograms = () => {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
                     <label className="block text-xs font-semibold text-slate-700 mb-1.5">
                       Start Date <span className="text-rose-500">*</span>
@@ -1034,6 +1147,24 @@ const ManagePrograms = () => {
                       className="w-full h-10 px-3 border border-slate-200 rounded-md focus:border-[#2D73B4] focus:ring-2 focus:ring-[#2D73B4]/15 outline-none text-xs font-medium text-slate-800 bg-white placeholder:text-slate-400 transition-all shadow-2xs"
                       placeholder="DD/MM/YYYY"
                     />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                      Schedule Status
+                    </label>
+                    <div className="relative">
+                      <select
+                        name="scheduleStatus"
+                        value={formData.scheduleStatus || 'Scheduled'}
+                        onChange={handleInputChange}
+                        className="w-full h-10 pl-3 pr-8 border border-slate-200 rounded-md focus:border-[#2D73B4] focus:ring-2 focus:ring-[#2D73B4]/15 outline-none text-xs font-medium text-slate-800 bg-white appearance-none cursor-pointer transition-all shadow-2xs"
+                      >
+                        <option value="Scheduled">Scheduled</option>
+                        <option value="Rescheduled">Rescheduled</option>
+                        <option value="Postponed">Postponed</option>
+                      </select>
+                      <ChevronDown className="w-4 h-4 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                    </div>
                   </div>
                 </div>
 
@@ -1075,18 +1206,20 @@ const ManagePrograms = () => {
                 </div>
 
                 {/* Section 5: Features List */}
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                    Features (One per line)
-                  </label>
-                  <textarea
-                    name="features"
-                    value={formData.features}
-                    onChange={handleInputChange}
-                    rows="3"
-                    className="w-full p-3 border border-slate-200 rounded-md focus:border-[#2D73B4] focus:ring-2 focus:ring-[#2D73B4]/15 outline-none text-xs font-medium text-slate-800 placeholder:text-slate-400 transition-all resize-none shadow-2xs"
-                    placeholder="Features (One per line)"
-                  />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                      Features (One per line)
+                    </label>
+                    <textarea
+                      name="features"
+                      value={formData.features}
+                      onChange={handleInputChange}
+                      rows="3"
+                      className="w-full p-3 border border-slate-200 rounded-md focus:border-[#2D73B4] focus:ring-2 focus:ring-[#2D73B4]/15 outline-none text-xs font-medium text-slate-800 placeholder:text-slate-400 transition-all resize shadow-2xs"
+                      placeholder="Features (One per line)"
+                    />
+                  </div>
                 </div>
               </form>
             </div>
@@ -1267,6 +1400,91 @@ const ManagePrograms = () => {
                 );
               })()}
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Reschedule Subscription Modal UI */}
+      {isRescheduleModalOpen && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-lg shadow-2xl w-[400px] border-2 border-purple-500 p-8 flex flex-col items-center animate-in zoom-in-95 duration-200 relative">
+            <button
+              onClick={() => setIsRescheduleModalOpen(false)}
+              className="absolute top-3 right-3 text-slate-400 hover:text-slate-600 cursor-pointer"
+            >
+              <X size={18} />
+            </button>
+
+            {rescheduleStep === 'email' && editingId ? (
+              <>
+                <div className="w-full mb-5 mt-4">
+                  <label className="block text-sm text-[#2e4c8f] font-semibold mb-1.5 ml-1">
+                    Enter email to receive OTP
+                  </label>
+                  <input
+                    type="email"
+                    value={rescheduleEmail}
+                    onChange={(e) => {
+                      setRescheduleEmail(e.target.value);
+                      if (rescheduleEmailError) setRescheduleEmailError('');
+                    }}
+                    disabled={isSendingOtp}
+                    placeholder="am@vmanous.com"
+                    className={`w-full h-11 px-3 border ${rescheduleEmailError ? 'border-red-400 focus:border-red-400 focus:ring-red-400' : 'border-gray-300 focus:border-purple-400 focus:ring-purple-400'} rounded-md outline-none focus:ring-1 transition-colors shadow-sm text-center text-sm`}
+                  />
+                  {rescheduleEmailError && (
+                    <p className="text-red-500 text-xs mt-1.5 text-center font-medium animate-in fade-in slide-in-from-top-1">{rescheduleEmailError}</p>
+                  )}
+                </div>
+                <button
+                  onClick={handleSendOtp}
+                  disabled={isSendingOtp || !rescheduleEmail}
+                  className="w-full py-2.5 bg-[#dbe4ff] text-[#3b5998] font-bold text-sm rounded-full hover:bg-[#c7d6ff] transition-colors mb-5 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center gap-2"
+                >
+                  {isSendingOtp ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-[#3b5998] border-t-transparent rounded-full animate-spin"></div>
+                      Sending...
+                    </>
+                  ) : "Send OTP"}
+                </button>
+              </>
+            ) : (
+              <>
+                <div className="w-full mb-5 mt-4">
+                  <label className="block text-sm text-[#2e4c8f] font-semibold mb-1.5 ml-1">
+                    {isSendingOtp ? `Sending OTP to ${rescheduleEmail || 'am@vmanous.com'}...` : `Enter OTP sent to ${rescheduleEmail || 'am@vmanous.com'}`}
+                  </label>
+                  <input
+                    type="text"
+                    value={otpValue}
+                    onChange={(e) => setOtpValue(e.target.value)}
+                    disabled={isSendingOtp || isVerifyingOtp}
+                    placeholder="6-digit OTP"
+                    className="w-full h-11 px-3 border border-gray-300 rounded-md outline-none focus:border-purple-400 focus:ring-1 focus:ring-purple-400 transition-colors shadow-sm text-center tracking-widest text-lg font-mono font-bold"
+                    maxLength={6}
+                  />
+                </div>
+
+                <button
+                  onClick={handleVerifyOtp}
+                  disabled={isVerifyingOtp || isSendingOtp}
+                  className="w-full py-2.5 bg-[#dbe4ff] text-[#3b5998] font-bold text-sm rounded-full hover:bg-[#c7d6ff] transition-colors mb-5 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center gap-2"
+                >
+                  {isVerifyingOtp ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-[#3b5998] border-t-transparent rounded-full animate-spin"></div>
+                      Verifying...
+                    </>
+                  ) : "Verify OTP"}
+                </button>
+              </>
+            )}
+
+            <p className="text-[10px] text-center text-[#5c729c] px-4 leading-relaxed">
+              Your details are securely verified by Vmanous. Never share your OTP.<br />
+              <a href="#" className="underline hover:text-[#2e4c8f]">Learn about our privacy policy</a>
+            </p>
           </div>
         </div>
       )}

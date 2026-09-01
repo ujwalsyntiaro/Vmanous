@@ -5,7 +5,9 @@ const {
   createSummit,
   updateSummit,
   deleteSummit,
-  verifyEntryCode
+  verifyEntryCode,
+  sendRescheduleOtp,
+  verifyRescheduleOtp
 } = require('../controllers/summitController');
 
 router.route('/')
@@ -13,6 +15,8 @@ router.route('/')
   .post(createSummit);
 
 router.post('/verify-entry-code', verifyEntryCode);
+router.post('/send-reschedule-otp', sendRescheduleOtp);
+router.post('/verify-reschedule-otp', verifyRescheduleOtp);
 
 router.route('/:id')
   .put(updateSummit)
