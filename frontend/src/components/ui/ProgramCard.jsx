@@ -93,21 +93,34 @@ const ProgramCard = ({ summit, index = 0, isAdmin = false, isHistory = false, on
 
         {/* Schedule & Timing Box */}
         <div className="p-2 rounded-md bg-slate-50 border border-slate-200/60 mb-2 space-y-1.5 shadow-2xs">
-          <div className="flex items-center justify-between gap-2 flex-wrap">
-            <div className="flex items-center gap-1.5 flex-wrap">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-1.5 min-w-0">
               <div className="p-1 rounded-md bg-emerald-600 text-white shadow-2xs shrink-0">
                 <Calendar size={13} />
               </div>
-              <span className="text-xs font-extrabold text-slate-900 tracking-tight">{summit.duration}</span>
+              <span className="text-xs font-extrabold text-slate-900 tracking-tight truncate">{summit.duration}</span>
               {totalHours && (
-                <span className="inline-flex items-center text-[10px] font-extrabold text-emerald-800 bg-emerald-100/90 px-1.5 py-0.5 rounded border border-emerald-200/80 shadow-2xs">
+                <span className="inline-flex items-center text-[10px] font-extrabold text-emerald-800 bg-emerald-100/90 px-1.5 py-0.5 rounded border border-emerald-200/80 shadow-2xs shrink-0">
                   {totalHours} Hrs
                 </span>
               )}
             </div>
-            <div className="flex items-center gap-1.5">
-              <span className="text-xs font-extrabold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200/80 shadow-2xs">
-                {summit.date}
+            <div className="flex items-center gap-1.5 shrink-0">
+              <span className="text-[11px] sm:text-xs font-extrabold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200/80 shadow-2xs flex items-center gap-1 whitespace-nowrap">
+                <span className="text-emerald-600/70 uppercase text-[9px] tracking-wider font-bold hidden sm:inline-block">Summit Date:</span>
+                <span className="text-emerald-600/70 uppercase text-[9px] tracking-wider font-bold sm:hidden">Date:</span>
+                {(() => {
+                  const str = summit.date;
+                  if (!str) return '';
+                  if (/^\d{4}-\d{2}-\d{2}$/.test(str)) {
+                    return new Date(str).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+                  }
+                  if (/^\d{2}\/\d{2}\/\d{4}$/.test(str)) {
+                    const p = str.split('/');
+                    return new Date(`${p[2]}-${p[1]}-${p[0]}`).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+                  }
+                  return str;
+                })()}
               </span>
             </div>
           </div>
@@ -125,6 +138,29 @@ const ProgramCard = ({ summit, index = 0, isAdmin = false, isHistory = false, on
                   {totalHours} Hours Total
                 </span>
               )}
+            </div>
+          )}
+
+          {(summit.startDate || summit.endDate) && (
+            <div className="flex items-center gap-1.5 pt-1.5 border-t border-slate-200/50 text-[11px] font-medium text-slate-600">
+              <span className="text-slate-500 font-semibold">Registration:</span>
+              <span className="truncate">
+                {(() => {
+                  const formatD = (str) => {
+                    if (!str) return '';
+                    let d = new Date(str);
+                    if (isNaN(d)) {
+                      const p = str.split(/[-/]/);
+                      if (p.length === 3) d = new Date(`${p[2]}-${p[1]}-${p[0]}`);
+                    }
+                    if (isNaN(d)) return str;
+                    return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+                  };
+                  const start = formatD(summit.startDate);
+                  const end = formatD(summit.endDate);
+                  return `${start} ${end ? `- ${end}` : ''}`;
+                })()}
+              </span>
             </div>
           )}
         </div>

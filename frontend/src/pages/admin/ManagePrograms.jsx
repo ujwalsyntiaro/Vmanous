@@ -334,7 +334,7 @@ const ManagePrograms = () => {
       setRescheduleEmailError("Invalid email address. Please enter the authorized admin email.");
       return;
     }
-    
+
     setIsSendingOtp(true);
 
     // Calculate derived data for API
@@ -437,10 +437,11 @@ const ManagePrograms = () => {
     const timeStr = `${formData.startTime || "10:00"} ${formData.startAmPm || "AM"} - ${formData.endTime || "05:00"} ${formData.endAmPm || "PM"}`;
 
     const finalEndDate = formData.endDate || formData.startDate;
-    const formattedDate =
-      formData.startDate || formData.endDate
-        ? formatEventDates(formData.startDate, finalEndDate)
-        : formData.date;
+    const formattedDate = formData.date
+      ? formData.date
+      : (formData.startDate || formData.endDate
+          ? formatEventDates(formData.startDate, finalEndDate)
+          : "");
 
     const featStr = typeof formData.features === 'string' ? formData.features : '';
     const normalizedEntryCode = formData.entryCode ? String(formData.entryCode).trim().toUpperCase() : "";
@@ -1119,6 +1120,20 @@ const ManagePrograms = () => {
                         </div>
                       </div>
                     </div>
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                      Summit Date
+                    </label>
+                    <DateInput
+                      name="date"
+                      value={formData.date || ''}
+                      onChange={handleInputChange}
+                      className="w-full h-10 px-3 border border-slate-200 rounded-md focus:border-[#2D73B4] focus:ring-2 focus:ring-[#2D73B4]/15 outline-none text-xs font-medium text-slate-800 bg-white placeholder:text-slate-400 transition-all shadow-2xs"
+                      placeholder="DD/MM/YYYY"
+                    />
                   </div>
                 </div>
 
