@@ -968,7 +968,7 @@ const ManageCertificates = () => {
       {/* Live Certificate Interactive Preview Modal */}
       {previewStudent && (
         <div className="fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto animate-fadeIn">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full border border-slate-200 overflow-hidden space-y-4 p-6">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-5xl w-full border border-slate-200 overflow-hidden space-y-4 p-6">
             {/* Modal Header */}
             <div className="flex items-center justify-between pb-3 border-b border-slate-100">
               <div className="flex items-center space-x-2">
@@ -986,18 +986,18 @@ const ManageCertificates = () => {
             {/* New Certificate Visual Rendering */}
             <div
               className="relative w-full overflow-hidden rounded-md border border-slate-200 shadow-md bg-white mx-auto [container-type:inline-size]"
-              style={{ aspectRatio: '841.89 / 595.28', backgroundImage: 'url(/VMANOUS_Certificate_Final.png)', backgroundSize: 'cover', backgroundPosition: 'center' }}
+              style={{ aspectRatio: '1.55', backgroundImage: 'url(/VMANOUS_Certificate_Final.png)', backgroundSize: 'cover', backgroundPosition: 'center' }}
             >
               {/* Precise white masks to hide only the placeholder text without hiding logos or lines */}
               {/* SRN Mask - Wider to cover text on the left, but not so wide to hit VMANOUS */}
-              <div className="absolute top-[4%] right-[4%] w-[28%] h-[9%] bg-white z-0"></div>
+              <div className="absolute top-[1%] right-[4%] w-[28%] h-[12%] bg-white z-0"></div>
               {/* Name & Line Mask - Tall enough to completely hide 'Name of Candidates' and the original line */}
-              <div className="absolute top-[37%] left-[20%] w-[60%] h-[15%] bg-white z-0"></div>
+              <div className="absolute top-[37%] left-[17%] w-[66%] h-[19%] bg-white z-0"></div>
               {/* Paragraph Mask */}
-              <div className="absolute top-[56%] left-[12%] w-[76%] h-[16%] bg-white z-0"></div>
+              <div className="absolute top-[49%] left-[10%] w-[80%] h-[27%] bg-white z-0"></div>
 
               {/* SRN and Issue Date (Top Right) */}
-              <div className="absolute top-[5.5%] right-[7%] text-right space-y-0.5 z-10">
+              <div className="absolute top-[5.5%] right-[7%] text-left space-y-0.5 z-10">
                 <p className="font-bold text-black" style={{ fontSize: '1.2cqi' }}>
                   SRN : {previewStudent.certificate ? previewStudent.certificate.certificateCode : 'VM-CERT-2026-001'}
                 </p>
@@ -1007,22 +1007,25 @@ const ManageCertificates = () => {
               </div>
 
               {/* Student Name (Center) */}
-              <div className="absolute top-[37%] left-[20%] w-[60%] h-[15%] flex flex-col justify-end z-10">
-                <h1 
-                  className="text-black text-center leading-none mb-[1%]" 
+              <div className="absolute top-[37%] left-[17%] w-[66%] h-[19%] flex flex-col justify-center items-center z-10">
+                <h1
+                  className="text-black text-center leading-none mb-[3%]"
                   style={{ fontFamily: "'Brittany', 'Brittany Signature', cursive", fontSize: '4.5cqi', fontWeight: '400' }}
                 >
                   {previewStudent.studentName}
                 </h1>
+                <div className="w-[70%] border-b-2 border-dotted border-slate-500 opacity-70"></div>
               </div>
 
               {/* Description Body Paragraph */}
-              <div className="absolute top-[56%] left-[15%] w-[70%] text-center z-10 flex items-center justify-center h-[16%]">
+              <div className="absolute top-[52%] left-[2%] w-[96%] text-center z-10 flex items-center justify-center h-[16%]">
                 <p
-                  className="text-[#334155] leading-relaxed uppercase"
-                  style={{ fontSize: '1.45cqi', fontFamily: "'Cinzel', serif", letterSpacing: '0.12em', fontWeight: '500' }}
+                  className="text-black leading-relaxed"
+                  style={{ fontSize: '1.8cqi', fontFamily: "Baskerville, 'Baskerville Old Face', 'Hoefler Text', Garamond, serif", fontWeight: '500', letterSpacing: '0.04em', wordSpacing: '0.1em' }}
                 >
-                  FOR SUCCESSFULLY COMPLETING THE AI SUMMIT ON {selectedWorkshop ? (selectedWorkshop.date || selectedWorkshop.startDate) : 'AUG 24, 2026'}, WITH A TOTAL DURATION OF {selectedWorkshop ? selectedWorkshop.duration || '30' : '30'} HOURS, AND DEMONSTRATING ACTIVE PARTICIPATION IN EXPLORING AI TECHNOLOGIES, INDUSTRY INSIGHTS, AND PRACTICAL APPLICATIONS.
+                  For successfully completing the AI Summit on __ /__ /____, with a total<br />
+                  duration of [10/20/30] hours, and demonstrating active participation in<br />
+                  exploring AI technologies, industry insights, and practical applications.
                 </p>
               </div>
             </div>
