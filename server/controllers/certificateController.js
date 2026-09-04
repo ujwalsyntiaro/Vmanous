@@ -2,6 +2,49 @@ const prisma = require('../config/prisma');
 const { generateCertificatePDF } = require('../services/certificatePdfService');
 const { sendWorkshopCertificateEmail } = require('../services/emailService');
 
+/**
+ * Helper to dynamically generate SRN based on payment chronological order
+ */
+const getAppSRN = async (app, monthCache = {}) => {
+  if (!app || app.paymentStatus !== 'Paid' || !app.createdAt) {
+    return `VM-CERT-${new Date().getFullYear()}-${(app?.id || '').slice(0, 4).toUpperCase()}`;
+  }
+
+  const d = new Date(app.createdAt);
+  const year = d.getFullYear();
+  const month = d.getMonth();
+  const cacheKey = `${year}-${month}`;
+
+  if (!monthCache[cacheKey]) {
+    const startOfMonth = new Date(year, month, 1);
+    const endOfMonth = new Date(year, month + 1, 1);
+
+    const monthApps = await prisma.application.findMany({
+      where: {
+        paymentStatus: 'Paid',
+        createdAt: {
+          gte: startOfMonth,
+          lt: endOfMonth
+        }
+      },
+      orderBy: [
+        { createdAt: 'asc' },
+        { id: 'asc' }
+      ],
+      select: { id: true }
+    });
+
+    monthCache[cacheKey] = monthApps.map(a => a.id);
+  }
+
+  const rank = monthCache[cacheKey].indexOf(app.id) + 1;
+  const rankStr = rank > 0 ? rank.toString().padStart(5, '0') : '00000';
+  const yy = year.toString().slice(-2);
+  const mm = (month + 1).toString().padStart(2, '0');
+
+  return `VAI-${yy}${mm}-${rankStr}`;
+};
+
 // Helper to extract year and month strings
 const parseDateParts = (dateStr) => {
   if (!dateStr) return { year: null, month: null, day: null, fullDate: null };
@@ -139,8 +182,16 @@ const getWorkshopStudents = async (req, res) => {
     const certMap = new Map();
     certificates.forEach(c => certMap.set(c.applicationId, c));
 
-    const students = applications.map(app => {
+    const monthCache = {};
+    const students = await Promise.all(applications.map(async app => {
       const cert = certMap.get(app.id);
+      let pendingCode = `VM-CERT-${new Date().getFullYear()}-${app.id.slice(0, 4).toUpperCase()}`;
+      try {
+        pendingCode = await getAppSRN(app, monthCache);
+      } catch (e) {
+        console.error("Error calculating SRN:", e);
+      }
+
       return {
         id: app.id,
         applicationId: app.id,
@@ -160,13 +211,13 @@ const getWorkshopStudents = async (req, res) => {
           errorMessage: cert.errorMessage,
           sentAt: cert.sentAt
         } : {
-          certificateCode: `VM-CERT-${new Date().getFullYear()}-${app.id.slice(0, 4).toUpperCase()}`,
+          certificateCode: pendingCode,
           status: 'Pending',
           errorMessage: null,
           sentAt: null
         }
       };
-    });
+    }));
 
     res.json({
       success: true,
@@ -206,10 +257,11 @@ const sendBulkCertificates = async (req, res) => {
       include: { summit: true }
     });
 
+    const monthCache = {};
     const results = [];
 
     for (const app of applications) {
-      const certCode = `VM-CERT-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
+      const certCode = await getAppSRN(app, monthCache);
       const certData = {
         studentName: app.studentName,
         email: app.email,
@@ -311,7 +363,7 @@ const previewCertificatePdf = async (req, res) => {
       workshopTitle: (app.summit && app.summit.title) || app.programTitle,
       workshopDate: (app.summit && (app.summit.date || app.summit.startDate)) || 'August 2026',
       duration: (app.summit && app.summit.duration) || '30',
-      certificateCode: `VM-CERT-${new Date().getFullYear()}-${app.id.slice(0, 4).toUpperCase()}`
+      certificateCode: await getAppSRN(app, {})
     };
 
     const pdfBuffer = await generateCertificatePDF(certData);

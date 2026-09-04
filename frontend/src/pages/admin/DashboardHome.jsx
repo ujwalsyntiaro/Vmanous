@@ -23,6 +23,7 @@ import {
   Clock,
   X,
   ChevronDown,
+  Loader2,
 } from "lucide-react";
 import StatCard from "../../components/admin/StatCard";
 import { getSummits, fetchSummitsAsync, isSummitActive, isCollegeMatch } from "../../services/summitService";
@@ -40,6 +41,7 @@ const DashboardHome = () => {
   const [summits, setSummits] = useState([]);
   const [applications, setApplications] = useState([]);
   const [students, setStudents] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Master Date Filter State (Controls Revenue Cards, KPI Stat Cards & Applications Table)
   const [revenueDateRange, setRevenueDateRange] = useState("all"); // all, 7d, 1m, 3m, 6m, ytd, custom
@@ -100,6 +102,8 @@ const DashboardHome = () => {
       setStudents(uniqueList || []);
     } catch (err) {
       console.error("Error loading dashboard data:", err);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -465,8 +469,8 @@ const DashboardHome = () => {
               <TrendingUp size={15} />
             </span>
           </div>
-          <div className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
-            ₹{revMetrics.grossRevenue.toLocaleString("en-IN")}
+          <div className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight h-8 flex items-center">
+            {isLoading ? <Loader2 className="w-5 h-5 text-emerald-600 animate-spin" /> : `₹${revMetrics.grossRevenue.toLocaleString("en-IN")}`}
           </div>
           <div className="mt-1 flex items-center justify-between text-[11px] text-slate-500">
             <span className="font-medium">
@@ -488,8 +492,8 @@ const DashboardHome = () => {
               <PieChartIcon size={15} />
             </span>
           </div>
-          <div className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
-            ₹{revMetrics.baseRevenue.toLocaleString("en-IN")}
+          <div className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight h-8 flex items-center">
+            {isLoading ? <Loader2 className="w-5 h-5 text-sky-600 animate-spin" /> : `₹${revMetrics.baseRevenue.toLocaleString("en-IN")}`}
           </div>
           <div className="mt-1 text-[11px] text-slate-500 font-medium">
             Course sales before tax
@@ -506,8 +510,8 @@ const DashboardHome = () => {
               <Receipt size={15} />
             </span>
           </div>
-          <div className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
-            ₹{revMetrics.gstCollected.toLocaleString("en-IN")}
+          <div className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight h-8 flex items-center">
+            {isLoading ? <Loader2 className="w-5 h-5 text-amber-600 animate-spin" /> : `₹${revMetrics.gstCollected.toLocaleString("en-IN")}`}
           </div>
           <div className="mt-1 text-[11px] text-slate-500 font-medium">
             Accrued GST tax liability
@@ -524,8 +528,8 @@ const DashboardHome = () => {
               <CreditCard size={15} />
             </span>
           </div>
-          <div className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
-            ₹{revMetrics.platformFeeCollected.toLocaleString("en-IN")}
+          <div className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight h-8 flex items-center">
+            {isLoading ? <Loader2 className="w-5 h-5 text-indigo-600 animate-spin" /> : `₹${revMetrics.platformFeeCollected.toLocaleString("en-IN")}`}
           </div>
           <div className="mt-1 text-[11px] text-slate-500 font-medium">
             Convenience & processing fee
@@ -548,30 +552,35 @@ const DashboardHome = () => {
               value={displayTotalStudents.toString()}
               icon={Users}
               onClick={() => navigate('/vpanel/applications')}
+              isLoading={isLoading}
             />
             <StatCard
               title="Active Programs"
               value={summits.length.toString()}
               icon={BookOpen}
               onClick={() => navigate('/vpanel/ai-summits')}
+              isLoading={isLoading}
             />
             <StatCard
               title="Paid Registrations"
               value={revMetrics.totalPaidCount.toString()}
               icon={CheckCircle2}
               onClick={() => navigate('/vpanel/applications')}
+              isLoading={isLoading}
             />
             <StatCard
               title="Failed Payments"
               value={revMetrics.failedCount.toString()}
               icon={AlertCircle}
               onClick={() => navigate('/vpanel/applications')}
+              isLoading={isLoading}
             />
             <StatCard
               title="Pending Audits"
               value={revMetrics.pendingAuditCount.toString()}
               icon={FileText}
               onClick={() => navigate('/vpanel/applications')}
+              isLoading={isLoading}
             />
           </div>
         );
@@ -629,8 +638,8 @@ const DashboardHome = () => {
                       setIsStatusOpen(false);
                     }}
                     className={`w-full px-3 py-2 text-left text-xs font-bold flex items-center gap-2 transition-colors cursor-pointer ${activeTab === "All"
-                        ? "bg-slate-100 text-slate-900 font-extrabold"
-                        : "text-slate-700 hover:bg-slate-50"
+                      ? "bg-slate-100 text-slate-900 font-extrabold"
+                      : "text-slate-700 hover:bg-slate-50"
                       }`}
                   >
                     <Filter size={14} className="text-[#2D73B4]" />
@@ -644,8 +653,8 @@ const DashboardHome = () => {
                       setIsStatusOpen(false);
                     }}
                     className={`w-full px-3 py-2 text-left text-xs font-bold flex items-center gap-2 transition-colors cursor-pointer ${activeTab === "Paid"
-                        ? "bg-emerald-100 text-emerald-900 font-extrabold"
-                        : "text-emerald-800 hover:bg-emerald-50"
+                      ? "bg-emerald-100 text-emerald-900 font-extrabold"
+                      : "text-emerald-800 hover:bg-emerald-50"
                       }`}
                   >
                     <CheckCircle2 size={14} className="text-emerald-600" />
@@ -659,8 +668,8 @@ const DashboardHome = () => {
                       setIsStatusOpen(false);
                     }}
                     className={`w-full px-3 py-2 text-left text-xs font-bold flex items-center gap-2 transition-colors cursor-pointer ${activeTab === "Failed"
-                        ? "bg-rose-100 text-rose-900 font-extrabold"
-                        : "text-rose-800 hover:bg-rose-50"
+                      ? "bg-rose-100 text-rose-900 font-extrabold"
+                      : "text-rose-800 hover:bg-rose-50"
                       }`}
                   >
                     <AlertCircle size={14} className="text-rose-600" />
@@ -674,8 +683,8 @@ const DashboardHome = () => {
                       setIsStatusOpen(false);
                     }}
                     className={`w-full px-3 py-2 text-left text-xs font-bold flex items-center gap-2 transition-colors cursor-pointer ${activeTab === "Pending Audit"
-                        ? "bg-amber-100 text-amber-950 font-extrabold"
-                        : "text-amber-900 hover:bg-amber-50"
+                      ? "bg-amber-100 text-amber-950 font-extrabold"
+                      : "text-amber-900 hover:bg-amber-50"
                       }`}
                   >
                     <Clock size={14} className="text-amber-600" />
@@ -716,8 +725,8 @@ const DashboardHome = () => {
                       setIsCollegeOpen(false);
                     }}
                     className={`w-full px-3 py-2 text-left text-xs font-bold transition-colors cursor-pointer ${selectedCollege === "All"
-                        ? "bg-slate-100 text-slate-900 font-extrabold"
-                        : "text-slate-700 hover:bg-slate-50"
+                      ? "bg-slate-100 text-slate-900 font-extrabold"
+                      : "text-slate-700 hover:bg-slate-50"
                       }`}
                   >
                     All Partner Colleges
@@ -731,8 +740,8 @@ const DashboardHome = () => {
                         setIsCollegeOpen(false);
                       }}
                       className={`w-full px-3 py-2 text-left text-xs font-semibold transition-colors cursor-pointer truncate ${selectedCollege === name
-                          ? "bg-blue-50 text-[#2D73B4] font-bold"
-                          : "text-slate-700 hover:bg-slate-50"
+                        ? "bg-blue-50 text-[#2D73B4] font-bold"
+                        : "text-slate-700 hover:bg-slate-50"
                         }`}
                     >
                       {name}
@@ -774,7 +783,15 @@ const DashboardHome = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 text-xs">
-                {filteredApps.length === 0 ? (
+                {isLoading ? (
+                  <tr>
+                    <td colSpan="6" className="py-12 text-center text-slate-400 font-medium">
+                      <div className="flex justify-center">
+                        <Loader2 className="w-8 h-8 text-[#2D73B4] animate-spin" />
+                      </div>
+                    </td>
+                  </tr>
+                ) : filteredApps.length === 0 ? (
                   <tr>
                     <td
                       colSpan="6"

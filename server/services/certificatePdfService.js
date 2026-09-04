@@ -11,7 +11,7 @@ const fs = require('fs');
 const generateCertificatePDF = async (data) => {
   return new Promise(async (resolve, reject) => {
     try {
-      const studentName = (data.studentName || data.name || 'Participant').toUpperCase();
+      const studentName = data.studentName || data.name || 'Participant';
       const collegeName = data.collegeName || data.college || 'National Institute of Technology';
       const workshopTitle = data.workshopTitle || data.programTitle || data.title || 'Generative AI & Machine Learning';
       const dateStr = data.workshopDate || data.eventDate || data.startDate || '25th August 2026';
@@ -39,7 +39,7 @@ const generateCertificatePDF = async (data) => {
       const height = 595.28;
 
       // 1. Background Image
-      const bgPath = path.join(__dirname, '../../VMANOUS Certificate Final .png');
+      const bgPath = path.join(__dirname, '../../frontend/public/VMANOUS_Certificate_Final.png');
       if (fs.existsSync(bgPath)) {
         doc.image(bgPath, 0, 0, { width: width, height: height });
       } else {
@@ -47,12 +47,14 @@ const generateCertificatePDF = async (data) => {
       }
 
       // Hide the placeholder text from the image using white rectangles
-      // Mask SRN and Issue Date (wider to cover old text on the left)
-      doc.rect(width - 250, 20, 210, 45).fill('#ffffff');
-      // Mask Candidate Name and original line (completely hidden)
-      doc.rect(150, 210, width - 300, 90).fill('#ffffff');
-      // Mask Paragraph
-      doc.rect(100, 320, width - 200, 90).fill('#ffffff');
+      // Mask SRN and Issue Date (wider and taller to cover all old text on the top right)
+      doc.rect(width - 270, 20, 250, 60).fill('#ffffff');
+      
+      // Mask Candidate Name and original line (completely hidden without hitting the header)
+      doc.rect(120, 225, width - 240, 100).fill('#ffffff');
+      
+      // Mask Paragraph (taller and wider to cover the entire old paragraph)
+      doc.rect(80, 315, width - 160, 120).fill('#ffffff');
 
       // 2. Top Right: SRN & Issue Date
       const today = new Date();
@@ -71,13 +73,28 @@ const generateCertificatePDF = async (data) => {
       doc.restore();
 
       // 3. Student Recipient Name (Center, Cursive/Italic)
-      doc.fontSize(36)
-        .font('Times-Italic')
+      const fontPath = path.join(__dirname, 'GreatVibes-Regular.ttf');
+      if (fs.existsSync(fontPath)) {
+        doc.registerFont('Brittany', fontPath);
+      }
+
+      doc.fontSize(48)
+        .font(fs.existsSync(fontPath) ? 'Brittany' : 'Times-Italic')
         .fillColor('#000000')
-        .text(studentName, 0, 235, {
+        .text(studentName, 0, 240, {
           align: 'center',
           characterSpacing: 1
         });
+
+      // Draw dotted line under the name with a little bit of spacing
+      doc.save();
+      doc.moveTo(width / 2 - 180, 295)
+         .lineTo(width / 2 + 180, 295)
+         .lineWidth(1)
+         .dash(2, {space: 3})
+         .strokeOpacity(0.5)
+         .stroke('#64748b');
+      doc.restore();
 
       // 4. Description Body Paragraph
       let formattedSummitDate = dateStr;
@@ -88,16 +105,21 @@ const generateCertificatePDF = async (data) => {
         formattedSummitDate = `${months[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;
       }
 
-      const descText = `FOR SUCCESSFULLY COMPLETING THE AI SUMMIT ON ${formattedSummitDate}, WITH A TOTAL DURATION OF ${duration} HOURS, AND DEMONSTRATING ACTIVE PARTICIPATION IN EXPLORING AI TECHNOLOGIES, INDUSTRY INSIGHTS, AND PRACTICAL APPLICATIONS.`;
+      const descText = `For successfully completing the AI Summit on ${formattedSummitDate}, with a total\nduration of ${duration} hours, and demonstrating active participation in\nexploring AI technologies, industry insights, and practical applications.`;
 
-      doc.fontSize(12)
-        .font('Times-Roman')
-        .fillColor('#2c3e50')
-        .text(descText, width / 2 - 250, 335, {
+      const baskervillePath = 'C:\\Windows\\Fonts\\BASKVILL.TTF';
+      if (fs.existsSync(baskervillePath)) {
+        doc.registerFont('Baskerville', baskervillePath);
+      }
+
+      doc.fontSize(16)
+        .font(fs.existsSync(baskervillePath) ? 'Baskerville' : 'Times-Roman')
+        .fillColor('#000000')
+        .text(descText, width / 2 - 325, 318, {
           align: 'center',
-          width: 500,
-          lineGap: 7,
-          characterSpacing: 1
+          width: 650,
+          lineGap: 4,
+          characterSpacing: 0.5
         });
 
       // Finalize PDF

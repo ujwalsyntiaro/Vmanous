@@ -1,8 +1,8 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { TrendingUp, TrendingDown } from 'lucide-react';
+import { TrendingUp, TrendingDown, Loader2 } from 'lucide-react';
 
-const StatCard = ({ title, value, icon: Icon, onClick }) => {
+const StatCard = ({ title, value, icon: Icon, onClick, isLoading }) => {
   return (
     <motion.div
       whileHover={{ y: -2 }}
@@ -16,7 +16,13 @@ const StatCard = ({ title, value, icon: Icon, onClick }) => {
         <h3 className="text-xs font-bold text-slate-600 leading-tight">{title}</h3>
       </div>
       <div>
-        <p className="text-xl font-black text-slate-900 tracking-tight">{value}</p>
+        {isLoading ? (
+          <div className="flex items-center h-7">
+            <Loader2 className="w-5 h-5 text-emerald-600 animate-spin" />
+          </div>
+        ) : (
+          <p className="text-xl font-black text-slate-900 tracking-tight">{value}</p>
+        )}
       </div>
     </motion.div>
   );
