@@ -1,10 +1,5 @@
 // Enrolled Students Roster & Digital Pass Service
-import { getApplications } from "./applicationService";
-
-if (typeof window !== "undefined") {
-  localStorage.removeItem("vmanous_students");
-  localStorage.removeItem("vmanous_custom_students");
-}
+import { fetchApplicationsAsync } from "./applicationService";
 
 export const getUniqueStudents = (applicationsList = [], dbStudentsList = []) => {
   const map = new Map();
@@ -27,6 +22,7 @@ export const getUniqueStudents = (applicationsList = [], dbStudentsList = []) =>
     if (!map.has(key)) {
       map.set(key, {
         id: item.id ? (isDb ? `stu_${item.id}` : item.id) : `stu_${Date.now()}`,
+        dbId: isDb ? item.id : null,
         studentName: name || "Student",
         email: email || item.email || "",
         phone: item.phone || item.mobileNumber || "",
@@ -43,6 +39,12 @@ export const getUniqueStudents = (applicationsList = [], dbStudentsList = []) =>
         passCode: item.passCode || "PASS-VERIFIED",
         transactionId: item.transactionId || "",
         paymentStatus: item.paymentStatus || "Paid",
+        amountPaid: item.amountPaid !== undefined && item.amountPaid !== null ? Number(item.amountPaid) : 0,
+        baseAmount: item.baseAmount !== undefined && item.baseAmount !== null ? Number(item.baseAmount) : null,
+        gstAmount: item.gstAmount !== undefined && item.gstAmount !== null ? Number(item.gstAmount) : null,
+        platformFee: item.platformFee !== undefined && item.platformFee !== null ? Number(item.platformFee) : 0,
+        summitId: item.summitId || null,
+        attendance: item.attendance || { day1: false, day2: false },
         createdAt: item.createdAt || new Date().toISOString(),
         enrolledAt: item.createdAt || new Date().toISOString(),
       });
@@ -64,6 +66,11 @@ export const getUniqueStudents = (applicationsList = [], dbStudentsList = []) =>
         marksTwelfth: item.marksTwelfth || existing.marksTwelfth,
         passCode: passCode || existing.passCode,
         transactionId: item.transactionId || existing.transactionId,
+        amountPaid: item.amountPaid !== undefined && item.amountPaid !== null ? Number(item.amountPaid) : existing.amountPaid,
+        baseAmount: item.baseAmount !== undefined && item.baseAmount !== null ? Number(item.baseAmount) : existing.baseAmount,
+        gstAmount: item.gstAmount !== undefined && item.gstAmount !== null ? Number(item.gstAmount) : existing.gstAmount,
+        platformFee: item.platformFee !== undefined && item.platformFee !== null ? Number(item.platformFee) : existing.platformFee,
+        summitId: item.summitId || existing.summitId,
       });
     }
   };
@@ -78,32 +85,46 @@ export const getUniqueStudents = (applicationsList = [], dbStudentsList = []) =>
   return Array.from(map.values());
 };
 
+let _inMemoryStudents = [];
+
 export const getStudents = () => {
-  const apps = getApplications();
-  const stored = localStorage.getItem("vmanous_custom_students");
-  const customList = stored ? JSON.parse(stored) : [];
-  return getUniqueStudents(apps, customList);
+  return _inMemoryStudents;
 };
 
 export const saveStudents = (students) => {
-  localStorage.setItem("vmanous_custom_students", JSON.stringify(students));
+  if (Array.isArray(students)) {
+    _inMemoryStudents = students;
+  }
 };
 
-export const addStudent = (studentData) => {
-  const students = getStudents();
-  const newStudent = {
-    id: `stu_${Date.now()}`,
-    enrolledAt: new Date().toISOString(),
-    paymentStatus: "Paid",
-    attendance: { day1: false, day2: false },
-    ...studentData,
-  };
-  const updated = [newStudent, ...students];
-  saveStudents(updated);
-
-  // Sync with MySQL Database
+export const fetchStudentsAsync = async () => {
   try {
-    fetch("/api/v1/students", {
+    const [appsResult, stuRes] = await Promise.all([
+      fetchApplicationsAsync(),
+      fetch(`/api/v1/students?_t=${Date.now()}`, {
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0'
+        }
+      }).then(r => r.ok ? r.json() : { success: false, data: [] })
+    ]);
+
+    const apps = appsResult.applications || [];
+    const dbStudents = (stuRes && stuRes.success && Array.isArray(stuRes.data)) ? stuRes.data : [];
+    const unique = getUniqueStudents(apps, dbStudents);
+    _inMemoryStudents = unique;
+    return unique;
+  } catch (err) {
+    console.error("Error fetching students async:", err);
+    return _inMemoryStudents;
+  }
+};
+
+export const addStudent = async (studentData) => {
+  try {
+    const res = await fetch("/api/v1/students", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -115,58 +136,39 @@ export const addStudent = (studentData) => {
         year: studentData.year,
         passCode: studentData.passCode,
       }),
-    }).catch((err) => console.log("Student API sync notice:", err));
+    });
+    const data = await res.json();
+    return data;
   } catch (err) {
     console.error("Student API error:", err);
+    return { success: false, error: err.message };
   }
-
-  return newStudent;
 };
 
-export const updateStudentAttendance = (id, day, isPresent) => {
-  const students = getStudents();
-  const updated = students.map((s) => {
-    if (s.id === id) {
-      const currentAttendance = s.attendance || { day1: false, day2: false };
-      return {
-        ...s,
-        attendance: {
-          ...currentAttendance,
-          [day]: isPresent,
-        },
-      };
-    }
-    return s;
-  });
-  saveStudents(updated);
-
-  // Sync with MySQL Database
+export const updateStudentAttendance = async (id, day, isPresent) => {
+  const numId = String(id).startsWith("stu_") ? id.replace("stu_", "") : id;
   try {
-    fetch(`/api/v1/students/${id}`, {
+    const res = await fetch(`/api/v1/students/${numId}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ attendanceDay: day, isPresent }),
-    }).catch((err) => console.log("Student PUT notice:", err));
+    });
+    const data = await res.json();
+    return data;
   } catch (err) {
-    console.error("Student update error:", err);
+    console.error("Student update attendance error:", err);
   }
-
-  return updated;
 };
 
-export const deleteStudent = (id) => {
-  const students = getStudents();
-  const updated = students.filter((s) => s.id !== id);
-  saveStudents(updated);
-
-  // Sync with MySQL Database
+export const deleteStudent = async (id) => {
+  const numId = String(id).startsWith("stu_") ? id.replace("stu_", "") : id;
   try {
-    fetch(`/api/v1/students/${id}`, {
+    const res = await fetch(`/api/v1/students/${numId}`, {
       method: "DELETE",
-    }).catch((err) => console.log("Student DELETE notice:", err));
+    });
+    const data = await res.json();
+    return data;
   } catch (err) {
     console.error("Student delete error:", err);
   }
-
-  return updated;
 };

@@ -12,8 +12,8 @@ import {
   BookOpen,
   ChevronDown
 } from 'lucide-react';
-import { getStudents, updateStudentAttendance } from '../../services/studentService';
-import { getApplications } from '../../services/applicationService';
+import { fetchStudentsAsync, updateStudentAttendance } from '../../services/studentService';
+import { fetchApplicationsAsync } from '../../services/applicationService';
 import { getColleges } from '../../services/collegeService';
 
 const ManageAttendance = () => {
@@ -40,33 +40,40 @@ const ManageAttendance = () => {
     loadAttendanceData();
   }, []);
 
-  const loadAttendanceData = () => {
-    const rawStudents = getStudents();
-    const rawApps = getApplications().filter(a => a.paymentStatus === 'Paid');
+  const loadAttendanceData = async () => {
+    try {
+      const [rawStudents, appsData] = await Promise.all([
+        fetchStudentsAsync(),
+        fetchApplicationsAsync()
+      ]);
+      const rawApps = (appsData.applications || []).filter(a => a.paymentStatus === 'Paid');
 
-    const combinedMap = new Map();
-    rawStudents.forEach(s => combinedMap.set((s.email || s.id).toLowerCase(), s));
-    rawApps.forEach(a => {
-      const key = (a.email || a.id).toLowerCase();
-      if (!combinedMap.has(key)) {
-        combinedMap.set(key, {
-          id: a.id,
-          studentName: a.studentName,
-          email: a.email,
-          phone: a.phone,
-          collegeName: a.collegeName,
-          programTitle: a.programTitle,
-          passCode: a.passCode || 'PASS-VERIFIED',
-          attendance: { day1: true, day2: false }
-        });
-      }
-    });
+      const combinedMap = new Map();
+      rawStudents.forEach(s => combinedMap.set((s.email || s.id).toLowerCase(), s));
+      rawApps.forEach(a => {
+        const key = (a.email || a.id).toLowerCase();
+        if (!combinedMap.has(key)) {
+          combinedMap.set(key, {
+            id: a.id,
+            studentName: a.studentName,
+            email: a.email,
+            phone: a.phone,
+            collegeName: a.collegeName,
+            programTitle: a.programTitle,
+            passCode: a.passCode || 'PASS-VERIFIED',
+            attendance: { day1: true, day2: false }
+          });
+        }
+      });
 
-    setStudents(Array.from(combinedMap.values()));
-    setColleges(getColleges());
+      setStudents(Array.from(combinedMap.values()));
+      setColleges(getColleges());
+    } catch (err) {
+      console.error("Error loading attendance data:", err);
+    }
   };
 
-  const handleToggleAttendance = (id, day) => {
+  const handleToggleAttendance = async (id, day) => {
     const target = students.find(s => s.id === id);
     if (!target) return;
     const currentVal = target.attendance?.[day] || false;
@@ -86,7 +93,7 @@ const ManageAttendance = () => {
     });
 
     setStudents(updatedStudents);
-    updateStudentAttendance(id, day, newVal);
+    await updateStudentAttendance(id, day, newVal);
   };
 
   const filteredStudents = students.filter((stu) => {

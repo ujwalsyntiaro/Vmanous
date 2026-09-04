@@ -11,8 +11,7 @@ import {
   Award,
   ChevronDown,
 } from "lucide-react";
-import { getStudents, getUniqueStudents, deleteStudent } from "../../services/studentService";
-import { getApplications } from "../../services/applicationService";
+import { fetchStudentsAsync, deleteStudent } from "../../services/studentService";
 
 const ManageStudents = () => {
   const navigate = useNavigate();
@@ -31,29 +30,12 @@ const ManageStudents = () => {
   }, []);
 
   const loadStudentsData = async () => {
-    let currentApps = getApplications();
     try {
-      const resApp = await fetch("/api/v1/applications");
-      const jsonApp = await resApp.json();
-      if (jsonApp.success && Array.isArray(jsonApp.data) && jsonApp.data.length > 0) {
-        currentApps = jsonApp.data;
-      }
+      const unique = await fetchStudentsAsync();
+      setStudents(unique || []);
     } catch (err) {
-      console.log("Applications fetch notice");
+      console.error("Error loading students:", err);
     }
-
-    let apiData = [];
-    try {
-      const res = await fetch("/api/v1/students");
-      const json = await res.json();
-      if (json.success && Array.isArray(json.data)) {
-        apiData = json.data;
-      }
-    } catch (err) {
-      console.log("Using local fallback for students:", err);
-    }
-    const unique = getUniqueStudents(currentApps, apiData);
-    setStudents(unique);
   };
 
   const handleDelete = async (id) => {
@@ -62,8 +44,8 @@ const ManageStudents = () => {
         "Are you sure you want to remove this student from the roster?",
       )
     ) {
-      const updated = deleteStudent(id);
-      setStudents(updated);
+      await deleteStudent(id);
+      await loadStudentsData();
     }
   };
 

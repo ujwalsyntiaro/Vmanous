@@ -20,7 +20,7 @@ import {
 import { QRCodeSVG } from 'qrcode.react';
 import html2pdf from 'html2pdf.js';
 import Container from '../components/ui/Container';
-import { getApplications, computeAppFinancialBreakdown } from '../services/applicationService';
+import { fetchApplicationsAsync, computeAppFinancialBreakdown } from '../services/applicationService';
 import { fetchSummitsAsync, getSummits, isCollegeMatch } from '../services/summitService';
 
 const PaymentSuccessfulSeal = ({ size = 95 }) => {
@@ -110,88 +110,45 @@ export const Pass = () => {
     }).catch(e => console.warn('Could not fetch summits for pass:', e));
 
     if (!formData && passCodeParam) {
-      const apps = getApplications();
-      const matched = apps.find(
-        (a) =>
-          a.passCode === passCodeParam ||
-          a.transactionId === passCodeParam ||
-          String(a.id) === String(passCodeParam)
-      );
-      if (matched) {
-        const nameParts = (matched.studentName || matched.name || "").trim().split(" ");
-        setFormData({
-          firstName: nameParts[0] || "Student",
-          lastName: nameParts.slice(1).join(" ") || "",
-          fullName: matched.studentName || matched.name,
-          email: matched.email,
-          phone: matched.phone || "N/A",
-          bloodGroup: matched.bloodGroup || "O+",
-          institution: matched.collegeName,
-          collegeAddress: matched.venueLocation || "Main Campus Auditorium",
-          programInterest: matched.programTitle || "AI Summit Workshop 2026",
-          degree: matched.degree || "B.Tech",
-          branch: matched.branch || "Computer Science",
-          semester: matched.year || "3rd Year",
-          selfie: matched.selfiePhotoUrl,
-          selfiePhotoUrl: matched.selfiePhotoUrl,
-          tenthPercentage: matched.marksTenth ? String(matched.marksTenth).replace("%", "") : "85",
-          twelfthPercentage: matched.marksTwelfth ? String(matched.marksTwelfth).replace("%", "") : "83",
-          appliedDate: matched.createdAt,
-          paymentStatus: matched.paymentStatus || "Paid",
-          amountPaid: (matched.amountPaid !== undefined && matched.amountPaid !== null) ? Number(matched.amountPaid) : 0,
-          baseAmount: (matched.baseAmount !== undefined && matched.baseAmount !== null) ? Number(matched.baseAmount) : null,
-          gstAmount: (matched.gstAmount !== undefined && matched.gstAmount !== null) ? Number(matched.gstAmount) : null,
-          platformFee: (matched.platformFee !== undefined && matched.platformFee !== null) ? Number(matched.platformFee) : 0,
-          summitId: matched.summitId || null,
-          transactionId: matched.transactionId || matched.passCode,
-          passCode: matched.passCode
-        });
-        setPaymentId(matched.passCode || matched.transactionId);
-      } else {
-        // Fallback: Fetch application from backend API if not in localStorage
-        fetch('/api/v1/applications?range=all')
-          .then(res => res.json())
-          .then(res => {
-            if (res.success && Array.isArray(res.data)) {
-              const apiMatched = res.data.find(a =>
-                a.passCode === passCodeParam ||
-                a.transactionId === passCodeParam ||
-                String(a.id) === String(passCodeParam)
-              );
-              if (apiMatched) {
-                const nameParts = (apiMatched.studentName || apiMatched.name || "").trim().split(" ");
-                setFormData({
-                  firstName: nameParts[0] || "Student",
-                  lastName: nameParts.slice(1).join(" ") || "",
-                  fullName: apiMatched.studentName || apiMatched.name,
-                  email: apiMatched.email,
-                  phone: apiMatched.phone || "N/A",
-                  bloodGroup: apiMatched.bloodGroup || "O+",
-                  institution: apiMatched.collegeName,
-                  collegeAddress: apiMatched.venueLocation || "Main Campus Auditorium",
-                  programInterest: apiMatched.programTitle || "AI Summit Workshop 2026",
-                  degree: apiMatched.degree || "B.Tech",
-                  branch: apiMatched.branch || "Computer Science",
-                  semester: apiMatched.year || "3rd Year",
-                  selfie: apiMatched.selfiePhotoUrl,
-                  selfiePhotoUrl: apiMatched.selfiePhotoUrl,
-                  tenthPercentage: apiMatched.marksTenth ? String(apiMatched.marksTenth).replace("%", "") : "85",
-                  twelfthPercentage: apiMatched.marksTwelfth ? String(apiMatched.marksTwelfth).replace("%", "") : "83",
-                  appliedDate: apiMatched.createdAt,
-                  paymentStatus: apiMatched.paymentStatus || "Paid",
-                  amountPaid: (apiMatched.amountPaid !== undefined && apiMatched.amountPaid !== null) ? Number(apiMatched.amountPaid) : 0,
-                  baseAmount: (apiMatched.baseAmount !== undefined && apiMatched.baseAmount !== null) ? Number(apiMatched.baseAmount) : null,
-                  gstAmount: (apiMatched.gstAmount !== undefined && apiMatched.gstAmount !== null) ? Number(apiMatched.gstAmount) : null,
-                  platformFee: (apiMatched.platformFee !== undefined && apiMatched.platformFee !== null) ? Number(apiMatched.platformFee) : 0,
-                  summitId: apiMatched.summitId || null,
-                  transactionId: apiMatched.transactionId || apiMatched.passCode,
-                  passCode: apiMatched.passCode
-                });
-                setPaymentId(apiMatched.passCode || apiMatched.transactionId);
-              }
-            }
-          }).catch(err => console.warn('Could not fetch backend application:', err));
-      }
+      fetchApplicationsAsync().then(({ applications }) => {
+        const matched = (applications || []).find(
+          (a) =>
+            a.passCode === passCodeParam ||
+            a.transactionId === passCodeParam ||
+            String(a.id) === String(passCodeParam)
+        );
+        if (matched) {
+          const nameParts = (matched.studentName || matched.name || "").trim().split(" ");
+          setFormData({
+            firstName: nameParts[0] || "Student",
+            lastName: nameParts.slice(1).join(" ") || "",
+            fullName: matched.studentName || matched.name,
+            email: matched.email,
+            phone: matched.phone || "N/A",
+            bloodGroup: matched.bloodGroup || "O+",
+            institution: matched.collegeName,
+            collegeAddress: matched.venueLocation || "Main Campus Auditorium",
+            programInterest: matched.programTitle || "AI Summit Workshop 2026",
+            degree: matched.degree || "B.Tech",
+            branch: matched.branch || "Computer Science",
+            semester: matched.year || "3rd Year",
+            selfie: matched.selfiePhotoUrl,
+            selfiePhotoUrl: matched.selfiePhotoUrl,
+            tenthPercentage: matched.marksTenth ? String(matched.marksTenth).replace("%", "") : "85",
+            twelfthPercentage: matched.marksTwelfth ? String(matched.marksTwelfth).replace("%", "") : "83",
+            appliedDate: matched.createdAt,
+            paymentStatus: matched.paymentStatus || "Paid",
+            amountPaid: (matched.amountPaid !== undefined && matched.amountPaid !== null) ? Number(matched.amountPaid) : 0,
+            baseAmount: (matched.baseAmount !== undefined && matched.baseAmount !== null) ? Number(matched.baseAmount) : null,
+            gstAmount: (matched.gstAmount !== undefined && matched.gstAmount !== null) ? Number(matched.gstAmount) : null,
+            platformFee: (matched.platformFee !== undefined && matched.platformFee !== null) ? Number(matched.platformFee) : 0,
+            summitId: matched.summitId || null,
+            transactionId: matched.transactionId || matched.passCode,
+            passCode: matched.passCode
+          });
+          setPaymentId(matched.passCode || matched.transactionId);
+        }
+      }).catch(err => console.warn('Could not fetch backend application:', err));
     } else if (!formData && !passCodeParam) {
       navigate('/enroll');
     }

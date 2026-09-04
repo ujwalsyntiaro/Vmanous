@@ -25,15 +25,15 @@ import {
   ChevronDown,
 } from "lucide-react";
 import StatCard from "../../components/admin/StatCard";
-import { getSummits, isSummitActive, isCollegeMatch } from "../../services/summitService";
+import { getSummits, fetchSummitsAsync, isSummitActive, isCollegeMatch } from "../../services/summitService";
 import {
-  getApplications,
+  fetchApplicationsAsync,
   getFinancialMetrics,
   exportGSTFinancialReportToCSV,
   updateVerificationStatus,
   deleteApplication,
 } from "../../services/applicationService";
-import { getStudents, getUniqueStudents } from "../../services/studentService";
+import { getUniqueStudents } from "../../services/studentService";
 
 const DashboardHome = () => {
   const navigate = useNavigate();
@@ -78,33 +78,29 @@ const DashboardHome = () => {
   }, []);
 
   const loadDashboardData = async () => {
-    let currentApps = getApplications();
     try {
-      const res = await fetch("/api/v1/applications");
-      const json = await res.json();
-      if (json.success && Array.isArray(json.data)) {
-        currentApps = json.data;
-        saveApplications(json.data);
-      }
-    } catch (err) {
-      console.log("MySQL API fallback notice for applications");
-    }
-    setApplications(currentApps);
+      const [{ applications: serverApps }, summitsList, stuRes] = await Promise.all([
+        fetchApplicationsAsync(),
+        fetchSummitsAsync(),
+        fetch(`/api/v1/students?_t=${Date.now()}`, {
+          cache: "no-store",
+          headers: {
+            "Cache-Control": "no-cache, no-store, must-revalidate",
+            "Pragma": "no-cache",
+            "Expires": "0"
+          }
+        }).then(r => r.ok ? r.json() : { success: false, data: [] }).catch(() => ({ success: false, data: [] }))
+      ]);
 
-    let apiStudents = [];
-    try {
-      const resStu = await fetch("/api/v1/students");
-      const jsonStu = await resStu.json();
-      if (jsonStu.success && Array.isArray(jsonStu.data)) {
-        apiStudents = jsonStu.data;
-      }
-    } catch (err) {
-      console.log("Students API fetch notice");
-    }
+      const apiStudents = (stuRes && stuRes.success && Array.isArray(stuRes.data)) ? stuRes.data : [];
+      const uniqueList = getUniqueStudents(serverApps, apiStudents);
 
-    const uniqueList = getUniqueStudents(currentApps, apiStudents);
-    setStudents(uniqueList);
-    setSummits(getSummits());
+      setApplications(serverApps || []);
+      setSummits(summitsList || []);
+      setStudents(uniqueList || []);
+    } catch (err) {
+      console.error("Error loading dashboard data:", err);
+    }
   };
 
   useEffect(() => {
@@ -272,21 +268,21 @@ const DashboardHome = () => {
   });
 
   // Update verification status
-  const handleStatusChange = (id, newStatus) => {
-    const updated = updateVerificationStatus(id, newStatus);
-    setApplications(updated);
+  const handleStatusChange = async (id, newStatus) => {
+    await updateVerificationStatus(id, newStatus);
+    await loadDashboardData();
     if (selectedApp && selectedApp.id === id) {
-      setSelectedApp({ ...selectedApp, verificationStatus: newStatus });
+      setSelectedApp((prev) => prev ? { ...prev, verificationStatus: newStatus } : null);
     }
   };
 
   // Delete record
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
     if (
       window.confirm("Are you sure you want to delete this application record?")
     ) {
-      const updated = deleteApplication(id);
-      setApplications(updated);
+      await deleteApplication(id);
+      await loadDashboardData();
       if (selectedApp && selectedApp.id === id) {
         setSelectedApp(null);
       }

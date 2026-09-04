@@ -16,7 +16,7 @@ import {
   Award
 } from 'lucide-react';
 import { getColleges, addCollege, updateCollege, deleteCollege } from '../../services/collegeService';
-import { getStudents } from '../../services/studentService';
+import { fetchStudentsAsync } from '../../services/studentService';
 
 const ManageColleges = () => {
   const [colleges, setColleges] = useState([]);
@@ -39,9 +39,18 @@ const ManageColleges = () => {
     totalSeatLimit: 100
   });
 
-  useEffect(() => {
+  const loadData = async () => {
     setColleges(getColleges());
-    setStudents(getStudents());
+    try {
+      const studentList = await fetchStudentsAsync();
+      setStudents(studentList || []);
+    } catch (err) {
+      console.error("Error loading college students:", err);
+    }
+  };
+
+  useEffect(() => {
+    loadData();
   }, []);
 
   const openAddModal = () => {

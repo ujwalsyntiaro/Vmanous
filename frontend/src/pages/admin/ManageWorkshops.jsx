@@ -15,8 +15,7 @@ import {
   X
 } from 'lucide-react';
 import DateInput, { isoToDDMMYYYY, isValidDDMMYYYY } from '../../components/ui/DateInput';
-import { getSummits, fetchSummitsAsync, saveSummits, formatEventDates } from '../../services/summitService';
-import { saveApplications } from '../../services/applicationService';
+import { getSummits, fetchSummitsAsync, addSummit, updateSummit, deleteSummit, formatEventDates } from '../../services/summitService';
 import ProgramCard from '../../components/ui/ProgramCard';
 
 const parseTimeStr = (timeStr) => {
@@ -36,7 +35,7 @@ const parseTimeStr = (timeStr) => {
 };
 
 const ManageWorkshops = () => {
-  const [workshops, setWorkshops] = useState(() => getSummits());
+  const [workshops, setWorkshops] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -67,21 +66,16 @@ const ManageWorkshops = () => {
     features: ''
   });
 
-  useEffect(() => {
-    const loadWorkshops = async () => {
-      try {
-        const resApps = await fetch("/api/v1/applications");
-        const jsonApps = await resApps.json();
-        if (jsonApps.success && Array.isArray(jsonApps.data) && jsonApps.data.length > 0) {
-          saveApplications(jsonApps.data);
-        }
-      } catch (err) {
-        console.log("Applications fetch error notice");
-      }
-
+  const loadWorkshops = async () => {
+    try {
       const data = await fetchSummitsAsync();
-      setWorkshops(data);
-    };
+      setWorkshops(data || []);
+    } catch (err) {
+      console.error("Error loading workshops:", err);
+    }
+  };
+
+  useEffect(() => {
     loadWorkshops();
     window.addEventListener("applications_updated", loadWorkshops);
     window.addEventListener("summits_updated", loadWorkshops);
@@ -158,11 +152,10 @@ const ManageWorkshops = () => {
     setIsModalOpen(true);
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
     if (window.confirm("Are you sure you want to delete this workshop?")) {
-      const updated = workshops.filter(w => w.id !== id);
-      setWorkshops(updated);
-      saveSummits(updated);
+      await deleteSummit(id);
+      await loadWorkshops();
     }
   };
 
@@ -220,7 +213,7 @@ const ManageWorkshops = () => {
       await addSummit(workshopData);
     }
 
-    setWorkshops(getSummits());
+    await loadWorkshops();
     setIsModalOpen(false);
   };
 

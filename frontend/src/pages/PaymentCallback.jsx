@@ -14,8 +14,6 @@ import {
   Home
 } from 'lucide-react';
 import { verifyCashfreeStatus } from '../services/paymentService';
-import { saveApplications, getApplications } from '../services/applicationService';
-import { saveStudents, getStudents } from '../services/studentService';
 import { broadcastSummitUpdate } from '../services/summitService';
 
 export const PaymentCallback = () => {
@@ -62,34 +60,8 @@ export const PaymentCallback = () => {
         const appData = result.data;
         setStatusResult(appData);
 
-        // Update local application state in localStorage
-        try {
-          const currentApps = getApplications();
-          if (!currentApps.some(a => a.transactionId === appData.transactionId || a.id === appData.id)) {
-            saveApplications([appData, ...currentApps]);
-          }
-
-          const currentStudents = getStudents();
-          const newStudent = {
-            id: `stu_${Date.now()}`,
-            studentName: appData.studentName,
-            email: appData.email,
-            phone: appData.phone,
-            collegeName: appData.collegeName,
-            programTitle: appData.programTitle,
-            passCode: appData.passCode,
-            paymentStatus: 'Paid',
-            attendance: { day1: false, day2: false },
-            enrolledAt: new Date().toISOString()
-          };
-          if (!currentStudents.some(s => s.email && s.email.toLowerCase() === appData.email.toLowerCase())) {
-            saveStudents([newStudent, ...currentStudents]);
-          }
-          // Trigger live reactive update events across all open windows & tabs
-          broadcastSummitUpdate();
-        } catch (storageErr) {
-          console.warn('Local state sync notice:', storageErr);
-        }
+        // Trigger live reactive update events across all open windows & tabs
+        broadcastSummitUpdate();
 
         // Clean up temporary pending payment session data
         try {

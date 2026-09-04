@@ -1,31 +1,45 @@
-import { getSummits, isCollegeMatch } from "./summitService";
+/**
+ * Fetch all applications directly from MySQL Server with optional query filters
+ */
+export const fetchApplicationsAsync = async (params = {}) => {
+  try {
+    const query = new URLSearchParams();
+    if (params.range) query.append("range", params.range);
+    if (params.startDate) query.append("startDate", params.startDate);
+    if (params.endDate) query.append("endDate", params.endDate);
+    if (params.collegeName && params.collegeName !== "All") query.append("collegeName", params.collegeName);
 
-const INITIAL_APPLICATIONS = [];
-
-export const getApplications = () => {
-  const stored = localStorage.getItem("vmanous_applications");
-  if (stored) {
-    try {
-      const parsed = JSON.parse(stored);
-      if (Array.isArray(parsed)) {
-        return parsed;
+    const queryString = query.toString() ? `?${query.toString()}` : "";
+    const res = await fetch(`/api/v1/applications${queryString}`, {
+      cache: "no-store",
+      headers: {
+        "Cache-Control": "no-cache, no-store, must-revalidate",
+        "Pragma": "no-cache",
+        "Expires": "0"
       }
-    } catch (e) {
-      console.error("Error parsing stored applications:", e);
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      if (data.success) {
+        return {
+          applications: Array.isArray(data.data) ? data.data : [],
+          transactions: Array.isArray(data.transactions) ? data.transactions : [],
+          financialMetrics: data.financialMetrics || null
+        };
+      }
     }
+  } catch (err) {
+    console.error("Error fetching applications from server:", err);
   }
-  return [];
+  return { applications: [], transactions: [], financialMetrics: null };
 };
 
-export const saveApplications = (apps) => {
-  localStorage.setItem("vmanous_applications", JSON.stringify(apps));
-};
+// Synchronous stubs for backward compatibility
+export const getApplications = () => [];
+export const saveApplications = () => {};
 
 export const clearAllApplications = async () => {
-  localStorage.removeItem("vmanous_applications");
-  localStorage.removeItem("vmanous_students");
-  localStorage.removeItem("vmanous_custom_students");
-
   try {
     await fetch("/api/v1/applications/clear", {
       method: "DELETE",
@@ -185,8 +199,7 @@ export const getFinancialMetrics = (apps = null, summits = null) => {
   };
 };
 
-export const addApplication = (appData, summitDetails = null) => {
-  const apps = getApplications();
+export const addApplication = async (appData, summitDetails = null) => {
   const isPaid = appData.paymentStatus === "Paid";
 
   let base = 0;
@@ -212,91 +225,75 @@ export const addApplication = (appData, summitDetails = null) => {
     }
   }
 
-  const newApp = {
-    id: `app_${Date.now()}`,
-    createdAt: new Date().toISOString(),
+  const payload = {
+    ...appData,
     verificationStatus: isPaid ? "Verified" : "Pending Audit",
     amountPaid: amount,
     baseAmount: base,
     gstAmount: gst,
     platformFee: fee,
+    summitId: summitDetails?.id ? Number(summitDetails.id) : (appData.summitId ? Number(appData.summitId) : null),
     transactionId:
       appData.transactionId ||
       `TXN_${isPaid ? "" : "FAIL_"}${Math.floor(10000000 + Math.random() * 90000000)}`,
     paymentFailureReason: isPaid
       ? null
-      : appData.paymentFailureReason ||
-      "Bank Server Timeout / Transaction Cancelled",
-    ...appData,
+      : appData.paymentFailureReason || "Bank Server Timeout / Transaction Cancelled",
   };
-  const updated = [newApp, ...apps];
-  saveApplications(updated);
 
-  if (typeof window !== "undefined") {
-    window.dispatchEvent(new CustomEvent("applications_updated"));
-    window.dispatchEvent(new CustomEvent("summits_updated"));
-  }
-
-  // Send to MySQL backend DB server
   try {
-    fetch("/api/v1/applications", {
+    const res = await fetch("/api/v1/applications", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(newApp),
-    }).then(() => {
-      if (typeof window !== "undefined") {
-        window.dispatchEvent(new CustomEvent("applications_updated"));
-        window.dispatchEvent(new CustomEvent("summits_updated"));
-      }
-    }).catch((err) => console.log("MySQL API sync notice:", err));
+      body: JSON.stringify(payload),
+    });
+    const result = await res.json();
+
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new CustomEvent("applications_updated"));
+      window.dispatchEvent(new CustomEvent("summits_updated"));
+    }
+
+    return result.data || payload;
   } catch (err) {
     console.error("MySQL API post error:", err);
+    return payload;
   }
-
-  return newApp;
 };
 
-export const updateVerificationStatus = (id, status) => {
-  const apps = getApplications();
-  const updated = apps.map((app) =>
-    app.id === id ? { ...app, verificationStatus: status } : app,
-  );
-  saveApplications(updated);
-
-  // Sync with MySQL
+export const updateVerificationStatus = async (id, status) => {
   try {
-    fetch(`/api/v1/applications/${id}/status`, {
+    const res = await fetch(`/api/v1/applications/${id}/status`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ verificationStatus: status }),
-    }).catch((err) => console.log("Backend status update notice:", err));
+    });
+    const result = await res.json();
+
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new CustomEvent("applications_updated"));
+      window.dispatchEvent(new CustomEvent("summits_updated"));
+    }
+
+    return result.data;
   } catch (err) {
     console.error("Backend status update error:", err);
   }
-
-  return updated;
 };
 
-export const deleteApplication = (id) => {
-  const apps = getApplications();
-  const updated = apps.filter((app) => app.id !== id);
-  saveApplications(updated);
-
-  // Sync with MySQL backend
+export const deleteApplication = async (id) => {
   try {
-    fetch(`/api/v1/applications/${id}`, {
+    await fetch(`/api/v1/applications/${id}`, {
       method: "DELETE",
-    }).catch((err) => console.log("Backend delete application notice:", err));
+    });
+
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new CustomEvent("applications_updated"));
+      window.dispatchEvent(new CustomEvent("summits_updated"));
+    }
   } catch (err) {
     console.error("Backend delete application error:", err);
   }
-
-  if (typeof window !== "undefined") {
-    window.dispatchEvent(new CustomEvent("applications_updated"));
-    window.dispatchEvent(new CustomEvent("summits_updated"));
-  }
-
-  return updated;
 };
 
 export const exportGSTFinancialReportToCSV = (apps = null, summits = null) => {

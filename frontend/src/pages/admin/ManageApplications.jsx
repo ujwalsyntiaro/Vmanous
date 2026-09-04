@@ -22,14 +22,13 @@ import {
   Trash2
 } from 'lucide-react';
 import {
-  getApplications,
-  saveApplications,
+  fetchApplicationsAsync,
   updateVerificationStatus,
   deleteApplication,
   clearAllApplications,
   exportApplicationsToCSV
 } from '../../services/applicationService';
-import { getSummits } from '../../services/summitService';
+import { fetchSummitsAsync } from '../../services/summitService';
 import DateInput from '../../components/ui/DateInput';
 
 const ManageApplications = () => {
@@ -106,20 +105,18 @@ const ManageApplications = () => {
 
   const loadData = async () => {
     setIsLoading(true);
-    let currentApps = getApplications();
     try {
-      const res = await fetch('/api/v1/applications');
-      const json = await res.json();
-      if (json.success && Array.isArray(json.data)) {
-        currentApps = json.data;
-        saveApplications(json.data);
-      }
+      const [{ applications: currentApps }, summitsList] = await Promise.all([
+        fetchApplicationsAsync(),
+        fetchSummitsAsync()
+      ]);
+      setApplications(currentApps || []);
+      setSummits(summitsList || []);
     } catch (err) {
-      console.log('MySQL API fetch notice for applications');
+      console.error('Error loading applications:', err);
+    } finally {
+      setIsLoading(false);
     }
-    setApplications(currentApps);
-    setSummits(getSummits());
-    setIsLoading(false);
   };
 
   useEffect(() => {
@@ -139,18 +136,18 @@ const ManageApplications = () => {
     loadData();
   };
 
-  const handleStatusChange = (id, newStatus) => {
-    const updated = updateVerificationStatus(id, newStatus);
-    setApplications(updated);
+  const handleStatusChange = async (id, newStatus) => {
+    await updateVerificationStatus(id, newStatus);
+    await loadData();
     if (selectedApp && selectedApp.id === id) {
-      setSelectedApp({ ...selectedApp, verificationStatus: newStatus });
+      setSelectedApp((prev) => prev ? { ...prev, verificationStatus: newStatus } : null);
     }
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
     if (window.confirm("Are you sure you want to delete this application record?")) {
-      const updated = deleteApplication(id);
-      setApplications(updated);
+      await deleteApplication(id);
+      await loadData();
       if (selectedApp && selectedApp.id === id) {
         setSelectedApp(null);
       }
@@ -161,7 +158,7 @@ const ManageApplications = () => {
     if (window.confirm("⚠️ DANGER: Are you sure you want to permanently delete ALL student applications, reports, and payment transactions from the MySQL database?\n\nThis will completely erase all student data.")) {
       setIsLoading(true);
       await clearAllApplications();
-      setApplications([]);
+      await loadData();
       setSelectedApp(null);
       setIsLoading(false);
     }

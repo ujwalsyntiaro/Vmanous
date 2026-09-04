@@ -1,5 +1,3 @@
-import { getApplications } from "./applicationService";
-
 export const liveBroadcastChannel = (typeof window !== "undefined" && "BroadcastChannel" in window)
   ? new BroadcastChannel("vmanous_live_updates")
   : null;
@@ -15,8 +13,6 @@ export const broadcastSummitUpdate = () => {
     }
   }
 };
-
-
 
 export const formatEventDates = (startDate, endDate) => {
   if (!startDate && !endDate) return "";
@@ -92,124 +88,63 @@ export const isCollegeMatch = (colA, colB) => {
   return wordsA.some((w) => wordsB.includes(w) || wordsB.some((wb) => wb.includes(w) || w.includes(wb)));
 };
 
-export const getSummits = () => {
-  let paidApps = [];
-  try {
-    const apps = getApplications();
-    paidApps = apps.filter((a) => a.paymentStatus === "Paid");
-  } catch (e) {
-    console.error("Error fetching applications for summit count:", e);
-  }
+let _inMemorySummits = [];
 
-  const stored = localStorage.getItem("vmanous_summits");
-  let listToProcess = INITIAL_SUMMITS;
-
-  if (stored) {
-    try {
-      const parsed = JSON.parse(stored);
-      if (Array.isArray(parsed) && parsed.length > 0) {
-        listToProcess = parsed;
-      }
-    } catch (e) {
-      console.error("Error parsing stored summits:", e);
+export const formatSummit = (s) => {
+  let dur = s.duration || "2-Day Live Workshop";
+  let totalHours = (s.totalHours !== undefined && s.totalHours !== null) ? String(s.totalHours).trim() : "";
+  if (!totalHours && dur) {
+    const hMatch = String(dur).match(/(\d+)\s*(?:hrs|hours)/i);
+    if (hMatch) {
+      totalHours = hMatch[1];
     }
   }
 
-  if (!Array.isArray(listToProcess) || listToProcess.length === 0) {
-    listToProcess = INITIAL_SUMMITS;
+  if (!dur || dur === "1" || dur === "2" || !isNaN(dur)) {
+    const num = parseInt(dur) || 2;
+    dur = `${num}-Day Live Workshop`;
+  } else if (dur.includes("Live Workshop")) {
+    const dMatch = String(dur).match(/(\d+)\s*[- ]*day/i);
+    if (dMatch) {
+      dur = `${dMatch[1]}-Day Live Workshop`;
+    }
   }
 
-  const computeCountForSummit = (s) => {
-    const sumTitle = (s.title || "").trim().toLowerCase();
+  const enrolled = (s.enrolledCount !== undefined && s.enrolledCount !== null && !isNaN(Number(s.enrolledCount)))
+    ? Number(s.enrolledCount)
+    : (Array.isArray(s.applications) ? s.applications.filter(a => a.paymentStatus === 'Paid' || !a.paymentStatus).length : 0);
 
-    const matched = paidApps.filter((a) => {
-      if (a.paymentStatus && a.paymentStatus !== "Paid") return false;
+  const cap = s.seatCapacity !== undefined && s.seatCapacity !== null ? Number(s.seatCapacity) : 100;
+  const isCompleted = s.status === 'Event Completed' || s.status === 'Completed';
+  const isFull = enrolled >= cap;
+  const isClosed = s.status === 'Closed' || s.status === 'Registration Closed' || isFull;
+  const dynamicStatus = isCompleted
+    ? s.status
+    : (isClosed ? 'Registration Closed' : (enrolled >= cap * 0.8 ? 'Filling Fast' : (s.status === 'Filling Fast' ? 'Filling Fast' : 'Registration Open')));
 
-      // 1. Exact summitId match (highest priority)
-      if (a.summitId !== null && a.summitId !== undefined && Number(a.summitId) === Number(s.id)) {
-        return true;
-      }
-
-      // 2. Exact Title + College match
-      const progTitle = (a.programTitle || "").trim().toLowerCase();
-      const titleMatches = Boolean(progTitle && sumTitle && (progTitle === sumTitle || progTitle.includes(sumTitle) || sumTitle.includes(progTitle)));
-
-      if (titleMatches) {
-        if (!s.college || !a.collegeName || isCollegeMatch(a.collegeName, s.college)) {
-          return true;
-        }
-      }
-
-      // 3. College match (if program title matches or is generic)
-      if (s.college && isCollegeMatch(a.collegeName, s.college)) {
-        if (!a.summitId && (titleMatches || !a.programTitle || progTitle.includes('ai') || sumTitle.includes('ai') || sumTitle === 'eeee')) {
-          return true;
-        }
-      }
-
-      return false;
-    });
-
-    return matched.length;
+  return {
+    ...s,
+    duration: dur,
+    totalHours: totalHours,
+    address: s.address || "",
+    time: s.time || "",
+    status: dynamicStatus,
+    seatCapacity: cap,
+    enrolledCount: enrolled,
+    price: s.price !== undefined ? Number(s.price) : 1999,
+    originalPrice: s.originalPrice ? Number(s.originalPrice) : 4999,
+    taxRate: s.taxRate !== undefined ? Number(s.taxRate) : 18,
+    taxMode: s.taxMode || "Exclusive",
+    processingFee: (s.processingFee !== undefined && s.processingFee !== null) ? Number(s.processingFee) : 0,
+    processingFeeType: s.processingFeeType || 'Percentage',
+    startDate: s.startDate || "",
+    endDate: s.endDate || "",
+    features: Array.isArray(s.features) ? s.features : (typeof s.features === 'string' ? s.features.split('\n').filter(Boolean) : []),
   };
+};
 
-  const updated = listToProcess.map((s) => {
-    let dur = s.duration || "2-Day Live Workshop";
-    let totalHours = (s.totalHours !== undefined && s.totalHours !== null) ? String(s.totalHours).trim() : "";
-    if (!totalHours && dur) {
-      const hMatch = String(dur).match(/(\d+)\s*(?:hrs|hours)/i);
-      if (hMatch) {
-        totalHours = hMatch[1];
-      }
-    }
-
-    if (!dur || dur === "1" || dur === "2" || !isNaN(dur)) {
-      const num = parseInt(dur) || 2;
-      dur = `${num}-Day Live Workshop`;
-    } else if (dur.includes("Live Workshop")) {
-      const dMatch = String(dur).match(/(\d+)\s*[- ]*day/i);
-      if (dMatch) {
-        dur = `${dMatch[1]}-Day Live Workshop`;
-      }
-    }
-
-    // Authoritative count from MySQL server, with optimistic local fallback
-    const serverEnrolled = (s.enrolledCount !== undefined && s.enrolledCount !== null && !isNaN(Number(s.enrolledCount)))
-      ? Number(s.enrolledCount)
-      : (Array.isArray(s.applications) ? s.applications.filter(a => a.paymentStatus === 'Paid' || !a.paymentStatus).length : 0);
-    const localComputed = computeCountForSummit(s);
-    const finalEnrolledCount = Math.max(serverEnrolled, localComputed);
-
-    const cap = s.seatCapacity !== undefined && s.seatCapacity !== null ? Number(s.seatCapacity) : 100;
-    const isCompleted = s.status === 'Event Completed' || s.status === 'Completed';
-    const isFull = finalEnrolledCount >= cap;
-    const isClosed = s.status === 'Closed' || s.status === 'Registration Closed' || isFull;
-    const dynamicStatus = isCompleted
-      ? s.status
-      : (isClosed ? 'Registration Closed' : (finalEnrolledCount >= cap * 0.8 ? 'Filling Fast' : (s.status === 'Filling Fast' ? 'Filling Fast' : 'Registration Open')));
-
-    return {
-      ...s,
-      duration: dur,
-      totalHours: totalHours,
-      address: s.address || "",
-      time: s.time || "",
-      status: dynamicStatus,
-      seatCapacity: cap,
-      enrolledCount: finalEnrolledCount,
-      price: s.price !== undefined ? s.price : 1999,
-      originalPrice: s.originalPrice || 4999,
-      taxRate: s.taxRate !== undefined ? s.taxRate : 18,
-      taxMode: s.taxMode || "Exclusive",
-      processingFee: (s.processingFee !== undefined && s.processingFee !== null) ? Number(s.processingFee) : 0,
-      processingFeeType: s.processingFeeType || 'Percentage',
-      startDate: s.startDate || "",
-      endDate: s.endDate || "",
-      features: s.features || [],
-    };
-  });
-
-  return updated;
+export const getSummits = () => {
+  return _inMemorySummits.map(formatSummit);
 };
 
 export const parseSummitDate = (dStr) => {
@@ -306,17 +241,17 @@ export const isSummitVisiblePublicly = (summit) => {
 };
 
 export const getActiveSummits = () => {
-  const summits = getSummits();
-  return summits.filter(isSummitActive);
+  return getSummits().filter(isSummitActive);
 };
 
 export const getPublicSummits = () => {
-  const summits = getSummits();
-  return summits.filter(isSummitVisiblePublicly);
+  return getSummits().filter(isSummitVisiblePublicly);
 };
 
 export const saveSummits = (summits) => {
-  localStorage.setItem("vmanous_summits", JSON.stringify(summits));
+  if (Array.isArray(summits)) {
+    _inMemorySummits = summits;
+  }
 };
 
 export const fetchSummitsAsync = async () => {
@@ -332,21 +267,21 @@ export const fetchSummitsAsync = async () => {
     if (res.ok) {
       const data = await res.json();
       if (data.success && Array.isArray(data.data)) {
-        saveSummits(data.data);
-        return getSummits();
+        _inMemorySummits = data.data;
+        return _inMemorySummits.map(formatSummit);
       }
     }
   } catch (err) {
-    console.warn("API fetch summits failed, fallback to local:", err);
+    console.warn("API fetch summits failed:", err);
   }
-  return getSummits();
+  return _inMemorySummits.map(formatSummit);
 };
 
 export const addSummit = async (summit) => {
   const normalizedCode = summit.entryCode ? String(summit.entryCode).trim().toUpperCase() : null;
   const summitData = { ...summit, entryCode: normalizedCode };
 
-  // Sync with MySQL Database first for validation
+  // Sync with MySQL Database
   try {
     const res = await fetch("/api/v1/summits", {
       method: "POST",
@@ -359,9 +294,7 @@ export const addSummit = async (summit) => {
     }
 
     const createdSummit = data.data;
-    const summits = getSummits();
-    summits.unshift(createdSummit);
-    saveSummits(summits);
+    _inMemorySummits.unshift(createdSummit);
     broadcastSummitUpdate();
 
     return { success: true, data: createdSummit };
@@ -386,13 +319,11 @@ export const updateSummit = async (id, updatedSummit) => {
       return { success: false, error: data.error || "Failed to update workshop" };
     }
 
-    const summits = getSummits();
-    const index = summits.findIndex((s) => s.id === id || Number(s.id) === Number(id));
+    const index = _inMemorySummits.findIndex((s) => s.id === id || Number(s.id) === Number(id));
     if (index !== -1) {
-      summits[index] = { ...data.data, id };
-      saveSummits(summits);
-      broadcastSummitUpdate();
+      _inMemorySummits[index] = { ...data.data, id };
     }
+    broadcastSummitUpdate();
     return { success: true, data: data.data };
   } catch (err) {
     console.error("Summit update error:", err);
@@ -419,16 +350,17 @@ export const verifyEntryCodeAsync = async (summitId, entryCode) => {
   }
 };
 
-export const deleteSummit = (id) => {
-  const summits = getSummits();
-  const newSummits = summits.filter((s) => s.id !== id);
-  saveSummits(newSummits);
+export const deleteSummit = async (id) => {
+  _inMemorySummits = _inMemorySummits.filter((s) => s.id !== id && Number(s.id) !== Number(id));
+  broadcastSummitUpdate();
 
   // Sync with MySQL Database
   try {
-    fetch(`/api/v1/summits/${id}`, {
+    const res = await fetch(`/api/v1/summits/${id}`, {
       method: "DELETE",
-    }).catch((err) => console.log("Summit DELETE notice:", err));
+    });
+    const data = await res.json();
+    return data;
   } catch (err) {
     console.error("Summit delete error:", err);
   }
@@ -442,17 +374,10 @@ export const getAuthorizedAdminEmail = async () => {
     const res = await fetch("/api/v1/summits/authorized-email");
     const data = await res.json();
     if (data && data.authorizedEmail) {
-      if (typeof window !== "undefined") {
-        localStorage.setItem("vmanous_authorized_admin_email", data.authorizedEmail);
-      }
       return data.authorizedEmail;
     }
   } catch (err) {
     console.error("Error fetching authorized email:", err);
-  }
-  if (typeof window !== "undefined") {
-    const cached = localStorage.getItem("vmanous_authorized_admin_email");
-    if (cached) return cached;
   }
   return "am@vmanous.com";
 };
@@ -486,15 +411,9 @@ export const verifyAuthorizedEmailChange = async (otp, newEmail) => {
       body: JSON.stringify({ otp, newEmail })
     });
     const data = await res.json();
-    if (data.success && data.authorizedEmail) {
-      if (typeof window !== "undefined") {
-        localStorage.setItem("vmanous_authorized_admin_email", data.authorizedEmail);
-      }
-    }
     return data;
   } catch (err) {
     console.error("Error verifying email change:", err);
     return { success: false, error: err.message || "Network error verifying OTP" };
   }
 };
-

@@ -42,7 +42,7 @@ const getApplications = async (req, res) => {
     const grossRevenue = paidApps.reduce((sum, a) => sum + (a.amountPaid || 0), 0);
     const baseRevenue = paidApps.reduce((sum, a) => sum + (a.baseAmount || (a.amountPaid / 1.18)), 0);
     const gstCollected = grossRevenue - baseRevenue;
-    const platformFeeCollected = paidApps.reduce((sum, a) => sum + (a.platformFee || 50), 0);
+    const platformFeeCollected = paidApps.reduce((sum, a) => sum + (a.platformFee !== undefined && a.platformFee !== null ? a.platformFee : 0), 0);
     const totalPaidCount = paidApps.length;
     const failedCount = applications.filter(a => a.paymentStatus === 'Failed').length;
     const pendingAuditCount = applications.filter(a => a.verificationStatus === 'Pending Audit').length;

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Edit2, Trash2, Calendar, Clock, MapPin, CheckCircle2, Building2, LayoutGrid, List, Receipt, DollarSign, History, Users, ChevronDown, Download, X, Search, Key, AlertCircle, Lock, ShieldCheck, Mail } from 'lucide-react';
 import { getSummits, fetchSummitsAsync, addSummit, updateSummit, deleteSummit, formatEventDates, isSummitActive, isRegistrationUpcoming, isCollegeMatch, getAuthorizedAdminEmail, requestAuthorizedEmailChange, verifyAuthorizedEmailChange } from '../../services/summitService';
-import { getApplications, saveApplications } from '../../services/applicationService';
+import { fetchApplicationsAsync } from '../../services/applicationService';
 import ProgramCard from '../../components/ui/ProgramCard';
 import DateInput, { isoToDDMMYYYY, isValidDDMMYYYY } from '../../components/ui/DateInput';
 
@@ -96,30 +96,21 @@ const ManagePrograms = () => {
 
   const loadSummits = async () => {
     try {
-      const resApps = await fetch("/api/v1/applications");
-      const jsonApps = await resApps.json();
-      if (jsonApps.success && Array.isArray(jsonApps.data)) {
-        saveApplications(jsonApps.data);
-        setApplications(jsonApps.data);
-      } else {
-        setApplications(getApplications());
-      }
+      const [{ applications: apps }, data] = await Promise.all([
+        fetchApplicationsAsync(),
+        fetchSummitsAsync()
+      ]);
+      setApplications(apps || []);
+      setSummits(data || []);
     } catch (err) {
-      setApplications(getApplications());
+      console.error("Error loading programs and applications:", err);
     }
-
-    const data = await fetchSummitsAsync();
-    setSummits(data);
   };
 
   const openHistoryStudentsModal = async (summit) => {
     try {
-      const resApps = await fetch("/api/v1/applications");
-      const jsonApps = await resApps.json();
-      if (jsonApps.success && Array.isArray(jsonApps.data)) {
-        saveApplications(jsonApps.data);
-        setApplications(jsonApps.data);
-      }
+      const { applications: apps } = await fetchApplicationsAsync();
+      setApplications(apps || []);
     } catch (err) { }
 
     setHistoryModalSummit(summit);
@@ -406,10 +397,10 @@ const ManagePrograms = () => {
     setIsModalOpen(true);
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
     if (window.confirm("Are you sure you want to delete this program?")) {
-      deleteSummit(id);
-      setSummits(getSummits());
+      await deleteSummit(id);
+      await loadSummits();
     }
   };
 
@@ -636,7 +627,7 @@ const ManagePrograms = () => {
       return;
     }
 
-    setSummits(getSummits());
+    await loadSummits();
     setIsModalOpen(false);
   };
 
