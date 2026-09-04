@@ -45,6 +45,7 @@ const isCollegeMatch = (colA, colB) => {
   const b = colB.trim().toLowerCase();
 
   if (a === b) return true;
+  if (a.includes(b) || b.includes(a)) return true;
 
   const keywordsMap = [
     { keys: ['nit', 'national institute of technology'] },
@@ -66,18 +67,17 @@ const isCollegeMatch = (colA, colB) => {
     }
   }
 
-  const stopWords = [
+  const genericWords = [
     'college', 'engineering', 'institute', 'technology', 'university',
-    'nagpur', 'pune', 'delhi', 'mumbai', 'campus', 'nagar', 'city',
-    'road', 'park', 'center', 'centre', 'main', 'auditorium', 'subhash', 'lokmanya', 'midc'
+    'campus', 'auditorium', 'main'
   ];
 
-  const wordsA = a.split(/\s+/).filter(w => w.length >= 3 && !stopWords.includes(w));
-  const wordsB = b.split(/\s+/).filter(w => w.length >= 3 && !stopWords.includes(w));
+  const wordsA = a.split(/[\s,.-]+/).filter(w => w.length >= 3 && !genericWords.includes(w));
+  const wordsB = b.split(/[\s,.-]+/).filter(w => w.length >= 3 && !genericWords.includes(w));
 
   if (wordsA.length === 0 || wordsB.length === 0) return false;
 
-  return wordsA.some(w => wordsB.includes(w));
+  return wordsA.some(w => wordsB.includes(w) || wordsB.some(wb => wb.includes(w) || w.includes(wb)));
 };
 
 const getSummits = async (req, res) => {
@@ -103,32 +103,39 @@ const getSummits = async (req, res) => {
       const matched = paidApplications.filter(app => {
         if (app.paymentStatus && app.paymentStatus !== 'Paid') return false;
 
-        // 1. Explicit summitId match
+        // 1. Explicit summitId match (highest priority)
         if (app.summitId !== null && app.summitId !== undefined && Number(app.summitId) === Number(summit.id)) {
           return true;
         }
 
-        // 2. Primary College match (when summit specifies a college)
-        if (summit.college && isCollegeMatch(app.collegeName, summit.college)) {
-          return true;
+        // 2. Exact Title + College match
+        const progTitle = (app.programTitle || '').trim().toLowerCase();
+        const titleMatches = progTitle && sumTitle && (progTitle === sumTitle || progTitle.includes(sumTitle) || sumTitle.includes(progTitle));
+
+        if (titleMatches) {
+          if (!summit.college || !app.collegeName || isCollegeMatch(app.collegeName, summit.college)) {
+            return true;
+          }
         }
 
-        // 3. Fallback exact title match ONLY if summit has no specific college set
-        if (!summit.college) {
-          const progTitle = (app.programTitle || '').trim().toLowerCase();
-          return Boolean(progTitle && sumTitle && progTitle === sumTitle);
+        // 3. College match (if program title is generic or matching)
+        if (summit.college && isCollegeMatch(app.collegeName, summit.college)) {
+          if (!app.summitId && (titleMatches || !app.programTitle || progTitle.includes('ai') || sumTitle.includes('ai') || sumTitle === 'eeee')) {
+            return true;
+          }
         }
 
         return false;
       });
 
       const seatCapacity = summit.seatCapacity !== undefined ? Number(summit.seatCapacity) : 100;
+      const enrolledCount = matched.length;
       const isCompleted = summit.status === 'Event Completed' || summit.status === 'Completed';
-      const isFull = matched.length >= seatCapacity;
+      const isFull = enrolledCount >= seatCapacity;
       const isClosed = summit.status === 'Closed' || summit.status === 'Registration Closed' || isFull;
       const dynamicStatus = isCompleted
         ? summit.status
-        : (isClosed ? 'Registration Closed' : (summit.status === 'Filling Fast' ? 'Filling Fast' : 'Registration Open'));
+        : (isClosed ? 'Registration Closed' : (enrolledCount >= seatCapacity * 0.8 ? 'Filling Fast' : (summit.status === 'Filling Fast' ? 'Filling Fast' : 'Registration Open')));
 
       let totalHours = '';
       if (summit.duration) {
@@ -141,7 +148,7 @@ const getSummits = async (req, res) => {
         totalHours: totalHours,
         status: dynamicStatus,
         seatCapacity: seatCapacity,
-        enrolledCount: matched.length,
+        enrolledCount: enrolledCount,
         applications: matched
       };
     });

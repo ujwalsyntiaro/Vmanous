@@ -335,6 +335,7 @@ const verifyPaymentStatus = async (req, res) => {
             amountPaid: totalPaid,
             baseAmount,
             gstAmount,
+            platformFee: orderDetails.platformFee !== undefined && orderDetails.platformFee !== null ? Number(orderDetails.platformFee) : 0,
             passCode
           }
         });
@@ -359,6 +360,7 @@ const verifyPaymentStatus = async (req, res) => {
               amountPaid: totalPaid,
               baseAmount,
               gstAmount,
+              platformFee: orderDetails.platformFee !== undefined && orderDetails.platformFee !== null ? Number(orderDetails.platformFee) : 0,
               paymentStatus: 'Paid',
               paymentMethod: paymentMethod,
               passCode: app.passCode || passCode
