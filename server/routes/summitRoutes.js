@@ -7,12 +7,19 @@ const {
   deleteSummit,
   verifyEntryCode,
   sendRescheduleOtp,
-  verifyRescheduleOtp
+  verifyRescheduleOtp,
+  getAuthorizedEmailConfig,
+  requestEmailChangeOtp,
+  verifyEmailChangeOtp
 } = require('../controllers/summitController');
 
 router.route('/')
   .get(getSummits)
   .post(createSummit);
+
+router.get('/authorized-email', getAuthorizedEmailConfig);
+router.post('/request-email-change', requestEmailChangeOtp);
+router.post('/verify-email-change', verifyEmailChangeOtp);
 
 router.post('/verify-entry-code', verifyEntryCode);
 router.post('/send-reschedule-otp', sendRescheduleOtp);

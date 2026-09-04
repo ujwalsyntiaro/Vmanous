@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Edit2, Trash2, Calendar, Clock, MapPin, CheckCircle2, Building2, LayoutGrid, List, Receipt, DollarSign, History, Users, ChevronDown, Download, X, Search, Key, AlertCircle, Lock, ShieldCheck } from 'lucide-react';
-import { getSummits, fetchSummitsAsync, addSummit, updateSummit, deleteSummit, formatEventDates, isSummitActive, isCollegeMatch } from '../../services/summitService';
+import { Plus, Edit2, Trash2, Calendar, Clock, MapPin, CheckCircle2, Building2, LayoutGrid, List, Receipt, DollarSign, History, Users, ChevronDown, Download, X, Search, Key, AlertCircle, Lock, ShieldCheck, Mail } from 'lucide-react';
+import { getSummits, fetchSummitsAsync, addSummit, updateSummit, deleteSummit, formatEventDates, isSummitActive, isRegistrationUpcoming, isCollegeMatch, getAuthorizedAdminEmail, requestAuthorizedEmailChange, verifyAuthorizedEmailChange } from '../../services/summitService';
 import { getApplications, saveApplications } from '../../services/applicationService';
 import ProgramCard from '../../components/ui/ProgramCard';
 import DateInput, { isoToDDMMYYYY, isValidDDMMYYYY } from '../../components/ui/DateInput';
@@ -43,6 +43,15 @@ const ManagePrograms = () => {
   const [historyModalSummit, setHistoryModalSummit] = useState(null);
   const [historySearchQuery, setHistorySearchQuery] = useState("");
   const [formError, setFormError] = useState("");
+
+  const [authorizedAdminEmail, setAuthorizedAdminEmail] = useState('am@vmanous.com');
+  const [isEmailChangeModalOpen, setIsEmailChangeModalOpen] = useState(false);
+  const [emailChangeStep, setEmailChangeStep] = useState('input'); // 'input' | 'otp'
+  const [newEmailInput, setNewEmailInput] = useState('');
+  const [emailChangeOtpInput, setEmailChangeOtpInput] = useState('');
+  const [isEmailChangeLoading, setIsEmailChangeLoading] = useState(false);
+  const [emailChangeError, setEmailChangeError] = useState('');
+  const [emailChangeSuccessMsg, setEmailChangeSuccessMsg] = useState('');
 
   const [otpValue, setOtpValue] = useState('');
   const [isSendingOtp, setIsSendingOtp] = useState(false);
@@ -204,8 +213,21 @@ const ManagePrograms = () => {
     URL.revokeObjectURL(url);
   };
 
+  const loadAuthorizedEmail = async () => {
+    try {
+      const email = await getAuthorizedAdminEmail();
+      if (email) {
+        setAuthorizedAdminEmail(email);
+        setRescheduleEmail(email);
+      }
+    } catch (e) {
+      console.error("Error loading authorized email:", e);
+    }
+  };
+
   useEffect(() => {
     loadSummits();
+    loadAuthorizedEmail();
     window.addEventListener("summits_updated", loadSummits);
     window.addEventListener("applications_updated", loadSummits);
 
@@ -215,6 +237,7 @@ const ManagePrograms = () => {
       bc.onmessage = (msg) => {
         if (msg.data?.type === "SUMMIT_UPDATED") {
           loadSummits();
+          loadAuthorizedEmail();
         }
       };
     }
@@ -230,6 +253,84 @@ const ManagePrograms = () => {
       clearInterval(syncInterval);
     };
   }, []);
+
+  const openEmailChangeModal = () => {
+    setEmailChangeStep('input');
+    setNewEmailInput('');
+    setEmailChangeOtpInput('');
+    setEmailChangeError('');
+    setEmailChangeSuccessMsg('');
+    setIsEmailChangeModalOpen(true);
+  };
+
+  const handleRequestEmailChange = async (e) => {
+    if (e && e.preventDefault) e.preventDefault();
+    setEmailChangeError('');
+    setEmailChangeSuccessMsg('');
+
+    if (!newEmailInput || !newEmailInput.trim()) {
+      setEmailChangeError('Please enter a valid email address.');
+      return;
+    }
+
+    const emailToSubmit = newEmailInput.trim().toLowerCase();
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(emailToSubmit)) {
+      setEmailChangeError('Please enter a valid email address format.');
+      return;
+    }
+
+    if (emailToSubmit === (authorizedAdminEmail || 'am@vmanous.com').toLowerCase()) {
+      setEmailChangeError('This email is already the active authorized webmail.');
+      return;
+    }
+
+    setIsEmailChangeLoading(true);
+    try {
+      const res = await requestAuthorizedEmailChange(emailToSubmit);
+      if (res.success) {
+        setEmailChangeStep('otp');
+        setEmailChangeSuccessMsg(res.message || `Security OTP sent to current owner (${res.currentEmail || authorizedAdminEmail})`);
+      } else {
+        setEmailChangeError(res.error || 'Failed to request email change.');
+      }
+    } catch (err) {
+      setEmailChangeError('Server error processing security request.');
+    } finally {
+      setIsEmailChangeLoading(false);
+    }
+  };
+
+  const handleVerifyEmailChange = async (e) => {
+    if (e && e.preventDefault) e.preventDefault();
+    setEmailChangeError('');
+
+    if (!emailChangeOtpInput || emailChangeOtpInput.trim().length !== 6) {
+      setEmailChangeError('Please enter the 6-digit confirmation OTP sent to current owner.');
+      return;
+    }
+
+    setIsEmailChangeLoading(true);
+    try {
+      const res = await verifyAuthorizedEmailChange(emailChangeOtpInput.trim(), newEmailInput.trim().toLowerCase());
+      if (res.success) {
+        const updated = res.authorizedEmail || newEmailInput.trim().toLowerCase();
+        setAuthorizedAdminEmail(updated);
+        setRescheduleEmail(updated);
+        setIsEmailChangeModalOpen(false);
+        setEmailChangeStep('input');
+        setNewEmailInput('');
+        setEmailChangeOtpInput('');
+        alert(`✅ Success: Authorized Webmail successfully transferred to ${updated}! All future OTPs and schedule authorizations will go to this email.`);
+      } else {
+        setEmailChangeError(res.error || 'Invalid OTP or verification failed.');
+      }
+    } catch (err) {
+      setEmailChangeError('Server error verifying security code.');
+    } finally {
+      setIsEmailChangeLoading(false);
+    }
+  };
 
   const openAddModal = () => {
     setEditingId(null);
@@ -326,7 +427,7 @@ const ManagePrograms = () => {
         endDate: formData.endDate || ''
       });
       setRescheduleStep('email');
-      setRescheduleEmail('am@vmanous.com');
+      setRescheduleEmail(authorizedAdminEmail || 'am@vmanous.com');
       setRescheduleEmailError('');
       setOtpValue('');
       setIsRescheduleModalOpen(true);
@@ -344,20 +445,19 @@ const ManagePrograms = () => {
 
   const handleSendOtp = async () => {
     setRescheduleEmailError('');
-    const targetEmail = (rescheduleEmail || 'am@vmanous.com').trim();
+    const currentActiveEmail = authorizedAdminEmail || 'am@vmanous.com';
+    const targetEmail = (rescheduleEmail || currentActiveEmail).trim();
     if (!targetEmail) {
       setRescheduleEmailError("Please enter an email address.");
       return;
     }
 
-    if (targetEmail.toLowerCase() !== 'am@vmanous.com') {
-      setRescheduleEmailError("Invalid email address. Please enter the authorized admin email (am@vmanous.com).");
+    if (targetEmail.toLowerCase() !== currentActiveEmail.toLowerCase()) {
+      setRescheduleEmailError(`Invalid email address. Please use the authorized webmail (${currentActiveEmail}).`);
       return;
-    }
-
-    // Validate proposed dates
-    if (!rescheduleData.date && !rescheduleData.startDate) {
-      setRescheduleEmailError("Please provide a new Summit Date or Start Date for this schedule update.");
+    }    // Validate proposed dates
+    if (!rescheduleData.date) {
+      setRescheduleEmailError("Please provide a new Summit Date for this schedule update.");
       return;
     }
 
@@ -367,10 +467,7 @@ const ManagePrograms = () => {
     const days = parseInt(formData.durationDays) || 1;
     const duration = `${days}-Day Live Workshop`;
     const timeStr = `${formData.startTime || "10:00"} ${formData.startAmPm || "AM"} - ${formData.endTime || "05:00"} ${formData.endAmPm || "PM"}`;
-    const finalEndDate = rescheduleData.endDate || rescheduleData.startDate;
-    const formattedDate = rescheduleData.startDate || rescheduleData.endDate 
-      ? formatEventDates(rescheduleData.startDate, finalEndDate) 
-      : (rescheduleData.date || formData.date);
+    const formattedDate = rescheduleData.date || formData.date;
 
     const summitData = {
       ...formData,
@@ -380,8 +477,8 @@ const ManagePrograms = () => {
       duration: duration,
       time: timeStr,
       date: formattedDate,
-      startDate: rescheduleData.startDate || formData.startDate,
-      endDate: rescheduleData.endDate || formData.endDate,
+      startDate: formData.startDate,
+      endDate: formData.endDate,
     };
 
     try {
@@ -406,19 +503,14 @@ const ManagePrograms = () => {
 
   const handleVerifyOtp = async () => {
     if (!editingId) {
-      // If it's a new workshop, update local dates and close
-      const finalEndDate = rescheduleData.endDate || rescheduleData.startDate;
-      const formattedDate = rescheduleData.startDate || rescheduleData.endDate 
-        ? formatEventDates(rescheduleData.startDate, finalEndDate) 
-        : rescheduleData.date;
+      // If it's a new workshop, update local date and close
+      const formattedDate = rescheduleData.date || formData.date;
 
       setFormData(prev => ({
         ...prev,
         scheduleStatus: rescheduleData.actionType,
         status: rescheduleData.actionType,
-        date: formattedDate,
-        startDate: rescheduleData.startDate,
-        endDate: rescheduleData.endDate
+        date: formattedDate
       }));
       setIsRescheduleModalOpen(false);
       return;
@@ -443,18 +535,13 @@ const ManagePrograms = () => {
       const data = await res.json();
 
       if (data.success) {
-        const finalEndDate = rescheduleData.endDate || rescheduleData.startDate;
-        const formattedDate = rescheduleData.startDate || rescheduleData.endDate 
-          ? formatEventDates(rescheduleData.startDate, finalEndDate) 
-          : (rescheduleData.date || formData.date);
+        const formattedDate = rescheduleData.date || formData.date;
 
         setFormData(prev => ({
           ...prev,
           scheduleStatus: rescheduleData.actionType,
           status: rescheduleData.actionType,
-          date: formattedDate,
-          startDate: rescheduleData.startDate || prev.startDate,
-          endDate: rescheduleData.endDate || prev.endDate
+          date: formattedDate
         }));
 
         alert(data.message || `Workshop marked as ${rescheduleData.actionType || 'Rescheduled'} and new date applied successfully!`);
@@ -554,7 +641,7 @@ const ManagePrograms = () => {
   };
 
   return (
-    <div className="space-y-4 animate-in fade-in duration-500">
+    <div className="space-y-4 animate-in fade-in duration-500 bg-white min-h-full">
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
         <div>
           <h1 className="text-2xl font-bold text-vmanous-navy-dark">
@@ -581,7 +668,7 @@ const ManagePrograms = () => {
           </div>
           <button
             onClick={openAddModal}
-            className="flex items-center gap-2 px-4 py-2 bg-[#2D73B4] text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm font-medium cursor-pointer"
+            className="flex items-center gap-2 px-4 py-2 bg-transparent text-emerald-700 rounded-lg border border-emerald-600 hover:border-emerald-700 hover:bg-emerald-50/50 hover:font-bold transition-all shadow-2xs font-semibold cursor-pointer active:scale-[0.99]"
           >
             <Plus size={18} />
             Create New
@@ -640,6 +727,11 @@ const ManagePrograms = () => {
                           <span className="inline-block px-2 py-0.5 bg-blue-50 text-blue-600 text-[10px] font-bold uppercase rounded-md">
                             {summit.type}
                           </span>
+                          {isRegistrationUpcoming(summit) && (
+                            <span className="inline-block px-2 py-0.5 bg-purple-100 text-purple-800 text-[10px] font-bold uppercase rounded-md border border-purple-300">
+                              Scheduled (Starts Soon)
+                            </span>
+                          )}
                           {summit.status && (
                             <span className="inline-block px-2 py-0.5 bg-emerald-50 text-emerald-700 text-[10px] font-bold uppercase rounded-md border border-emerald-200">
                               {summit.status}
@@ -856,9 +948,9 @@ const ManagePrograms = () => {
       {/* Add/Edit Modal (Professional SaaS Layout) */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4 overflow-y-auto">
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-3xl my-8 flex flex-col overflow-hidden animate-in zoom-in-95 duration-200 border border-slate-200">
+          <div className="bg-white rounded-md shadow-2xl w-full max-w-3xl my-8 flex flex-col overflow-hidden animate-in zoom-in-95 duration-200 border border-slate-200">
             {/* Modal Header */}
-            <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/80 shrink-0">
+            <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-white shrink-0">
               <div>
                 <h2 className="text-lg font-bold text-slate-900">
                   {editingId ? "Edit Workshop Program" : "Create New Workshop"}
@@ -986,7 +1078,7 @@ const ManagePrograms = () => {
                 </div>
 
                 {/* Section 3: Pricing & Tax Management Card */}
-                <div className="bg-slate-50/70 p-4 rounded-xl border border-slate-200 space-y-3.5">
+                <div className="bg-white p-4 rounded-md border border-slate-200 space-y-3.5 shadow-2xs">
                   <div className="flex items-center gap-2 border-b border-slate-200 pb-2">
                     <Receipt className="w-4 h-4 text-[#2D73B4]" />
                     <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
@@ -1200,16 +1292,15 @@ const ManagePrograms = () => {
                       value={formData.date || ''}
                       onChange={handleInputChange}
                       disabled={!!editingId}
-                      className={`w-full h-10 px-3 border rounded-md outline-none text-xs font-medium transition-all shadow-2xs ${
-                        editingId
-                          ? 'border-slate-200 bg-slate-100/90 text-slate-500 cursor-not-allowed select-none'
-                          : 'border-slate-200 bg-white focus:border-[#2D73B4] focus:ring-2 focus:ring-[#2D73B4]/15 text-slate-800'
-                      }`}
+                      className={`w-full h-10 px-3 border rounded-md outline-none text-xs font-medium transition-all shadow-2xs ${editingId
+                        ? 'border-slate-200 bg-slate-100/90 text-slate-500 cursor-not-allowed select-none'
+                        : 'border-slate-200 bg-white focus:border-[#2D73B4] focus:ring-2 focus:ring-[#2D73B4]/15 text-slate-800'
+                        }`}
                       placeholder="DD/MM/YYYY"
                     />
                     {editingId && (
                       <p className="text-[10px] text-slate-400 mt-1">
-                        Locked during edit. Change <strong>Schedule Status</strong> (Preponed/Rescheduled/Postponed) to update date.
+                        Locked during edit. Change <strong>Schedule Status</strong> (Preponed/Rescheduled/Postponed) below to update dates.
                       </p>
                     )}
                   </div>
@@ -1317,7 +1408,7 @@ const ManagePrograms = () => {
             </div>
 
             {/* Modal Footer */}
-            <div className="px-6 py-3.5 border-t border-slate-100 flex justify-end gap-3 bg-slate-50/80 shrink-0">
+            <div className="px-6 py-3.5 border-t border-slate-100 flex justify-end gap-3 bg-white shrink-0">
               <button
                 type="button"
                 onClick={() => setIsModalOpen(false)}
@@ -1328,7 +1419,7 @@ const ManagePrograms = () => {
               <button
                 type="submit"
                 form="programForm"
-                className="px-5 py-2 bg-[#2D73B4] text-white text-xs font-bold rounded-md hover:bg-[#235b8f] transition-all shadow-xs cursor-pointer"
+                className="px-5 py-2 bg-transparent text-emerald-700 text-xs font-semibold rounded-md border border-emerald-600 hover:border-emerald-700 hover:bg-emerald-50/50 hover:font-bold transition-all shadow-2xs cursor-pointer active:scale-[0.99]"
               >
                 {editingId ? "Save Changes" : "Create Workshop"}
               </button>
@@ -1526,10 +1617,11 @@ const ManagePrograms = () => {
       {/* Reschedule / Security OTP Modal UI */}
       {isRescheduleModalOpen && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/50 backdrop-blur-xs p-4">
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-[440px] border border-slate-200 p-6 flex flex-col animate-in zoom-in-95 duration-200 relative">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-[390px] border border-slate-200 p-5 flex flex-col animate-in zoom-in-95 duration-200 relative">
             <button
               onClick={() => setIsRescheduleModalOpen(false)}
-              className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 p-1 rounded-md hover:bg-slate-100 transition-colors cursor-pointer"
+              className="absolute top-4 right-4 z-20 text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer"
+              style={{ right: '16px', top: '16px' }}
             >
               <X size={18} />
             </button>
@@ -1552,91 +1644,75 @@ const ManagePrograms = () => {
 
             {rescheduleStep === 'email' ? (
               <div className="space-y-3.5">
-                {/* Date Inputs in Reschedule Modal */}
-                <div className="bg-slate-50 p-3 rounded-lg border border-slate-200 space-y-2.5">
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">
-                      New Summit Date <span className="text-rose-500">*</span>
-                    </label>
-                    <DateInput
-                      name="rescheduleSummitDate"
-                      value={rescheduleData.date || ''}
-                      onChange={(e) => setRescheduleData(prev => ({ ...prev, date: e.target.value }))}
-                      className="w-full h-9 px-3 border border-slate-200 rounded-md focus:border-[#2D73B4] focus:ring-2 focus:ring-[#2D73B4]/15 outline-none text-xs font-medium text-slate-800 bg-white placeholder:text-slate-400"
-                      placeholder="DD/MM/YYYY"
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-2">
-                    <div>
-                      <label className="block text-[11px] font-semibold text-slate-700 mb-1">
-                        New Start Date
-                      </label>
-                      <DateInput
-                        name="rescheduleStartDate"
-                        value={rescheduleData.startDate || ''}
-                        onChange={(e) => setRescheduleData(prev => ({ ...prev, startDate: e.target.value }))}
-                        className="w-full h-9 px-2.5 border border-slate-200 rounded-md focus:border-[#2D73B4] focus:ring-2 focus:ring-[#2D73B4]/15 outline-none text-xs font-medium text-slate-800 bg-white placeholder:text-slate-400"
-                        placeholder="DD/MM/YYYY"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-[11px] font-semibold text-slate-700 mb-1">
-                        New End Date
-                      </label>
-                      <DateInput
-                        name="rescheduleEndDate"
-                        value={rescheduleData.endDate || ''}
-                        onChange={(e) => setRescheduleData(prev => ({ ...prev, endDate: e.target.value }))}
-                        className="w-full h-9 px-2.5 border border-slate-200 rounded-md focus:border-[#2D73B4] focus:ring-2 focus:ring-[#2D73B4]/15 outline-none text-xs font-medium text-slate-800 bg-white placeholder:text-slate-400"
-                        placeholder="DD/MM/YYYY"
-                      />
-                    </div>
-                  </div>
+                {/* Date Input in Reschedule Modal */}
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">
+                    New Summit Date <span className="text-rose-500">*</span>
+                  </label>
+                  <DateInput
+                    name="rescheduleSummitDate"
+                    value={rescheduleData.date || ''}
+                    onChange={(e) => setRescheduleData(prev => ({ ...prev, date: e.target.value }))}
+                    className="w-full h-10 px-3 border border-slate-200 rounded-lg focus:border-[#2D73B4] focus:ring-2 focus:ring-[#2D73B4]/15 outline-none text-xs font-medium text-slate-800 bg-white placeholder:text-slate-400 shadow-2xs"
+                    placeholder="DD/MM/YYYY"
+                  />
                 </div>
 
                 {/* Email Verification Box */}
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">
-                    Authorized Admin Webmail
-                  </label>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="text-xs font-semibold text-slate-700">
+                      Authorized Mail
+                    </label>
+                    <button
+                      type="button"
+                      onClick={openEmailChangeModal}
+                      className="text-[10px] text-emerald-700 hover:text-emerald-800 font-bold flex items-center gap-1 cursor-pointer bg-emerald-50 hover:bg-emerald-100 px-2 py-0.5 rounded border border-emerald-200 transition-colors shadow-2xs"
+                      title="Transfer / Change Authorized Webmail with 2-Factor Authentication"
+                    >
+                      <Lock size={10} className="text-emerald-600" />
+                      <span>Change 🔒</span>
+                    </button>
+                  </div>
                   <input
                     type="email"
-                    value={rescheduleEmail}
+                    value={rescheduleEmail || authorizedAdminEmail || 'am@vmanous.com'}
                     onChange={(e) => {
                       setRescheduleEmail(e.target.value);
                       if (rescheduleEmailError) setRescheduleEmailError('');
                     }}
-                    disabled={isSendingOtp}
+                    disabled={true}
                     placeholder="am@vmanous.com"
-                    className={`w-full h-10 px-3 border ${rescheduleEmailError ? 'border-red-400 focus:border-red-400 focus:ring-red-400' : 'border-slate-200 focus:border-[#2D73B4] focus:ring-[#2D73B4]/15'} rounded-md outline-none focus:ring-2 transition-colors text-center text-xs font-semibold text-slate-800 bg-slate-50`}
+                    className={`w-full h-10 px-3 border border-slate-200 rounded-lg outline-none transition-colors text-center text-xs font-semibold text-slate-700 bg-slate-50/80 shadow-2xs cursor-not-allowed`}
                   />
                   {rescheduleEmailError && (
                     <p className="text-red-500 text-[11px] mt-1 text-center font-medium">{rescheduleEmailError}</p>
                   )}
                 </div>
 
-                <button
-                  onClick={handleSendOtp}
-                  disabled={isSendingOtp || !rescheduleEmail}
-                  className="w-full h-10.5 bg-[#2D73B4] text-white font-bold text-xs rounded-lg hover:bg-blue-700 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center gap-2 shadow-sm"
-                >
-                  {isSendingOtp ? (
-                    <>
-                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                      <span>Sending OTP...</span>
-                    </>
-                  ) : `Send OTP to ${rescheduleEmail || 'am@vmanous.com'}`}
-                </button>
+                <div className="flex justify-center pt-1">
+                  <button
+                    onClick={handleSendOtp}
+                    disabled={isSendingOtp || !rescheduleEmail}
+                    className="w-full sm:w-auto px-6 h-[38px] bg-white text-emerald-700 font-bold text-xs rounded-lg border-2 border-emerald-600/80 hover:border-emerald-600 hover:bg-emerald-50 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center gap-2 shadow-xs"
+                  >
+                    {isSendingOtp ? (
+                      <>
+                        <div className="w-3.5 h-3.5 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin"></div>
+                        <span>Sending OTP...</span>
+                      </>
+                    ) : 'Send OTP'}
+                  </button>
+                </div>
               </div>
             ) : (
               <div className="space-y-3.5">
-                <div className="p-3 bg-blue-50/70 border border-blue-100 rounded-lg text-center">
+                <div className="p-3.5 bg-white border border-slate-200 rounded-xl text-center shadow-2xs">
                   <p className="text-xs text-[#2D73B4] font-semibold">
                     Proposed New Date: {rescheduleData.date || rescheduleData.startDate || 'N/A'}
                   </p>
                   <p className="text-[11px] text-slate-500 mt-0.5">
-                    6-digit code has been sent to <strong>{rescheduleEmail || 'am@vmanous.com'}</strong>
+                    6-digit code has been sent to <strong>{rescheduleEmail || authorizedAdminEmail || 'am@vmanous.com'}</strong>
                   </p>
                 </div>
 
@@ -1650,27 +1726,183 @@ const ManagePrograms = () => {
                     onChange={(e) => setOtpValue(e.target.value)}
                     disabled={isVerifyingOtp}
                     placeholder="• • • • • •"
-                    className="w-full h-11 px-3 border border-slate-300 rounded-lg outline-none focus:border-[#2D73B4] focus:ring-2 focus:ring-[#2D73B4]/15 transition-colors shadow-2xs text-center tracking-widest text-xl font-mono font-extrabold text-slate-900 bg-white"
+                    className="w-full h-11 px-3 border border-slate-300 rounded-lg outline-none focus:border-[#2D73B4] focus:ring-2 focus:ring-[#2D73B4]/15 transition-colors shadow-2xs text-center tracking-widest text-lg font-mono font-normal text-slate-800 bg-white"
                     maxLength={6}
                   />
                 </div>
 
-                <button
-                  onClick={handleVerifyOtp}
-                  disabled={isVerifyingOtp || !otpValue}
-                  className="w-full h-10.5 bg-emerald-600 text-white font-bold text-xs rounded-lg hover:bg-emerald-700 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center gap-2 shadow-sm"
-                >
-                  {isVerifyingOtp ? (
-                    <>
-                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                      <span>Verifying OTP & Updating...</span>
-                    </>
-                  ) : `Verify OTP & Apply ${rescheduleData.actionType || 'Schedule Update'}`}
-                </button>
+                <div className="flex justify-center pt-1">
+                  <button
+                    onClick={handleVerifyOtp}
+                    disabled={isVerifyingOtp || !otpValue}
+                    className="w-full sm:w-auto px-6 h-[38px] bg-white text-emerald-700 font-semibold hover:font-extrabold text-xs rounded-lg border-2 border-emerald-600/80 hover:border-emerald-700 hover:bg-emerald-50 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center gap-2 shadow-xs"
+                  >
+                    {isVerifyingOtp ? (
+                      <>
+                        <div className="w-3.5 h-3.5 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin"></div>
+                        <span>Verifying OTP & Updating...</span>
+                      </>
+                    ) : `Verify OTP & Apply ${rescheduleData.actionType || 'Schedule Update'}`}
+                  </button>
+                </div>
               </div>
             )}
 
             <p className="text-[10px] text-center text-slate-400 mt-4 leading-relaxed">
+              Protected by VMANOUS Security Gateway. Never share your OTP.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* 🔐 Dual-Factor Authorized Webmail Transfer Modal */}
+      {isEmailChangeModalOpen && (
+        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-slate-900/50 backdrop-blur-xs p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-[420px] border border-slate-200 py-7 px-6 sm:px-7.5 flex flex-col justify-between animate-in zoom-in-95 duration-200 relative min-h-[460px]">
+            <button
+              onClick={() => setIsEmailChangeModalOpen(false)}
+              className="absolute top-4.5 right-4.5 z-20 text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer"
+              style={{ right: '18px', top: '18px' }}
+              title="Close Modal"
+            >
+              <X size={18} />
+            </button>
+
+            {/* Header Icon & Title */}
+            <div className="text-center mb-4">
+              <div className="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center mx-auto mb-2.5 border border-emerald-200 shadow-2xs">
+                <ShieldCheck size={26} />
+              </div>
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wider uppercase bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-2xs mb-1.5">
+                <span>Security Gateway • Dual Auth</span>
+              </div>
+              <h4 className="text-lg font-bold text-slate-900 tracking-tight">
+                Change Authorized Webmail
+              </h4>
+              <div className="mt-1.5 inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-slate-50 border border-slate-200/90 text-xs">
+                <span className="text-slate-500 font-medium">Current:</span>
+                <span className="text-slate-800 font-bold">{authorizedAdminEmail || 'am@vmanous.com'}</span>
+              </div>
+            </div>
+
+            {emailChangeError && (
+              <div className="mb-3 p-2.5 bg-red-50 border border-red-200 rounded-lg text-red-600 text-xs font-medium flex items-center gap-2 shadow-2xs">
+                <AlertCircle size={15} className="shrink-0 text-red-500" />
+                <span>{emailChangeError}</span>
+              </div>
+            )}
+
+            {emailChangeSuccessMsg && emailChangeStep === 'otp' && (
+              <div className="mb-3 p-2.5 bg-emerald-50 border border-emerald-200 rounded-lg text-emerald-800 text-xs font-medium text-center shadow-2xs">
+                {emailChangeSuccessMsg}
+              </div>
+            )}
+
+            {emailChangeStep === 'input' ? (
+              <form onSubmit={handleRequestEmailChange} className="space-y-4 flex-1 flex flex-col justify-between">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                    New Authorized Email <span className="text-rose-500">*</span>
+                  </label>
+                  <div className="relative">
+                    <Mail size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                    <input
+                      type="email"
+                      value={newEmailInput}
+                      onChange={(e) => {
+                        setNewEmailInput(e.target.value);
+                        if (emailChangeError) setEmailChangeError('');
+                      }}
+                      placeholder="e.g. admin@vmanous.com or user@gmail.com"
+                      required
+                      className="w-full h-12 pl-10 pr-3.5 border border-slate-200 rounded-md focus:border-emerald-600 focus:ring-2 focus:ring-emerald-500/15 outline-none text-xs font-medium text-slate-800 bg-white placeholder:text-slate-400 placeholder:font-normal transition-all shadow-2xs"
+                    />
+                  </div>
+                </div>
+
+                <div className="p-3 bg-slate-50 border border-slate-200/90 rounded-lg text-[11px] text-slate-600 leading-relaxed flex items-start gap-2 shadow-2xs">
+                  <ShieldCheck size={16} className="text-emerald-600 shrink-0 mt-0.5" />
+                  <div>
+                    <strong className="text-slate-800 font-semibold">Anti-Hijack Verification:</strong> A 6-digit confirmation code will be dispatched to current owner (<strong className="text-emerald-700">{authorizedAdminEmail || 'am@vmanous.com'}</strong>) to authorize this transfer.
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-center gap-3 pt-3">
+                  <button
+                    type="button"
+                    onClick={() => setIsEmailChangeModalOpen(false)}
+                    className="px-5 h-[38px] text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isEmailChangeLoading || !newEmailInput}
+                    className="px-5 h-[38px] bg-transparent text-emerald-700 rounded-lg border border-emerald-600 hover:border-emerald-700 hover:bg-emerald-50/60 hover:font-bold transition-all shadow-2xs font-semibold text-xs cursor-pointer active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  >
+                    {isEmailChangeLoading ? (
+                      <>
+                        <div className="w-3.5 h-3.5 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin" />
+                        <span>Sending OTP...</span>
+                      </>
+                    ) : 'Send Authorization OTP'}
+                  </button>
+                </div>
+              </form>
+            ) : (
+              <form onSubmit={handleVerifyEmailChange} className="space-y-4 flex-1 flex flex-col justify-between">
+                <div className="space-y-3.5">
+                  <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-xl text-center shadow-2xs">
+                    <p className="text-xs text-slate-700 font-semibold">
+                      Transferring Authorization To: <strong className="text-emerald-700">{newEmailInput}</strong>
+                    </p>
+                    <p className="text-[11px] text-slate-500 mt-1">
+                      Enter the 6-digit code sent to current owner <strong>{authorizedAdminEmail}</strong>
+                    </p>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1.5 text-center">
+                      Enter 6-Digit Security OTP
+                    </label>
+                    <input
+                      type="text"
+                      value={emailChangeOtpInput}
+                      onChange={(e) => setEmailChangeOtpInput(e.target.value)}
+                      disabled={isEmailChangeLoading}
+                      placeholder="• • • • • •"
+                      maxLength={6}
+                      required
+                      className="w-full h-12 px-3 border border-slate-300 rounded-md outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-500/15 transition-colors shadow-2xs text-center tracking-widest text-lg font-mono font-normal text-slate-800 bg-white"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-center gap-3 pt-3">
+                  <button
+                    type="button"
+                    onClick={() => setEmailChangeStep('input')}
+                    className="px-4 h-[38px] text-xs font-semibold text-slate-500 hover:text-slate-800 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer"
+                  >
+                    ← Back
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isEmailChangeLoading || !emailChangeOtpInput}
+                    className="px-5 h-[38px] bg-transparent text-emerald-700 rounded-lg border border-emerald-600 hover:border-emerald-700 hover:bg-emerald-50/60 hover:font-bold transition-all shadow-2xs font-semibold text-xs cursor-pointer active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  >
+                    {isEmailChangeLoading ? (
+                      <>
+                        <div className="w-3.5 h-3.5 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin" />
+                        <span>Verifying OTP...</span>
+                      </>
+                    ) : 'Verify & Transfer Webmail'}
+                  </button>
+                </div>
+              </form>
+            )}
+
+            <p className="text-[10px] text-center text-slate-400 mt-4">
               Protected by VMANOUS Security Gateway. Never share your OTP.
             </p>
           </div>

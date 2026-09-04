@@ -1,7 +1,42 @@
+const fs = require('fs');
+const path = require('path');
 const prisma = require('../config/prisma');
-const { sendAdminOtpEmail } = require('../services/emailService');
+const { 
+  sendAdminOtpEmail, 
+  sendSecurityEmailChangeOtpEmail,
+  sendStudentRescheduleEmail 
+} = require('../services/emailService');
 
 const otpStore = new Map();
+const emailChangeOtpStore = new Map();
+
+const configFilePath = path.join(__dirname, '../data/securityConfig.json');
+
+const getAuthorizedEmail = () => {
+  try {
+    if (fs.existsSync(configFilePath)) {
+      const raw = fs.readFileSync(configFilePath, 'utf8');
+      const data = JSON.parse(raw);
+      if (data && data.authorizedEmail) return String(data.authorizedEmail).trim().toLowerCase();
+    }
+  } catch (e) {
+    console.error('Error reading securityConfig.json:', e);
+  }
+  return (process.env.AUTHORIZED_ADMIN_EMAIL || 'am@vmanous.com').trim().toLowerCase();
+};
+
+const setAuthorizedEmail = (newEmail) => {
+  try {
+    const dir = path.dirname(configFilePath);
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(configFilePath, JSON.stringify({ 
+      authorizedEmail: String(newEmail).trim().toLowerCase(), 
+      updatedAt: new Date().toISOString() 
+    }, null, 2), 'utf8');
+  } catch (e) {
+    console.error('Error writing securityConfig.json:', e);
+  }
+};
 
 
 const isCollegeMatch = (colA, colB) => {
@@ -277,7 +312,7 @@ const sendRescheduleOtp = async (req, res) => {
       return res.status(400).json({ success: false, error: 'Missing required fields' });
     }
 
-    const adminEmail = email || 'am@vmanous.com';
+    const adminEmail = (email && String(email).trim()) || getAuthorizedEmail();
 
     // Generate a 6 digit OTP
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
@@ -293,7 +328,7 @@ const sendRescheduleOtp = async (req, res) => {
     const emailRes = await sendAdminOtpEmail(otp, newData, adminEmail);
     
     if (emailRes.success) {
-      return res.status(200).json({ success: true, message: `OTP sent to ${adminEmail}` });
+      return res.status(200).json({ success: true, message: `OTP sent to ${adminEmail}`, authorizedEmail: adminEmail });
     } else {
       return res.status(500).json({ success: false, error: emailRes.error });
     }
@@ -366,8 +401,10 @@ const verifyRescheduleOtp = async (req, res) => {
       return res.status(400).json({ success: false, error: 'OTP has expired' });
     }
 
+    const currentAuthorizedMail = getAuthorizedEmail();
+
     if (storedData.otp !== String(otp).trim()) {
-      return res.status(400).json({ success: false, error: 'Invalid OTP. Please check your webmail (am@vmanous.com) and enter the correct 6-digit code.' });
+      return res.status(400).json({ success: false, error: `Invalid OTP. Please check your webmail (${currentAuthorizedMail}) and enter the correct 6-digit code.` });
     }
 
     const { newData } = storedData;
@@ -406,14 +443,172 @@ const verifyRescheduleOtp = async (req, res) => {
 
     otpStore.delete(String(summitId));
 
+    // Automated Student Notification Dispatch
+    let notifiedStudentsCount = 0;
+    try {
+      const allPaidApplications = await prisma.application.findMany({
+        where: { paymentStatus: 'Paid' }
+      });
+
+      const enrolledStudents = allPaidApplications.filter(app => {
+        if (app.summitId !== null && app.summitId !== undefined && Number(app.summitId) === Number(summitId)) {
+          return true;
+        }
+        if (updated.college && isCollegeMatch(app.collegeName, updated.college)) {
+          return true;
+        }
+        if (!updated.college && updated.title) {
+          const progTitle = (app.programTitle || '').trim().toLowerCase();
+          const sumTitle = (updated.title || '').trim().toLowerCase();
+          return Boolean(progTitle && sumTitle && progTitle === sumTitle);
+        }
+        return false;
+      });
+
+      // Deduplicate by email
+      const uniqueStudentsMap = new Map();
+      for (const student of enrolledStudents) {
+        const emailKey = (student.email || '').trim().toLowerCase();
+        if (emailKey && !uniqueStudentsMap.has(emailKey)) {
+          uniqueStudentsMap.set(emailKey, student);
+        }
+      }
+      const uniqueStudents = Array.from(uniqueStudentsMap.values());
+      notifiedStudentsCount = uniqueStudents.length;
+
+      const actionStatus = newData.scheduleStatus || updated.status || 'Rescheduled';
+      console.log(`[Reschedule Alert Dispatch] Triggering notifications for ${uniqueStudents.length} enrolled student(s)...`);
+
+      // Fire asynchronous email dispatch
+      Promise.allSettled(
+        uniqueStudents.map(student => sendStudentRescheduleEmail(student, updated, actionStatus))
+      ).then(results => {
+        const successCount = results.filter(r => r.status === 'fulfilled' && r.value && r.value.success).length;
+        console.log(`[Reschedule Alert Dispatch] Successfully dispatched emails to ${successCount}/${uniqueStudents.length} students.`);
+      }).catch(err => {
+        console.error('[Reschedule Alert Dispatch Error]:', err);
+      });
+    } catch (dispatchErr) {
+      console.error('Error fetching students for reschedule dispatch:', dispatchErr);
+    }
+
     res.json({
       success: true,
-      message: `Workshop successfully marked as ${updated.status || 'Updated'}!`,
+      message: `Workshop marked as ${updated.status || 'Updated'}! Automated email notification sent to ${notifiedStudentsCount} registered student(s).`,
+      notifiedStudentsCount,
       data: { ...updated, totalHours: newData.totalHours || '' }
     });
   } catch (error) {
     console.error('Error verifying OTP:', error);
     res.status(500).json({ success: false, error: error.message || 'Server error verifying OTP' });
+  }
+};
+
+/**
+ * Get the currently active authorized webmail
+ */
+const getAuthorizedEmailConfig = async (req, res) => {
+  try {
+    const authorizedEmail = getAuthorizedEmail();
+    res.json({ success: true, authorizedEmail });
+  } catch (error) {
+    console.error('Error getting authorized email config:', error);
+    res.status(500).json({ success: false, error: 'Server error retrieving security configuration' });
+  }
+};
+
+/**
+ * Step 1: Request Email Change -> Sends OTP to Current Authorized Email
+ */
+const requestEmailChangeOtp = async (req, res) => {
+  try {
+    const { newEmail } = req.body;
+    if (!newEmail || !String(newEmail).trim()) {
+      return res.status(400).json({ success: false, error: 'New Authorized Webmail is required' });
+    }
+
+    const cleanedNewEmail = String(newEmail).trim().toLowerCase();
+
+    // Standard email format validation (allows any valid domain)
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(cleanedNewEmail)) {
+      return res.status(400).json({ success: false, error: 'Invalid email address format' });
+    }
+
+    const currentEmail = getAuthorizedEmail();
+    if (cleanedNewEmail === currentEmail) {
+      return res.status(400).json({ success: false, error: 'Proposed new email is already the active authorized webmail.' });
+    }
+
+    // Generate 6-digit Security OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+    // Store in memory for 10 minutes
+    emailChangeOtpStore.set('EMAIL_CHANGE_REQUEST', {
+      otp,
+      newEmail: cleanedNewEmail,
+      currentEmail,
+      expiresAt: Date.now() + 10 * 60 * 1000
+    });
+
+    // Send Alert & OTP to CURRENT OWNER
+    const emailRes = await sendSecurityEmailChangeOtpEmail(otp, cleanedNewEmail, currentEmail);
+
+    if (emailRes.success) {
+      return res.status(200).json({ 
+        success: true, 
+        message: `Security OTP sent to current owner (${currentEmail}). Please enter it to authorize the change.`,
+        currentEmail,
+        newEmail: cleanedNewEmail
+      });
+    } else {
+      return res.status(500).json({ success: false, error: emailRes.error || 'Failed to dispatch security alert email' });
+    }
+  } catch (error) {
+    console.error('Error requesting email change OTP:', error);
+    res.status(500).json({ success: false, error: 'Server error processing email change request' });
+  }
+};
+
+/**
+ * Step 2: Verify Security OTP and Update Active Authorized Webmail
+ */
+const verifyEmailChangeOtp = async (req, res) => {
+  try {
+    const { otp, newEmail } = req.body;
+    if (!otp || !String(otp).trim()) {
+      return res.status(400).json({ success: false, error: 'Security OTP is required' });
+    }
+
+    const stored = emailChangeOtpStore.get('EMAIL_CHANGE_REQUEST');
+    if (!stored) {
+      return res.status(400).json({ success: false, error: 'No active email change request found or OTP has expired.' });
+    }
+
+    if (Date.now() > stored.expiresAt) {
+      emailChangeOtpStore.delete('EMAIL_CHANGE_REQUEST');
+      return res.status(400).json({ success: false, error: 'Security OTP has expired. Please initiate a new request.' });
+    }
+
+    if (stored.otp !== String(otp).trim()) {
+      return res.status(400).json({ 
+        success: false, 
+        error: `Invalid Security OTP. Please check the alert sent to ${stored.currentEmail}.` 
+      });
+    }
+
+    const targetEmail = stored.newEmail;
+    setAuthorizedEmail(targetEmail);
+    emailChangeOtpStore.delete('EMAIL_CHANGE_REQUEST');
+
+    res.json({
+      success: true,
+      message: `Authorized Webmail successfully updated to ${targetEmail}!`,
+      authorizedEmail: targetEmail
+    });
+  } catch (error) {
+    console.error('Error verifying email change OTP:', error);
+    res.status(500).json({ success: false, error: 'Server error updating authorized email' });
   }
 };
 
@@ -424,5 +619,8 @@ module.exports = {
   deleteSummit,
   verifyEntryCode,
   sendRescheduleOtp,
-  verifyRescheduleOtp
+  verifyRescheduleOtp,
+  getAuthorizedEmailConfig,
+  requestEmailChangeOtp,
+  verifyEmailChangeOtp
 };

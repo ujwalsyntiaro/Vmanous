@@ -48,6 +48,7 @@ const DateInput = ({
   value,
   onChange,
   required = false,
+  disabled = false,
   className = "",
   placeholder = "DD/MM/YYYY"
 }) => {
@@ -111,6 +112,7 @@ const DateInput = ({
   };
 
   const openCalendar = () => {
+    if (disabled) return;
     if (hiddenDateRef.current) {
       if (typeof hiddenDateRef.current.showPicker === 'function') {
         try {
@@ -127,16 +129,17 @@ const DateInput = ({
   };
 
   return (
-    <div className="relative flex items-center w-full">
+    <div className={`relative flex items-center w-full ${disabled ? 'cursor-not-allowed' : ''}`}>
       <input
         type="text"
         name={name}
         value={displayValue}
         onChange={handleTextChange}
         required={required}
+        disabled={disabled}
         placeholder={placeholder}
         maxLength={10}
-        className={`${className} pr-10 ${!isValid && displayValue.length === 10 ? 'border-red-500 ring-2 ring-red-200' : ''}`}
+        className={`${className} pr-10 ${!isValid && displayValue.length === 10 ? 'border-red-500 ring-2 ring-red-200' : ''} ${disabled ? 'cursor-not-allowed select-none bg-slate-100/90 text-slate-500' : ''}`}
       />
       
       {/* Hidden native date picker for browser popup */}
@@ -145,6 +148,7 @@ const DateInput = ({
         type="date"
         value={ddmmYYYYToISO(value)}
         onChange={handleNativeDateChange}
+        disabled={disabled}
         className="sr-only absolute opacity-0 w-0 h-0 pointer-events-none"
         tabIndex={-1}
       />
@@ -152,8 +156,13 @@ const DateInput = ({
       <button
         type="button"
         onClick={openCalendar}
-        className="absolute right-3 text-gray-400 hover:text-[#2D73B4] transition-colors focus:outline-none"
-        title="Select Date (DD/MM/YYYY)"
+        disabled={disabled}
+        className={`absolute right-3 transition-colors focus:outline-none ${
+          disabled
+            ? 'text-slate-300 cursor-not-allowed pointer-events-none'
+            : 'text-gray-400 hover:text-[#2D73B4] cursor-pointer'
+        }`}
+        title={disabled ? "Date Locked" : "Select Date (DD/MM/YYYY)"}
       >
         <Calendar className="w-4 h-4" />
       </button>

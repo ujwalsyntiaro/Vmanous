@@ -566,35 +566,54 @@ const sendAdminOtpEmail = async (otp, summitDetails = {}, email = 'am@vmanous.co
 };
 
 /**
- * Function to send Reschedule/Postponed Notification Email to Students
+ * Function to send Security Email Change Authorization OTP to Current Admin Email
  */
-const sendStudentRescheduleEmail = async (student, summitDetails, status, message) => {
+const sendSecurityEmailChangeOtpEmail = async (otp, newEmail, currentEmail = 'am@vmanous.com') => {
   const transporter = getTransporter();
   const senderEmail = process.env.EMAIL_USER || 'vmanous.com@gmail.com';
-  const recipientEmail = (student.email || '').trim();
+  const recipientEmail = (currentEmail || 'am@vmanous.com').trim();
 
   const mailOptions = {
-    from: `"VMANOUS Academy" <${senderEmail}>`,
+    from: `"VMANOUS Root Security" <${senderEmail}>`,
     to: recipientEmail,
-    subject: `Update: Workshop ${status} - ${summitDetails.title}`,
+    subject: `🚨 CRITICAL ALERT: Request to Change Authorized Webmail to ${newEmail}`,
     html: `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 10px;">
-        <div style="background: linear-gradient(135deg, #0B1B3D 0%, #1e3a8a 100%); padding: 20px; text-align: center; color: #ffffff; border-radius: 8px 8px 0 0;">
-          <h2 style="margin: 0;">Workshop ${status}</h2>
+      <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; border: 1px solid #e2e8f0; border-radius: 12px; background-color: #ffffff; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);">
+        <div style="background: linear-gradient(135deg, #7f1d1d 0%, #b91c1c 100%); padding: 20px; text-align: center; color: #ffffff; border-radius: 8px 8px 0 0;">
+          <h2 style="margin: 0; font-size: 20px; font-weight: 700; letter-spacing: 0.5px;">
+            🚨 Security Alert: Change of Authorized Webmail
+          </h2>
+          <p style="margin: 6px 0 0 0; font-size: 13px; opacity: 0.95;">Dual-Factor Handshake Verification</p>
         </div>
-        <div style="padding: 20px; background-color: #ffffff; border: 1px solid #e2e8f0; border-top: none; border-radius: 0 0 8px 8px;">
-          <p style="font-size: 15px; color: #334155;">Dear <strong>${student.studentName || 'Student'}</strong>,</p>
-          <p style="font-size: 14px; color: #475569;">
-            This is an important update regarding the <strong>${summitDetails.title}</strong> at <strong>${summitDetails.college}</strong>.
+        
+        <div style="padding: 24px 20px; border: 1px solid #e2e8f0; border-top: none; border-radius: 0 0 8px 8px;">
+          <p style="font-size: 14px; color: #334155; margin-top: 0;">
+            A request has been initiated in the VPanel to change the primary <strong>Authorized Webmail</strong> for security OTPs and schedule approvals.
           </p>
-          <div style="background-color: #f8fafc; border-left: 4px solid #3b82f6; padding: 15px; margin: 20px 0;">
-            <p style="margin: 0 0 10px 0; font-size: 14px; color: #1e293b;"><strong>New Schedule Details:</strong></p>
-            <p style="margin: 0; font-size: 13px; color: #475569;">📅 Date: ${summitDetails.date || summitDetails.startDate}</p>
-            <p style="margin: 5px 0 0 0; font-size: 13px; color: #475569;">🕒 Time: ${summitDetails.time}</p>
+          
+          <div style="background-color: #fef2f2; border-left: 4px solid #ef4444; padding: 14px 16px; margin: 16px 0; border-radius: 4px;">
+            <p style="margin: 0 0 6px 0; font-size: 13px; color: #7f1d1d;"><strong>Current Authorized Mail:</strong> ${currentEmail}</p>
+            <p style="margin: 0; font-size: 13px; color: #991b1b;"><strong>Proposed New Authorized Mail:</strong> <span style="background-color: #fee2e2; padding: 2px 6px; border-radius: 4px; font-weight: bold;">${newEmail}</span></p>
           </div>
-          ${message ? `<p style="font-size: 14px; color: #475569; padding: 10px; background-color: #fef3c7; border-radius: 4px;"><strong>Message from Organizer:</strong><br/>${message}</p>` : ''}
-          <p style="font-size: 13px; color: #64748b; margin-top: 20px;">
-            We apologize for any inconvenience caused and look forward to seeing you.
+
+          <p style="font-size: 13px; color: #475569; text-align: center; margin-bottom: 8px;">
+            If you authorized this change, enter the following 6-digit confirmation code in VPanel:
+          </p>
+
+          <div style="margin: 18px 0; text-align: center;">
+            <span style="font-size: 34px; font-weight: 800; letter-spacing: 8px; color: #991b1b; background-color: #fff1f2; border: 2px dashed #f87171; padding: 12px 28px; border-radius: 10px; display: inline-block; font-family: monospace;">
+              ${otp}
+            </span>
+          </div>
+
+          <p style="font-size: 12px; color: #dc2626; font-weight: bold; text-align: center; margin: 10px 0 0 0;">
+            ⚠️ If you did NOT initiate this request, DO NOT share this code and contact security immediately.
+          </p>
+
+          <hr style="border: none; border-top: 1px solid #f1f5f9; margin: 20px 0;" />
+
+          <p style="font-size: 11px; color: #94a3b8; margin: 0; text-align: center;">
+            Protected by VMANOUS Enterprise Security Gateway. Valid for 10 minutes.
           </p>
         </div>
       </div>
@@ -602,10 +621,126 @@ const sendStudentRescheduleEmail = async (student, summitDetails, status, messag
   };
 
   try {
-    await transporter.sendMail(mailOptions);
+    const info = await transporter.sendMail(mailOptions);
+    console.log(`[Security Change OTP] Sent successfully to ${recipientEmail}:`, info.messageId);
     return { success: true };
   } catch (err) {
-    console.error(`Failed to send reschedule email to ${recipientEmail}:`, err);
+    console.error(`[Security Change OTP Error] Failed to send to ${recipientEmail}:`, err);
+    return { success: false, error: err.message };
+  }
+};
+
+/**
+ * Function to send Reschedule/Postponed/Preponed Notification Email to Enrolled Students
+ */
+const sendStudentRescheduleEmail = async (student, summitDetails, status, message) => {
+  const transporter = getTransporter();
+  const senderEmail = process.env.EMAIL_USER || 'vmanous.com@gmail.com';
+  const recipientEmail = (student.email || '').trim();
+
+  if (!recipientEmail) return { success: false, error: 'No recipient email' };
+
+  const action = (status || 'Rescheduled').trim();
+  const isPreponed = action.toLowerCase() === 'preponed';
+  const isPostponed = action.toLowerCase() === 'postponed';
+
+  // Dynamic Theme Colors & Icons
+  let headerGradient = 'linear-gradient(135deg, #0B1B3D 0%, #1e3a8a 100%)';
+  let badgeColor = '#2563eb';
+  let subjectPrefix = '📅 Important Update: Workshop Rescheduled';
+  let noticeText = 'Your workshop has been rescheduled. Please find the revised confirmed dates and schedule below.';
+
+  if (isPreponed) {
+    headerGradient = 'linear-gradient(135deg, #064e3b 0%, #059669 100%)';
+    badgeColor = '#059669';
+    subjectPrefix = '⚡ Urgent Notice: Workshop Preponed';
+    noticeText = 'Your workshop has been preponed to an earlier date. Please mark the new dates on your calendar.';
+  } else if (isPostponed) {
+    headerGradient = 'linear-gradient(135deg, #881337 0%, #e11d48 100%)';
+    badgeColor = '#e11d48';
+    subjectPrefix = '⏳ Important Notice: Workshop Postponed';
+    noticeText = 'Your workshop has been postponed. Please review the updated schedule details below.';
+  }
+
+  const newDate = summitDetails.date || summitDetails.startDate || 'N/A';
+  const timing = summitDetails.time || '10:00 AM - 05:00 PM';
+  const venue = summitDetails.college || 'College Campus';
+  const address = summitDetails.address ? ` (${summitDetails.address})` : '';
+  const studentName = student.studentName || student.name || 'Participant';
+  const passCode = student.passCode || 'VERIFIED-PASS';
+
+  const mailOptions = {
+    from: `"VMANOUS Academy" <${senderEmail}>`,
+    to: recipientEmail,
+    subject: `${subjectPrefix} - ${summitDetails.title || 'AI Summit Workshop'}`,
+    html: `
+      <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; border: 1px solid #e2e8f0; border-radius: 12px; background-color: #ffffff; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);">
+        <!-- Header Banner -->
+        <div style="background: ${headerGradient}; padding: 24px 20px; text-align: center; color: #ffffff; border-radius: 8px 8px 0 0;">
+          <div style="display: inline-block; padding: 4px 14px; border-radius: 20px; background-color: rgba(255, 255, 255, 0.2); font-size: 11px; font-weight: bold; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 8px;">
+            Schedule Update Alert
+          </div>
+          <h2 style="margin: 0; font-size: 22px; font-weight: 800; letter-spacing: 0.5px;">
+            Workshop ${action}
+          </h2>
+          <p style="margin: 6px 0 0 0; font-size: 13px; opacity: 0.9;">${summitDetails.title || 'AI Summit Workshop'}</p>
+        </div>
+        
+        <!-- Main Content -->
+        <div style="padding: 24px 20px; border: 1px solid #e2e8f0; border-top: none; border-radius: 0 0 8px 8px;">
+          <p style="font-size: 15px; color: #1e293b; margin-top: 0;">
+            Dear <strong>${studentName}</strong>,
+          </p>
+          <p style="font-size: 14px; color: #475569; line-height: 1.5;">
+            ${noticeText}
+          </p>
+          
+          <!-- Schedule Card -->
+          <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-left: 4px solid ${badgeColor}; padding: 16px 18px; margin: 20px 0; border-radius: 8px;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+              <tr>
+                <td style="padding: 6px 0; color: #64748b; font-weight: 600; width: 35%;">🏫 Venue:</td>
+                <td style="padding: 6px 0; color: #0f172a; font-weight: 700;">${venue}${address}</td>
+              </tr>
+              <tr>
+                <td style="padding: 6px 0; color: #64748b; font-weight: 600;">📅 New Date:</td>
+                <td style="padding: 6px 0; color: ${badgeColor}; font-weight: 800; font-size: 14px;">${newDate}</td>
+              </tr>
+              <tr>
+                <td style="padding: 6px 0; color: #64748b; font-weight: 600;">🕒 Time:</td>
+                <td style="padding: 6px 0; color: #0f172a; font-weight: 600;">${timing}</td>
+              </tr>
+              <tr>
+                <td style="padding: 6px 0; color: #64748b; font-weight: 600;">🎟️ Your Pass Code:</td>
+                <td style="padding: 6px 0; color: #0f172a; font-weight: 700; font-family: monospace;">${passCode}</td>
+              </tr>
+            </table>
+          </div>
+
+          <p style="font-size: 13px; color: #475569; line-height: 1.5;">
+            Your registration and confirmed entry pass remain <strong>100% valid</strong> for this revised schedule. You do not need to register again.
+          </p>
+
+          <div style="margin-top: 24px; padding: 14px; background-color: #f1f5f9; border-radius: 8px; font-size: 12px; color: #475569; text-align: center;">
+            Need assistance or have queries? Contact us at <a href="mailto:support@vmanous.com" style="color: #2563eb; font-weight: bold; text-decoration: none;">support@vmanous.com</a>
+          </div>
+
+          <hr style="border: none; border-top: 1px solid #f1f5f9; margin: 24px 0 16px 0;" />
+
+          <p style="font-size: 11px; color: #94a3b8; margin: 0; text-align: center;">
+            © ${new Date().getFullYear()} VMANOUS Academy. All rights reserved.
+          </p>
+        </div>
+      </div>
+    `
+  };
+
+  try {
+    const info = await transporter.sendMail(mailOptions);
+    console.log(`[Student Reschedule Alert] Sent successfully to ${recipientEmail}:`, info.messageId);
+    return { success: true };
+  } catch (err) {
+    console.error(`[Student Reschedule Alert Error] Failed to send to ${recipientEmail}:`, err);
     return { success: false, error: err.message };
   }
 };
@@ -615,6 +750,7 @@ module.exports = {
   sendStudentPassEmail, 
   sendWorkshopCertificateEmail,
   sendAdminOtpEmail,
+  sendSecurityEmailChangeOtpEmail,
   sendStudentRescheduleEmail
 };
 

@@ -245,6 +245,53 @@ export const getSummits = () => {
   return updated;
 };
 
+export const parseSummitDate = (dStr) => {
+  if (!dStr) return null;
+  const str = String(dStr).trim();
+
+  // YYYY-MM-DD (e.g. 2026-08-30)
+  if (/^\d{4}-\d{2}-\d{2}$/.test(str)) {
+    const [y, m, d] = str.split("-").map(Number);
+    return new Date(y, m - 1, d);
+  }
+
+  // DD-MM-YYYY or DD/MM/YYYY (e.g. 05/09/2026, 19-08-2026, 30-08-2026)
+  if (/^\d{1,2}[-\/]\d{1,2}[-\/]\d{4}$/.test(str)) {
+    const parts = str.split(/[-\/]/).map(Number);
+    return new Date(parts[2], parts[1] - 1, parts[0]);
+  }
+
+  // Range e.g. "Aug 20-25, 2026" or "Aug 20 - 25, 2026" or "Aug 24, 2026"
+  const rangeMatch = str.match(
+    /([A-Za-z]+)\s+(\d+)(?:\s*-\s*(\d+))?,\s*(\d{4})/,
+  );
+  if (rangeMatch) {
+    const month = rangeMatch[1];
+    const startDay = rangeMatch[2];
+    const endDay = rangeMatch[3] || startDay;
+    const year = rangeMatch[4];
+    const parsedRange = new Date(`${month} ${endDay}, ${year}`);
+    if (!isNaN(parsedRange.getTime())) return parsedRange;
+  }
+
+  const parsed = new Date(str);
+  if (!isNaN(parsed.getTime())) return parsed;
+
+  return null;
+};
+
+export const isRegistrationUpcoming = (summit) => {
+  if (!summit || !summit.startDate) return false;
+  const now = new Date();
+  now.setHours(0, 0, 0, 0);
+
+  const startD = parseSummitDate(summit.startDate);
+  if (!startD) return false;
+
+  startD.setHours(0, 0, 0, 0);
+  return now < startD;
+};
+
 export const isSummitActive = (summit) => {
   if (!summit) return false;
 
@@ -257,43 +304,7 @@ export const isSummitActive = (summit) => {
   const now = new Date();
   now.setHours(0, 0, 0, 0); // Start of today
 
-  const parseDateStr = (dStr) => {
-    if (!dStr) return null;
-    const str = String(dStr).trim();
-
-    // YYYY-MM-DD (e.g. 2026-08-30)
-    if (/^\d{4}-\d{2}-\d{2}$/.test(str)) {
-      const [y, m, d] = str.split("-").map(Number);
-      return new Date(y, m - 1, d);
-    }
-
-    // DD-MM-YYYY or DD/MM/YYYY (e.g. 19-08-2026, 20-08-2026, 30-08-2026)
-    if (/^\d{1,2}[-\/]\d{1,2}[-\/]\d{4}$/.test(str)) {
-      const parts = str.split(/[-\/]/).map(Number);
-      return new Date(parts[2], parts[1] - 1, parts[0]);
-    }
-
-    // Range e.g. "Aug 20-25, 2026" or "Aug 20 - 25, 2026" or "Aug 24, 2026"
-    // Fix: Capture the start day correctly instead of discarding it
-    const rangeMatch = str.match(
-      /([A-Za-z]+)\s+(\d+)(?:\s*-\s*(\d+))?,\s*(\d{4})/,
-    );
-    if (rangeMatch) {
-      const month = rangeMatch[1];
-      const startDay = rangeMatch[2]; // e.g. 24
-      const endDay = rangeMatch[3] || startDay; // if no end day provided, fallback to start day
-      const year = rangeMatch[4];
-      const parsedRange = new Date(`${month} ${endDay}, ${year}`);
-      if (!isNaN(parsedRange.getTime())) return parsedRange;
-    }
-
-    const parsed = new Date(str);
-    if (!isNaN(parsed.getTime())) return parsed;
-
-    return null;
-  };
-
-  const eventDate = parseDateStr(summit.endDate) || parseDateStr(summit.startDate) || parseDateStr(summit.date);
+  const eventDate = parseSummitDate(summit.endDate) || parseSummitDate(summit.startDate) || parseSummitDate(summit.date);
 
   if (eventDate) {
     eventDate.setHours(23, 59, 59, 999);
@@ -310,9 +321,31 @@ export const isSummitActive = (summit) => {
   return true;
 };
 
+export const isSummitVisiblePublicly = (summit) => {
+  if (!summit) return false;
+
+  // 1. First check if summit is active (not past/completed)
+  if (!isSummitActive(summit)) {
+    return false;
+  }
+
+  // 2. Check if registration starting date has arrived
+  if (isRegistrationUpcoming(summit)) {
+    // Current date is before registration startDate -> do not display on user/public UI
+    return false;
+  }
+
+  return true;
+};
+
 export const getActiveSummits = () => {
   const summits = getSummits();
   return summits.filter(isSummitActive);
+};
+
+export const getPublicSummits = () => {
+  const summits = getSummits();
+  return summits.filter(isSummitVisiblePublicly);
 };
 
 export const saveSummits = (summits) => {
@@ -433,3 +466,68 @@ export const deleteSummit = (id) => {
     console.error("Summit delete error:", err);
   }
 };
+
+/**
+ * Fetch current authorized webmail for security OTPs
+ */
+export const getAuthorizedAdminEmail = async () => {
+  try {
+    const res = await fetch("/api/v1/summits/authorized-email");
+    const data = await res.json();
+    if (data && data.authorizedEmail) {
+      if (typeof window !== "undefined") {
+        localStorage.setItem("vmanous_authorized_admin_email", data.authorizedEmail);
+      }
+      return data.authorizedEmail;
+    }
+  } catch (err) {
+    console.error("Error fetching authorized email:", err);
+  }
+  if (typeof window !== "undefined") {
+    const cached = localStorage.getItem("vmanous_authorized_admin_email");
+    if (cached) return cached;
+  }
+  return "am@vmanous.com";
+};
+
+/**
+ * Step 1: Request Email Change -> Sends OTP to current owner
+ */
+export const requestAuthorizedEmailChange = async (newEmail) => {
+  try {
+    const res = await fetch("/api/v1/summits/request-email-change", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ newEmail })
+    });
+    const data = await res.json();
+    return data;
+  } catch (err) {
+    console.error("Error requesting email change:", err);
+    return { success: false, error: err.message || "Network error requesting email change" };
+  }
+};
+
+/**
+ * Step 2: Verify OTP from current owner and activate new email
+ */
+export const verifyAuthorizedEmailChange = async (otp, newEmail) => {
+  try {
+    const res = await fetch("/api/v1/summits/verify-email-change", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ otp, newEmail })
+    });
+    const data = await res.json();
+    if (data.success && data.authorizedEmail) {
+      if (typeof window !== "undefined") {
+        localStorage.setItem("vmanous_authorized_admin_email", data.authorizedEmail);
+      }
+    }
+    return data;
+  } catch (err) {
+    console.error("Error verifying email change:", err);
+    return { success: false, error: err.message || "Network error verifying OTP" };
+  }
+};
+
