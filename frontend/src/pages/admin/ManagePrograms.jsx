@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Edit2, Trash2, Calendar, Clock, MapPin, CheckCircle2, Building2, LayoutGrid, List, Receipt, DollarSign, History, Users, ChevronDown, Download, X, Search, Key, AlertCircle, Lock, ShieldCheck, Mail } from 'lucide-react';
+import { Plus, Edit2, Trash2, Calendar, Clock, MapPin, CheckCircle2, Building2, LayoutGrid, List, Receipt, DollarSign, History, Users, ChevronDown, Download, X, Search, Key, AlertCircle, Lock, ShieldCheck, Mail, Loader2 } from 'lucide-react';
 import { getSummits, fetchSummitsAsync, addSummit, updateSummit, deleteSummit, formatEventDates, isSummitActive, isRegistrationUpcoming, isCollegeMatch, getAuthorizedAdminEmail, requestAuthorizedEmailChange, verifyAuthorizedEmailChange } from '../../services/summitService';
 import { fetchApplicationsAsync } from '../../services/applicationService';
 import ProgramCard from '../../components/ui/ProgramCard';
@@ -36,6 +36,7 @@ const parseTimeStr = (timeStr) => {
 const ManagePrograms = () => {
   const [summits, setSummits] = useState([]);
   const [applications, setApplications] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isRescheduleModalOpen, setIsRescheduleModalOpen] = useState(false);
   const [editingId, setEditingId] = useState(null);
@@ -104,6 +105,8 @@ const ManagePrograms = () => {
       setSummits(data || []);
     } catch (err) {
       console.error("Error loading programs and applications:", err);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -678,7 +681,12 @@ const ManagePrograms = () => {
 
         {viewMode === 'grid' ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
-            {summits.filter(s => isSummitActive(s) && s.status !== 'Event Completed' && s.status !== 'Completed').map((summit, index) => (
+            {isLoading && (
+              <div className="col-span-full flex justify-center items-center py-12">
+                <Loader2 className="w-8 h-8 text-emerald-600 animate-spin" />
+              </div>
+            )}
+            {!isLoading && summits.filter(s => isSummitActive(s) && s.status !== 'Event Completed' && s.status !== 'Completed').map((summit, index) => (
               <div key={summit.id} className="w-full">
                 <ProgramCard
                   summit={summit}
@@ -689,7 +697,7 @@ const ManagePrograms = () => {
                 />
               </div>
             ))}
-            {summits.filter(s => isSummitActive(s) && s.status !== 'Event Completed' && s.status !== 'Completed').length === 0 && (
+            {!isLoading && summits.filter(s => isSummitActive(s) && s.status !== 'Event Completed' && s.status !== 'Completed').length === 0 && (
               <div className="col-span-full py-8 text-center text-gray-500 bg-white rounded-xl border border-gray-100 text-sm">
                 No active upcoming workshops right now.
               </div>
@@ -709,7 +717,16 @@ const ManagePrograms = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
-                  {summits.filter(s => isSummitActive(s) && s.status !== 'Event Completed' && s.status !== 'Completed').map((summit) => (
+                  {isLoading && (
+                    <tr>
+                      <td colSpan="5" className="px-6 py-12 text-center">
+                        <div className="flex justify-center">
+                          <Loader2 className="w-8 h-8 text-emerald-600 animate-spin" />
+                        </div>
+                      </td>
+                    </tr>
+                  )}
+                  {!isLoading && summits.filter(s => isSummitActive(s) && s.status !== 'Event Completed' && s.status !== 'Completed').map((summit) => (
                     <tr key={summit.id} className="hover:bg-gray-50/50 transition-colors">
                       <td className="px-6 py-4">
                         <div className="font-bold text-vmanous-navy-dark">{summit.title}</div>
@@ -794,7 +811,7 @@ const ManagePrograms = () => {
                       </td>
                     </tr>
                   ))}
-                  {summits.filter(s => isSummitActive(s) && s.status !== 'Event Completed' && s.status !== 'Completed').length === 0 && (
+                  {!isLoading && summits.filter(s => isSummitActive(s) && s.status !== 'Event Completed' && s.status !== 'Completed').length === 0 && (
                     <tr>
                       <td colSpan="5" className="px-6 py-8 text-center text-gray-500">
                         No active workshops found.
@@ -827,7 +844,12 @@ const ManagePrograms = () => {
 
         {viewMode === 'grid' ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
-            {summits.filter(s => !isSummitActive(s) || s.status === 'Event Completed' || s.status === 'Completed').map((summit, index) => (
+            {isLoading && (
+              <div className="col-span-full flex justify-center items-center py-12">
+                <Loader2 className="w-8 h-8 text-amber-600 animate-spin" />
+              </div>
+            )}
+            {!isLoading && summits.filter(s => !isSummitActive(s) || s.status === 'Event Completed' || s.status === 'Completed').map((summit, index) => (
               <div key={summit.id} className="w-full">
                 <ProgramCard
                   summit={{
@@ -843,7 +865,7 @@ const ManagePrograms = () => {
                 />
               </div>
             ))}
-            {summits.filter(s => !isSummitActive(s) || s.status === 'Event Completed' || s.status === 'Completed').length === 0 && (
+            {!isLoading && summits.filter(s => !isSummitActive(s) || s.status === 'Event Completed' || s.status === 'Completed').length === 0 && (
               <div className="col-span-full py-8 text-center text-gray-500 bg-white rounded-xl border border-gray-100 text-sm">
                 No past workshop history available.
               </div>
@@ -863,7 +885,16 @@ const ManagePrograms = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
-                  {summits.filter(s => !isSummitActive(s) || s.status === 'Event Completed' || s.status === 'Completed').map((summit) => (
+                  {isLoading && (
+                    <tr>
+                      <td colSpan="5" className="px-6 py-12 text-center">
+                        <div className="flex justify-center">
+                          <Loader2 className="w-8 h-8 text-amber-600 animate-spin" />
+                        </div>
+                      </td>
+                    </tr>
+                  )}
+                  {!isLoading && summits.filter(s => !isSummitActive(s) || s.status === 'Event Completed' || s.status === 'Completed').map((summit) => (
                     <tr key={summit.id} className="hover:bg-amber-50/20 transition-colors">
                       <td className="px-6 py-4">
                         <div className="font-bold text-vmanous-navy-dark">{summit.title}</div>
@@ -922,7 +953,7 @@ const ManagePrograms = () => {
                       </td>
                     </tr>
                   ))}
-                  {summits.filter(s => !isSummitActive(s) || s.status === 'Event Completed' || s.status === 'Completed').length === 0 && (
+                  {!isLoading && summits.filter(s => !isSummitActive(s) || s.status === 'Event Completed' || s.status === 'Completed').length === 0 && (
                     <tr>
                       <td colSpan="5" className="px-6 py-8 text-center text-gray-500">
                         No history records available.

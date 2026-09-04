@@ -16,7 +16,8 @@ import {
   Briefcase,
   Calendar,
   Clock,
-  MapPin
+  MapPin,
+  Loader2
 } from 'lucide-react';
 import Container from '../components/ui/Container';
 import ProgramCard from '../components/ui/ProgramCard';
@@ -38,6 +39,7 @@ export const Enroll = () => {
   const [upcomingSummits, setUpcomingSummits] = useState([]);
   const [selectedSummitForModal, setSelectedSummitForModal] = useState(null);
   const [isEntryModalOpen, setIsEntryModalOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   const handleRegisterClick = (summit) => {
     if (summit.entryCode) {
@@ -64,8 +66,14 @@ export const Enroll = () => {
   useEffect(() => {
     window.scrollTo(0, 0);
     const loadSummits = async () => {
-      const data = await fetchSummitsAsync();
-      setUpcomingSummits(data.filter(isSummitVisiblePublicly));
+      try {
+        const data = await fetchSummitsAsync();
+        setUpcomingSummits(data.filter(isSummitVisiblePublicly));
+      } catch (error) {
+        console.error("Failed to load summits:", error);
+      } finally {
+        setIsLoading(false);
+      }
     };
     loadSummits();
 
@@ -152,15 +160,25 @@ export const Enroll = () => {
             </div>
 
             <div className="flex flex-wrap justify-center gap-6">
-              {upcomingSummits.map((summit, index) => (
-                <div key={summit.id} className="w-full md:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)]">
-                  <ProgramCard
-                    summit={summit}
-                    index={index}
-                    onRegister={handleRegisterClick}
-                  />
+              {isLoading ? (
+                <div className="flex justify-center items-center py-20 w-full">
+                  <Loader2 className="w-12 h-12 text-vmanous-green animate-spin" />
                 </div>
-              ))}
+              ) : upcomingSummits.length > 0 ? (
+                upcomingSummits.map((summit, index) => (
+                  <div key={summit.id} className="w-full md:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)]">
+                    <ProgramCard
+                      summit={summit}
+                      index={index}
+                      onRegister={handleRegisterClick}
+                    />
+                  </div>
+                ))
+              ) : (
+                <div className="flex justify-center items-center py-20 w-full">
+                  <p className="text-gray-500 font-medium">No upcoming programs available at the moment.</p>
+                </div>
+              )}
             </div>
           </div>
         </Container>

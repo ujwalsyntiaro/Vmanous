@@ -19,7 +19,8 @@ import {
   RefreshCw,
   X,
   ChevronDown,
-  Trash2
+  Trash2,
+  Loader2
 } from 'lucide-react';
 import {
   fetchApplicationsAsync,
@@ -501,7 +502,15 @@ const ManageApplications = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 text-xs">
-              {filteredApps.length === 0 ? (
+              {isLoading ? (
+                <tr>
+                  <td colSpan="6" className="py-12 text-center text-slate-400 font-medium">
+                    <div className="flex justify-center">
+                      <Loader2 className="w-8 h-8 text-[#2D73B4] animate-spin" />
+                    </div>
+                  </td>
+                </tr>
+              ) : filteredApps.length === 0 ? (
                 <tr>
                   <td colSpan="6" className="py-12 text-center text-slate-400 font-medium">
                     No application records match your selected filters.
