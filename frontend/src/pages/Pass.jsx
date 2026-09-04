@@ -20,7 +20,8 @@ import {
 import { QRCodeSVG } from 'qrcode.react';
 import html2pdf from 'html2pdf.js';
 import Container from '../components/ui/Container';
-import { getApplications } from '../services/applicationService';
+import { getApplications, computeAppFinancialBreakdown } from '../services/applicationService';
+import { fetchSummitsAsync, getSummits, isCollegeMatch } from '../services/summitService';
 
 const PaymentSuccessfulSeal = ({ size = 95 }) => {
   return (
@@ -86,10 +87,28 @@ export const Pass = () => {
 
   const [formData, setFormData] = useState(location.state?.formData || null);
   const [paymentId, setPaymentId] = useState(location.state?.paymentId || null);
+  const [matchedSummit, setMatchedSummit] = useState(location.state?.summitDetails || null);
   const [isReceiptOpen, setIsReceiptOpen] = useState(initialReceiptState);
   const [isDownloading, setIsDownloading] = useState(false);
 
   useEffect(() => {
+    // 1. Fetch summits to accurately resolve workshop pricing & tax settings
+    fetchSummitsAsync().then((summits) => {
+      if (Array.isArray(summits) && summits.length > 0) {
+        const prog = (formData?.programInterest || formData?.programTitle || '').trim().toLowerCase();
+        const sumId = formData?.summitId;
+        const col = formData?.institution || formData?.collegeName || '';
+        const found = summits.find(s =>
+          (sumId && (s.id === sumId || Number(s.id) === Number(sumId))) ||
+          (s.title && prog && s.title.trim().toLowerCase() === prog && (!s.college || isCollegeMatch(col, s.college))) ||
+          (prog && s.title && (s.title.trim().toLowerCase().includes(prog) || prog.includes(s.title.trim().toLowerCase())))
+        );
+        if (found) {
+          setMatchedSummit(found);
+        }
+      }
+    }).catch(e => console.warn('Could not fetch summits for pass:', e));
+
     if (!formData && passCodeParam) {
       const apps = getApplications();
       const matched = apps.find(
@@ -119,13 +138,59 @@ export const Pass = () => {
           twelfthPercentage: matched.marksTwelfth ? String(matched.marksTwelfth).replace("%", "") : "83",
           appliedDate: matched.createdAt,
           paymentStatus: matched.paymentStatus || "Paid",
-          amountPaid: (matched.amountPaid !== undefined && matched.amountPaid !== null) ? matched.amountPaid : 0,
-          baseAmount: (matched.baseAmount !== undefined && matched.baseAmount !== null) ? matched.baseAmount : 0,
-          gstAmount: (matched.gstAmount !== undefined && matched.gstAmount !== null) ? matched.gstAmount : 0,
-          platformFee: (matched.platformFee !== undefined && matched.platformFee !== null) ? matched.platformFee : 0,
+          amountPaid: (matched.amountPaid !== undefined && matched.amountPaid !== null) ? Number(matched.amountPaid) : 0,
+          baseAmount: (matched.baseAmount !== undefined && matched.baseAmount !== null) ? Number(matched.baseAmount) : null,
+          gstAmount: (matched.gstAmount !== undefined && matched.gstAmount !== null) ? Number(matched.gstAmount) : null,
+          platformFee: (matched.platformFee !== undefined && matched.platformFee !== null) ? Number(matched.platformFee) : 0,
+          summitId: matched.summitId || null,
           transactionId: matched.transactionId || matched.passCode,
+          passCode: matched.passCode
         });
         setPaymentId(matched.passCode || matched.transactionId);
+      } else {
+        // Fallback: Fetch application from backend API if not in localStorage
+        fetch('/api/v1/applications?range=all')
+          .then(res => res.json())
+          .then(res => {
+            if (res.success && Array.isArray(res.data)) {
+              const apiMatched = res.data.find(a =>
+                a.passCode === passCodeParam ||
+                a.transactionId === passCodeParam ||
+                String(a.id) === String(passCodeParam)
+              );
+              if (apiMatched) {
+                const nameParts = (apiMatched.studentName || apiMatched.name || "").trim().split(" ");
+                setFormData({
+                  firstName: nameParts[0] || "Student",
+                  lastName: nameParts.slice(1).join(" ") || "",
+                  fullName: apiMatched.studentName || apiMatched.name,
+                  email: apiMatched.email,
+                  phone: apiMatched.phone || "N/A",
+                  bloodGroup: apiMatched.bloodGroup || "O+",
+                  institution: apiMatched.collegeName,
+                  collegeAddress: apiMatched.venueLocation || "Main Campus Auditorium",
+                  programInterest: apiMatched.programTitle || "AI Summit Workshop 2026",
+                  degree: apiMatched.degree || "B.Tech",
+                  branch: apiMatched.branch || "Computer Science",
+                  semester: apiMatched.year || "3rd Year",
+                  selfie: apiMatched.selfiePhotoUrl,
+                  selfiePhotoUrl: apiMatched.selfiePhotoUrl,
+                  tenthPercentage: apiMatched.marksTenth ? String(apiMatched.marksTenth).replace("%", "") : "85",
+                  twelfthPercentage: apiMatched.marksTwelfth ? String(apiMatched.marksTwelfth).replace("%", "") : "83",
+                  appliedDate: apiMatched.createdAt,
+                  paymentStatus: apiMatched.paymentStatus || "Paid",
+                  amountPaid: (apiMatched.amountPaid !== undefined && apiMatched.amountPaid !== null) ? Number(apiMatched.amountPaid) : 0,
+                  baseAmount: (apiMatched.baseAmount !== undefined && apiMatched.baseAmount !== null) ? Number(apiMatched.baseAmount) : null,
+                  gstAmount: (apiMatched.gstAmount !== undefined && apiMatched.gstAmount !== null) ? Number(apiMatched.gstAmount) : null,
+                  platformFee: (apiMatched.platformFee !== undefined && apiMatched.platformFee !== null) ? Number(apiMatched.platformFee) : 0,
+                  summitId: apiMatched.summitId || null,
+                  transactionId: apiMatched.transactionId || apiMatched.passCode,
+                  passCode: apiMatched.passCode
+                });
+                setPaymentId(apiMatched.passCode || apiMatched.transactionId);
+              }
+            }
+          }).catch(err => console.warn('Could not fetch backend application:', err));
       }
     } else if (!formData && !passCodeParam) {
       navigate('/enroll');
@@ -140,8 +205,45 @@ export const Pass = () => {
     ? new Date(formData.appliedDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
     : new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
 
-  const passId = paymentId || 'APP' + Math.floor(100000 + Math.random() * 900000);
+  const passId = paymentId || formData.passCode || formData.transactionId || ('APP' + Math.floor(100000 + Math.random() * 900000));
   const workshopTiming = formData.timing || '10:00 AM - 04:00 PM';
+
+  // Dynamic financial breakdown calculation based on application and summit settings
+  const financialData = computeAppFinancialBreakdown(formData || {}, matchedSummit ? [matchedSummit] : null);
+  
+  const baseFee = (formData?.baseAmount !== undefined && formData?.baseAmount !== null)
+    ? Number(formData.baseAmount)
+    : Number(financialData.base);
+
+  const gstFee = (formData?.gstAmount !== undefined && formData?.gstAmount !== null)
+    ? Number(formData.gstAmount)
+    : Number(financialData.gst);
+
+  const procFee = (formData?.platformFee !== undefined && formData?.platformFee !== null)
+    ? Number(formData.platformFee)
+    : Number(financialData.platformFee);
+
+  const totalPaid = (formData?.amountPaid !== undefined && formData?.amountPaid !== null)
+    ? Number(formData.amountPaid)
+    : Number((baseFee + gstFee + procFee).toFixed(2));
+
+  const taxRate = matchedSummit?.taxRate !== undefined
+    ? Number(matchedSummit.taxRate)
+    : (formData?.taxRate !== undefined ? Number(formData.taxRate) : (gstFee > 0 && baseFee > 0 ? Math.round((gstFee / baseFee) * 100) : 0));
+
+  const taxMode = matchedSummit?.taxMode || formData?.taxMode || 'Exclusive';
+
+  const gstLabel = (() => {
+    if (taxRate === 0 || gstFee === 0) {
+      return 'GST (0% Tax)';
+    }
+    if (taxMode === 'Inclusive') {
+      return `GST (${taxRate}% Inclusive Tax)`;
+    }
+    return `GST (${taxRate}% Exclusive Tax)`;
+  })();
+
+  const paymentGatewayName = formData?.paymentMethod || (totalPaid === 0 ? 'Direct Free Registration' : 'Cashfree Payment Gateway (UPI/Cards/NetBanking)');
 
   const qrDataText = `=== VMANOUS WORKSHOP PASS ===
 Pass ID: ${passId}
@@ -560,19 +662,19 @@ Issued On: ${currentDate}
                     </div>
                     <div className="flex justify-between p-2 text-slate-700">
                       <span>Base Workshop Registration Fee</span>
-                      <span className="font-bold">₹{Number(formData.baseAmount || 1999).toLocaleString('en-IN')}.00</span>
+                      <span className="font-bold">₹{baseFee.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                     </div>
                     <div className="flex justify-between p-2 text-slate-700">
-                      <span>GST (18% Exclusive Tax)</span>
-                      <span className="font-bold">₹{Number(formData.gstAmount || 360).toLocaleString('en-IN')}.00</span>
+                      <span>{gstLabel}</span>
+                      <span className="font-bold">₹{gstFee.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                     </div>
                     <div className="flex justify-between p-2 text-slate-700">
                       <span>Platform Processing Fee</span>
-                      <span className="font-bold">₹{Number(formData.platformFee || 99).toLocaleString('en-IN')}.00</span>
+                      <span className="font-bold">₹{procFee.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                     </div>
                     <div className="flex justify-between p-2.5 bg-emerald-50 text-emerald-900 font-black text-xs sm:text-sm">
                       <span>Total Paid Amount</span>
-                      <span className="text-emerald-700">₹{Number(formData.amountPaid || 2458).toLocaleString('en-IN')}.00</span>
+                      <span className="text-emerald-700">₹{totalPaid.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                     </div>
                   </div>
                 </div>
@@ -581,11 +683,11 @@ Issued On: ${currentDate}
                 <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100 text-[11px] text-slate-600 space-y-1">
                   <div className="flex justify-between">
                     <span className="font-medium text-slate-400">Transaction ID:</span>
-                    <span className="font-mono font-bold text-slate-800">{formData.transactionId || paymentId || 'TXN_PHPE_CONFIRMED'}</span>
+                    <span className="font-mono font-bold text-slate-800">{formData.transactionId || paymentId || passId}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="font-medium text-slate-400">Payment Gateway:</span>
-                    <span className="font-semibold text-slate-700">PhonePe Payment Gateway (UPI/Card)</span>
+                    <span className="font-semibold text-slate-700">{paymentGatewayName}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="font-medium text-slate-400">Date & Time:</span>

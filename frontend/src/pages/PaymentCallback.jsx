@@ -117,10 +117,18 @@ export const PaymentCallback = () => {
                 tenthPercentage: appData.marksTenth || pendingData?.tenthPercentage,
                 twelfthPercentage: appData.marksTwelfth || pendingData?.twelfthPercentage,
                 appliedDate: appData.createdAt || new Date().toISOString(),
-                paymentStatus: 'Paid'
+                paymentStatus: 'Paid',
+                amountPaid: (appData.amountPaid !== undefined && appData.amountPaid !== null) ? Number(appData.amountPaid) : (pendingData?.amountPaid ?? pendingData?.totalAmount ?? 0),
+                baseAmount: (appData.baseAmount !== undefined && appData.baseAmount !== null) ? Number(appData.baseAmount) : (pendingData?.baseAmount ?? null),
+                gstAmount: (appData.gstAmount !== undefined && appData.gstAmount !== null) ? Number(appData.gstAmount) : (pendingData?.gstAmount ?? null),
+                platformFee: (appData.platformFee !== undefined && appData.platformFee !== null) ? Number(appData.platformFee) : (pendingData?.platformFee ?? 0),
+                summitId: appData.summitId || pendingData?.summitId || null,
+                transactionId: appData.transactionId || pendingData?.transactionId || appData.passCode,
+                passCode: appData.passCode || pendingData?.passCode
               },
               paymentId: appData.transactionId,
-              passCode: appData.passCode
+              passCode: appData.passCode,
+              summitDetails: pendingData?.summitDetails || null
             }
           });
         };
@@ -136,7 +144,7 @@ export const PaymentCallback = () => {
           ...pendingData,
           transactionId: merchantTransactionId,
           failureReason: reason,
-          amountPaid: result.amountPaid || pendingData?.totalAmount || pendingData?.amountPaid || 3539,
+          amountPaid: result.amountPaid || pendingData?.totalAmount || pendingData?.amountPaid || 0,
           programTitle: result.programTitle || pendingData?.programInterest || 'AI Summit Workshop',
           collegeName: result.collegeName || pendingData?.institution || 'Partner College'
         });
@@ -211,7 +219,14 @@ export const PaymentCallback = () => {
           tenthPercentage: statusResult.marksTenth,
           twelfthPercentage: statusResult.marksTwelfth,
           appliedDate: statusResult.createdAt || new Date().toISOString(),
-          paymentStatus: 'Paid'
+          paymentStatus: 'Paid',
+          amountPaid: (statusResult.amountPaid !== undefined && statusResult.amountPaid !== null) ? Number(statusResult.amountPaid) : 0,
+          baseAmount: (statusResult.baseAmount !== undefined && statusResult.baseAmount !== null) ? Number(statusResult.baseAmount) : null,
+          gstAmount: (statusResult.gstAmount !== undefined && statusResult.gstAmount !== null) ? Number(statusResult.gstAmount) : null,
+          platformFee: (statusResult.platformFee !== undefined && statusResult.platformFee !== null) ? Number(statusResult.platformFee) : 0,
+          summitId: statusResult.summitId || null,
+          transactionId: statusResult.transactionId || statusResult.passCode,
+          passCode: statusResult.passCode
         },
         paymentId: statusResult.transactionId,
         passCode: statusResult.passCode

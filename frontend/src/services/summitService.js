@@ -57,6 +57,7 @@ export const isCollegeMatch = (colA, colB) => {
   const b = colB.trim().toLowerCase();
 
   if (a === b) return true;
+  if (a.includes(b) || b.includes(a)) return true;
 
   const keywordsMap = [
     { keys: ["nit", "national institute of technology"] },
@@ -78,18 +79,17 @@ export const isCollegeMatch = (colA, colB) => {
     }
   }
 
-  const stopWords = [
+  const genericWords = [
     "college", "engineering", "institute", "technology", "university",
-    "nagpur", "pune", "delhi", "mumbai", "campus", "nagar", "city",
-    "road", "park", "center", "centre", "main", "auditorium", "subhash", "lokmanya", "midc"
+    "campus", "auditorium", "main"
   ];
 
-  const wordsA = a.split(/\s+/).filter((w) => w.length >= 3 && !stopWords.includes(w));
-  const wordsB = b.split(/\s+/).filter((w) => w.length >= 3 && !stopWords.includes(w));
+  const wordsA = a.split(/[\s,.-]+/).filter((w) => w.length >= 3 && !genericWords.includes(w));
+  const wordsB = b.split(/[\s,.-]+/).filter((w) => w.length >= 3 && !genericWords.includes(w));
 
   if (wordsA.length === 0 || wordsB.length === 0) return false;
 
-  return wordsA.some((w) => wordsB.includes(w));
+  return wordsA.some((w) => wordsB.includes(w) || wordsB.some((wb) => wb.includes(w) || w.includes(wb)));
 };
 
 export const getSummits = () => {
@@ -100,37 +100,6 @@ export const getSummits = () => {
   } catch (e) {
     console.error("Error fetching applications for summit count:", e);
   }
-
-  const computeCount = (s) => {
-    const sumTitle = (s.title || "").trim().toLowerCase();
-
-    const matched = paidApps.filter((a) => {
-      if (a.paymentStatus && a.paymentStatus !== "Paid") return false;
-
-      // 1. summitId match
-      if (
-        a.summitId &&
-        (a.summitId === s.id || Number(a.summitId) === Number(s.id))
-      ) {
-        return true;
-      }
-
-      // 2. College match
-      if (s.college && isCollegeMatch(a.collegeName, s.college)) {
-        return true;
-      }
-
-      // 3. Fallback exact title match ONLY if summit has no specific college set
-      if (!s.college) {
-        const progTitle = (a.programTitle || "").trim().toLowerCase();
-        return Boolean(progTitle && sumTitle && progTitle === sumTitle);
-      }
-
-      return false;
-    });
-
-    return matched.length;
-  };
 
   const stored = localStorage.getItem("vmanous_summits");
   let listToProcess = INITIAL_SUMMITS;
@@ -150,32 +119,32 @@ export const getSummits = () => {
     listToProcess = INITIAL_SUMMITS;
   }
 
-  // Partition paid applications across summits without double-counting
-  const countsMap = {};
-  listToProcess.forEach((s) => {
-    countsMap[s.id] = 0;
-  });
-
   const computeCountForSummit = (s) => {
     const sumTitle = (s.title || "").trim().toLowerCase();
 
     const matched = paidApps.filter((a) => {
       if (a.paymentStatus && a.paymentStatus !== "Paid") return false;
 
-      // 1. Exact summitId match
+      // 1. Exact summitId match (highest priority)
       if (a.summitId !== null && a.summitId !== undefined && Number(a.summitId) === Number(s.id)) {
         return true;
       }
 
-      // 2. Primary College match (when summit specifies a college)
-      if (s.college && isCollegeMatch(a.collegeName, s.college)) {
-        return true;
+      // 2. Exact Title + College match
+      const progTitle = (a.programTitle || "").trim().toLowerCase();
+      const titleMatches = Boolean(progTitle && sumTitle && (progTitle === sumTitle || progTitle.includes(sumTitle) || sumTitle.includes(progTitle)));
+
+      if (titleMatches) {
+        if (!s.college || !a.collegeName || isCollegeMatch(a.collegeName, s.college)) {
+          return true;
+        }
       }
 
-      // 3. Fallback exact title match ONLY if summit has no specific college set
-      if (!s.college) {
-        const progTitle = (a.programTitle || "").trim().toLowerCase();
-        return Boolean(progTitle && sumTitle && progTitle === sumTitle);
+      // 3. College match (if program title matches or is generic)
+      if (s.college && isCollegeMatch(a.collegeName, s.college)) {
+        if (!a.summitId && (titleMatches || !a.programTitle || progTitle.includes('ai') || sumTitle.includes('ai') || sumTitle === 'eeee')) {
+          return true;
+        }
       }
 
       return false;
@@ -198,27 +167,26 @@ export const getSummits = () => {
       const num = parseInt(dur) || 2;
       dur = `${num}-Day Live Workshop`;
     } else if (dur.includes("Live Workshop")) {
-      // Normalize duration text
       const dMatch = String(dur).match(/(\d+)\s*[- ]*day/i);
       if (dMatch) {
         dur = `${dMatch[1]}-Day Live Workshop`;
       }
     }
 
-    const computed = computeCountForSummit(s);
-    // Prioritize server enrolledCount from database, merging with any local computed count
+    // Authoritative count from MySQL server, with optimistic local fallback
     const serverEnrolled = (s.enrolledCount !== undefined && s.enrolledCount !== null && !isNaN(Number(s.enrolledCount)))
       ? Number(s.enrolledCount)
       : (Array.isArray(s.applications) ? s.applications.filter(a => a.paymentStatus === 'Paid' || !a.paymentStatus).length : 0);
-    const finalEnrolledCount = Math.max(serverEnrolled, computed);
+    const localComputed = computeCountForSummit(s);
+    const finalEnrolledCount = Math.max(serverEnrolled, localComputed);
 
-    const cap = s.seatCapacity !== undefined ? Number(s.seatCapacity) : 100;
+    const cap = s.seatCapacity !== undefined && s.seatCapacity !== null ? Number(s.seatCapacity) : 100;
     const isCompleted = s.status === 'Event Completed' || s.status === 'Completed';
     const isFull = finalEnrolledCount >= cap;
     const isClosed = s.status === 'Closed' || s.status === 'Registration Closed' || isFull;
-    const finalStatus = isCompleted
+    const dynamicStatus = isCompleted
       ? s.status
-      : (isClosed ? 'Registration Closed' : (s.status === 'Filling Fast' ? 'Filling Fast' : 'Registration Open'));
+      : (isClosed ? 'Registration Closed' : (finalEnrolledCount >= cap * 0.8 ? 'Filling Fast' : (s.status === 'Filling Fast' ? 'Filling Fast' : 'Registration Open')));
 
     return {
       ...s,
@@ -226,7 +194,7 @@ export const getSummits = () => {
       totalHours: totalHours,
       address: s.address || "",
       time: s.time || "",
-      status: finalStatus,
+      status: dynamicStatus,
       seatCapacity: cap,
       enrolledCount: finalEnrolledCount,
       price: s.price !== undefined ? s.price : 1999,
@@ -241,7 +209,6 @@ export const getSummits = () => {
     };
   });
 
-  localStorage.setItem("vmanous_summits", JSON.stringify(updated));
   return updated;
 };
 

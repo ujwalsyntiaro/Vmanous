@@ -29,11 +29,12 @@ export const initiateCashfreePayment = async (formData, summitDetails = null) =>
         "https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=300",
       programTitle: formData.programInterest || formData.programTitle || "AI Summit Workshop 2026",
       summitId: formData.summitId ? Number(formData.summitId) : (summitDetails?.id ? Number(summitDetails.id) : null),
-      baseAmount: formData.baseAmount !== undefined ? Number(formData.baseAmount) : null,
-      gstAmount: formData.gstAmount !== undefined ? Number(formData.gstAmount) : null,
+      baseAmount: formData.baseAmount !== undefined && formData.baseAmount !== null ? Number(formData.baseAmount) : null,
+      gstAmount: formData.gstAmount !== undefined && formData.gstAmount !== null ? Number(formData.gstAmount) : null,
+      platformFee: formData.platformFee !== undefined && formData.platformFee !== null ? Number(formData.platformFee) : 0,
       amountPaid: (formData.totalAmount !== undefined && formData.totalAmount !== null)
         ? Number(formData.totalAmount)
-        : (formData.amountPaid !== undefined && formData.amountPaid !== null ? Number(formData.amountPaid) : 1999),
+        : (formData.amountPaid !== undefined && formData.amountPaid !== null ? Number(formData.amountPaid) : 0),
     };
 
     if (typeof window !== "undefined") {

@@ -503,7 +503,11 @@ export const Application = () => {
     setIsSubmitting(true);
     setTimeout(() => {
       setIsSubmitting(false);
-      const updatedData = { ...formData, appliedDate: formData.appliedDate || new Date().toISOString() };
+      const updatedData = {
+        ...formData,
+        summitId: summitDetails?.id ? Number(summitDetails.id) : (formData.summitId ? Number(formData.summitId) : null),
+        appliedDate: formData.appliedDate || new Date().toISOString()
+      };
       navigate('/payment', { state: { formData: updatedData, summitDetails: summitDetails } });
     }, 1200);
   };
