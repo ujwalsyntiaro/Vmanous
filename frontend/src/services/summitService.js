@@ -1,3 +1,5 @@
+import { getAuthHeaders } from "./adminAuthService";
+
 export const liveBroadcastChannel = (typeof window !== "undefined" && "BroadcastChannel" in window)
   ? new BroadcastChannel("vmanous_live_updates")
   : null;
@@ -285,7 +287,7 @@ export const addSummit = async (summit) => {
   try {
     const res = await fetch("/api/v1/summits", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: getAuthHeaders(),
       body: JSON.stringify(summitData),
     });
     const data = await res.json();
@@ -311,7 +313,7 @@ export const updateSummit = async (id, updatedSummit) => {
   try {
     const res = await fetch(`/api/v1/summits/${id}`, {
       method: "PUT",
-      headers: { "Content-Type": "application/json" },
+      headers: getAuthHeaders(),
       body: JSON.stringify(summitData),
     });
     const data = await res.json();
@@ -358,6 +360,7 @@ export const deleteSummit = async (id) => {
   try {
     const res = await fetch(`/api/v1/summits/${id}`, {
       method: "DELETE",
+      headers: getAuthHeaders()
     });
     const data = await res.json();
     return data;
@@ -389,7 +392,7 @@ export const requestAuthorizedEmailChange = async (newEmail) => {
   try {
     const res = await fetch("/api/v1/summits/request-email-change", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: getAuthHeaders(),
       body: JSON.stringify({ newEmail })
     });
     const data = await res.json();
@@ -407,7 +410,7 @@ export const verifyAuthorizedEmailChange = async (otp, newEmail) => {
   try {
     const res = await fetch("/api/v1/summits/verify-email-change", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: getAuthHeaders(),
       body: JSON.stringify({ otp, newEmail })
     });
     const data = await res.json();

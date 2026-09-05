@@ -1,3 +1,5 @@
+import { getAuthHeaders } from "./adminAuthService";
+
 /**
  * Fetch all applications directly from MySQL Server with optional query filters
  */
@@ -43,6 +45,7 @@ export const clearAllApplications = async () => {
   try {
     await fetch("/api/v1/applications/clear", {
       method: "DELETE",
+      headers: getAuthHeaders()
     });
   } catch (err) {
     console.error("Error calling backend clear applications API:", err);
@@ -265,7 +268,7 @@ export const updateVerificationStatus = async (id, status) => {
   try {
     const res = await fetch(`/api/v1/applications/${id}/status`, {
       method: "PATCH",
-      headers: { "Content-Type": "application/json" },
+      headers: getAuthHeaders(),
       body: JSON.stringify({ verificationStatus: status }),
     });
     const result = await res.json();
@@ -285,6 +288,7 @@ export const deleteApplication = async (id) => {
   try {
     await fetch(`/api/v1/applications/${id}`, {
       method: "DELETE",
+      headers: getAuthHeaders()
     });
 
     if (typeof window !== "undefined") {

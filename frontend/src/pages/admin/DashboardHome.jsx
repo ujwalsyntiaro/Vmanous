@@ -122,15 +122,21 @@ const DashboardHome = () => {
       };
     }
 
-    const syncInterval = setInterval(() => {
-      loadDashboardData();
-    }, 5000);
+    const handleVisibilityOrFocus = () => {
+      if (document.visibilityState === 'visible') {
+        loadDashboardData();
+      }
+    };
+
+    window.addEventListener("visibilitychange", handleVisibilityOrFocus);
+    window.addEventListener("focus", handleVisibilityOrFocus);
 
     return () => {
       window.removeEventListener("summits_updated", loadDashboardData);
       window.removeEventListener("applications_updated", loadDashboardData);
+      window.removeEventListener("visibilitychange", handleVisibilityOrFocus);
+      window.removeEventListener("focus", handleVisibilityOrFocus);
       if (bc) bc.close();
-      clearInterval(syncInterval);
     };
   }, []);
 

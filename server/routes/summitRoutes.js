@@ -12,21 +12,22 @@ const {
   requestEmailChangeOtp,
   verifyEmailChangeOtp
 } = require('../controllers/summitController');
+const { verifyAdminToken } = require('../middleware/authMiddleware');
 
 router.route('/')
   .get(getSummits)
-  .post(createSummit);
+  .post(verifyAdminToken, createSummit);
 
 router.get('/authorized-email', getAuthorizedEmailConfig);
-router.post('/request-email-change', requestEmailChangeOtp);
-router.post('/verify-email-change', verifyEmailChangeOtp);
+router.post('/request-email-change', verifyAdminToken, requestEmailChangeOtp);
+router.post('/verify-email-change', verifyAdminToken, verifyEmailChangeOtp);
 
 router.post('/verify-entry-code', verifyEntryCode);
-router.post('/send-reschedule-otp', sendRescheduleOtp);
-router.post('/verify-reschedule-otp', verifyRescheduleOtp);
+router.post('/send-reschedule-otp', verifyAdminToken, sendRescheduleOtp);
+router.post('/verify-reschedule-otp', verifyAdminToken, verifyRescheduleOtp);
 
 router.route('/:id')
-  .put(updateSummit)
-  .delete(deleteSummit);
+  .put(verifyAdminToken, updateSummit)
+  .delete(verifyAdminToken, deleteSummit);
 
 module.exports = router;

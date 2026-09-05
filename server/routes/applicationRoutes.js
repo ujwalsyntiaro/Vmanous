@@ -8,25 +8,26 @@ const {
   deleteApplication,
   deleteAllApplications
 } = require('../controllers/applicationController');
+const { verifyAdminToken } = require('../middleware/authMiddleware');
 
 router.route('/')
   .get(getApplications)
   .post(createApplication)
-  .delete(deleteAllApplications);
+  .delete(verifyAdminToken, deleteAllApplications);
 
 router.route('/all')
-  .delete(deleteAllApplications);
+  .delete(verifyAdminToken, deleteAllApplications);
 
 router.route('/clear')
-  .delete(deleteAllApplications);
+  .delete(verifyAdminToken, deleteAllApplications);
 
 router.route('/transactions')
   .get(getPaymentTransactions);
 
 router.route('/:id')
-  .delete(deleteApplication);
+  .delete(verifyAdminToken, deleteApplication);
 
 router.route('/:id/status')
-  .patch(updateVerificationStatus);
+  .patch(verifyAdminToken, updateVerificationStatus);
 
 module.exports = router;

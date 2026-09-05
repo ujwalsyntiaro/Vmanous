@@ -20,6 +20,7 @@ app.get('/health', (req, res) => {
 });
 
 // Mount routers
+app.use('/api/v1/auth', require('./routes/authRoutes'));
 app.use('/api/v1/applications', require('./routes/applicationRoutes'));
 app.use('/api/v1/summits', require('./routes/summitRoutes'));
 app.use('/api/summits', require('./routes/summitRoutes'));

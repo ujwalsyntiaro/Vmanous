@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Plus, Edit2, Trash2, Calendar, Clock, MapPin, CheckCircle2, Building2, LayoutGrid, List, Receipt, DollarSign, History, Users, ChevronDown, Download, X, Search, Key, AlertCircle, Lock, ShieldCheck, Mail, Loader2 } from 'lucide-react';
 import { getSummits, fetchSummitsAsync, addSummit, updateSummit, deleteSummit, formatEventDates, isSummitActive, isRegistrationUpcoming, isCollegeMatch, getAuthorizedAdminEmail, requestAuthorizedEmailChange, verifyAuthorizedEmailChange } from '../../services/summitService';
 import { fetchApplicationsAsync } from '../../services/applicationService';
+import { getAuthHeaders } from '../../services/adminAuthService';
 import ProgramCard from '../../components/ui/ProgramCard';
 import DateInput, { isoToDDMMYYYY, isValidDDMMYYYY } from '../../components/ui/DateInput';
 
@@ -236,15 +237,10 @@ const ManagePrograms = () => {
       };
     }
 
-    const syncInterval = setInterval(() => {
-      loadSummits();
-    }, 5000);
-
     return () => {
       window.removeEventListener("summits_updated", loadSummits);
       window.removeEventListener("applications_updated", loadSummits);
       if (bc) bc.close();
-      clearInterval(syncInterval);
     };
   }, []);
 
@@ -478,7 +474,7 @@ const ManagePrograms = () => {
     try {
       const res = await fetch('/api/v1/summits/send-reschedule-otp', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         body: JSON.stringify({ summitId: editingId, newData: summitData, email: targetEmail })
       });
       const data = await res.json();
@@ -519,7 +515,7 @@ const ManagePrograms = () => {
     try {
       const res = await fetch('/api/v1/summits/verify-reschedule-otp', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         body: JSON.stringify({
           summitId: editingId,
           otp: otpValue.trim(),

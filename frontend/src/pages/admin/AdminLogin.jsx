@@ -12,13 +12,13 @@ const AdminLogin = () => {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setIsLoading(true);
 
-    setTimeout(() => {
-      const res = verifyAdminLogin(id, password);
+    try {
+      const res = await verifyAdminLogin(id, password);
       setIsLoading(false);
 
       if (res.success) {
@@ -26,7 +26,10 @@ const AdminLogin = () => {
       } else {
         setError(res.error || 'Invalid credentials');
       }
-    }, 400);
+    } catch (err) {
+      setIsLoading(false);
+      setError('Connection error logging in');
+    }
   };
 
   return (

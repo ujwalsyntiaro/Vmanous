@@ -89,12 +89,21 @@ const getSummits = async (req, res) => {
     });
 
     let summits = await prisma.summit.findMany({
-      orderBy: { createdAt: 'desc' },
-      include: { applications: true }
+      orderBy: { createdAt: 'desc' }
     });
 
     const paidApplications = await prisma.application.findMany({
-      where: { paymentStatus: 'Paid' }
+      where: { paymentStatus: 'Paid' },
+      select: {
+        id: true,
+        summitId: true,
+        programTitle: true,
+        collegeName: true,
+        paymentStatus: true,
+        studentName: true,
+        email: true,
+        createdAt: true
+      }
     });
 
     const data = summits.map(summit => {

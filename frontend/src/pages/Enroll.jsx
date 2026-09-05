@@ -99,17 +99,12 @@ export const Enroll = () => {
     window.addEventListener("visibilitychange", handleVisibilityOrFocus);
     window.addEventListener("focus", handleVisibilityOrFocus);
 
-    const syncInterval = setInterval(() => {
-      loadSummits();
-    }, 4000);
-
     return () => {
       window.removeEventListener("summits_updated", loadSummits);
       window.removeEventListener("applications_updated", loadSummits);
       window.removeEventListener("visibilitychange", handleVisibilityOrFocus);
       window.removeEventListener("focus", handleVisibilityOrFocus);
       if (bc) bc.close();
-      clearInterval(syncInterval);
     };
   }, []);
 

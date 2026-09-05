@@ -2,22 +2,14 @@ const nodemailer = require('nodemailer');
 const QRCode = require('qrcode');
 const { generatePassPDF } = require('./pdfPassService');
 
-// Cached Persistent Transporter with Connection Pooling for Ultra-Fast Delivery
-let cachedTransporter = null;
-
 const getTransporter = () => {
-  if (cachedTransporter) return cachedTransporter;
-
   const host = process.env.EMAIL_HOST;
   const port = parseInt(process.env.EMAIL_PORT || '465', 10);
   const user = process.env.EMAIL_USER || 'vmanous.com@gmail.com';
   const pass = (process.env.EMAIL_PASS || '').replace(/\s+/g, '');
 
   if (host) {
-    cachedTransporter = nodemailer.createTransport({
-      pool: true,               // Connection pooling (keeps SMTP socket warm & open)
-      maxConnections: 5,        // Up to 5 parallel connections
-      maxMessages: 100,         // Reuse each connection for up to 100 emails
+    return nodemailer.createTransport({
       host: host,
       port: port,
       secure: port === 465,     // true for 465 SSL
@@ -26,18 +18,15 @@ const getTransporter = () => {
         rejectUnauthorized: false
       },
       connectionTimeout: 8000,
-      greetingTimeout: 4000,
-      socketTimeout: 12000
+      greetingTimeout: 5000,
+      socketTimeout: 15000
     });
   } else {
-    cachedTransporter = nodemailer.createTransport({
-      pool: true,
+    return nodemailer.createTransport({
       service: 'gmail',
       auth: { user, pass }
     });
   }
-
-  return cachedTransporter;
 };
 
 // Function to send College AI Summit Request Notification Email
