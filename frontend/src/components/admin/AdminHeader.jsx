@@ -30,6 +30,14 @@ const AdminHeader = ({ setIsMobileOpen }) => {
       </div>
 
       <div className="flex items-center gap-3 sm:gap-4">
+        <button
+          onClick={handleLogout}
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-600 hover:text-red-600 hover:bg-red-50 rounded-lg border border-slate-200 hover:border-red-200 transition-all cursor-pointer"
+          title="Logout of VPanel"
+        >
+          <LogOut size={15} />
+          <span className="hidden sm:inline">Sign Out</span>
+        </button>
       </div>
     </header>
   );

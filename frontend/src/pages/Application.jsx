@@ -134,9 +134,10 @@ export const Application = () => {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [errors, setErrors] = useState({});
 
-  // Camera State
+  // Camera & DOB Picker Refs
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
+  const dobPickerRef = useRef(null);
   const [isCameraOpen, setIsCameraOpen] = useState(false);
   const [cameraStream, setCameraStream] = useState(null);
   const [cameraError, setCameraError] = useState('');
@@ -313,6 +314,35 @@ export const Application = () => {
 
     setFormData(prev => ({ ...prev, dob: formatted }));
     if (errors.dob) setErrors(prev => ({ ...prev, dob: null }));
+  };
+
+  const getIsoDateFromDob = (dob) => {
+    if (!dob || dob.length !== 10) return '';
+    const parts = dob.split('/');
+    if (parts.length === 3 && parts[0].length === 2 && parts[1].length === 2 && parts[2].length === 4) {
+      return `${parts[2]}-${parts[1]}-${parts[0]}`;
+    }
+    return '';
+  };
+
+  const handleCalendarClick = () => {
+    if (dobPickerRef.current) {
+      if (typeof dobPickerRef.current.showPicker === 'function') {
+        dobPickerRef.current.showPicker();
+      } else {
+        dobPickerRef.current.focus();
+      }
+    }
+  };
+
+  const handleDatePickerChange = (e) => {
+    const val = e.target.value;
+    if (val) {
+      const [year, month, day] = val.split('-');
+      const formatted = `${day}/${month}/${year}`;
+      setFormData(prev => ({ ...prev, dob: formatted }));
+      if (errors.dob) setErrors(prev => ({ ...prev, dob: null }));
+    }
   };
 
   const handleChange = (e) => {
@@ -801,19 +831,38 @@ export const Application = () => {
                             <label className="block text-xs font-bold text-slate-700 mb-1">
                               Date of Birth <span className="text-red-500">*</span>
                             </label>
-                            <input
-                              type="text"
-                              name="dob"
-                              required
-                              placeholder="DD/MM/YYYY"
-                              maxLength={10}
-                              value={formData.dob}
-                              onChange={handleDobChange}
-                              className={`w-full px-3 py-1.5 rounded-lg bg-white border text-slate-800 text-xs font-medium focus:ring-2 outline-none transition-all duration-200 placeholder:text-slate-400 ${errors.dob
-                                ? 'border-red-500 focus:border-red-500 focus:ring-red-500/15'
-                                : 'border-slate-400 focus:border-emerald-600 focus:ring-emerald-600/15'
-                                }`}
-                            />
+                            <div className="relative flex items-center">
+                              <input
+                                type="text"
+                                name="dob"
+                                required
+                                placeholder="DD/MM/YYYY"
+                                maxLength={10}
+                                value={formData.dob}
+                                onChange={handleDobChange}
+                                className={`w-full pl-3 pr-9 py-1.5 rounded-lg bg-white border text-slate-800 text-xs font-medium focus:ring-2 outline-none transition-all duration-200 placeholder:text-slate-400 ${errors.dob
+                                  ? 'border-red-500 focus:border-red-500 focus:ring-red-500/15'
+                                  : 'border-slate-400 focus:border-emerald-600 focus:ring-emerald-600/15'
+                                  }`}
+                              />
+                              <input
+                                type="date"
+                                ref={dobPickerRef}
+                                value={getIsoDateFromDob(formData.dob)}
+                                onChange={handleDatePickerChange}
+                                max={new Date().toISOString().split('T')[0]}
+                                className="sr-only absolute opacity-0 pointer-events-none w-0 h-0"
+                                tabIndex={-1}
+                              />
+                              <button
+                                type="button"
+                                onClick={handleCalendarClick}
+                                className="absolute right-2.5 text-slate-400 hover:text-emerald-600 transition-colors p-0.5 cursor-pointer"
+                                title="Open Calendar"
+                              >
+                                <Calendar size={15} />
+                              </button>
+                            </div>
                             {errors.dob && (
                               <p className="mt-1 text-[11px] text-red-500 font-semibold flex items-center gap-1">
                                 <span>•</span> {errors.dob}

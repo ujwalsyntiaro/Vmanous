@@ -1932,9 +1932,9 @@ const ManagePrograms = () => {
                       {isSendingOtp ? (
                         <>
                           <div className="w-3.5 h-3.5 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin"></div>
-                          <span>Sending OTP...</span>
+                          <span>Sending Authorization...</span>
                         </>
-                      ) : 'Send OTP'}
+                      ) : 'Send Authorization'}
                     </button>
                   </div>
                 </div>

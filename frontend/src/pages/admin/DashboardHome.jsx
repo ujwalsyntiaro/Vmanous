@@ -561,7 +561,7 @@ const DashboardHome = () => {
         ).size;
 
         return (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2.5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
             {/* 1st: Total Active Colleges */}
             <StatCard
               title="Total Active Colleges"
@@ -578,15 +578,7 @@ const DashboardHome = () => {
               onClick={() => navigate('/vpanel/applications')}
               isLoading={isLoading}
             />
-            {/* 3rd: Registered Students */}
-            <StatCard
-              title="Registered Students"
-              value={revMetrics.totalPaidCount.toString()}
-              icon={CheckCircle2}
-              onClick={() => navigate('/vpanel/applications')}
-              isLoading={isLoading}
-            />
-            {/* 4th: Failed Payments */}
+            {/* 3rd: Failed Payments */}
             <StatCard
               title="Failed Payments"
               value={revMetrics.failedCount.toString()}
@@ -594,7 +586,7 @@ const DashboardHome = () => {
               onClick={() => navigate('/vpanel/applications')}
               isLoading={isLoading}
             />
-            {/* 5th: Pending Audits */}
+            {/* 4th: Pending Audits */}
             <StatCard
               title="Pending Audits"
               value={revMetrics.pendingAuditCount.toString()}

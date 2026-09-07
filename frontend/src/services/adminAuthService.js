@@ -51,8 +51,9 @@ export const verifyAdminLogin = async (id, password) => {
 
     const data = await res.json();
     if (res.ok && data.success && data.token) {
-      localStorage.setItem('vmanous_admin_token', data.token);
+      sessionStorage.setItem('vmanous_admin_token', data.token);
       sessionStorage.setItem('vmanous_admin_session', 'true');
+      localStorage.setItem('vmanous_admin_token', data.token);
       localStorage.setItem('vmanous_admin_creds', JSON.stringify({
         id: data.admin?.id || inputId,
         password: inputPassword
@@ -79,15 +80,16 @@ export const verifyAdminLogin = async (id, password) => {
 // Check if currently logged in
 export const isAdminLoggedIn = () => {
   if (typeof window === 'undefined') return false;
-  return sessionStorage.getItem('vmanous_admin_session') === 'true' || Boolean(getAdminToken());
+  return sessionStorage.getItem('vmanous_admin_session') === 'true';
 };
 
 // Logout Admin
 export const logoutAdmin = () => {
   if (typeof window === 'undefined') return;
   sessionStorage.removeItem('vmanous_admin_session');
-  localStorage.removeItem('vmanous_admin_token');
   sessionStorage.removeItem('vmanous_admin_token');
+  localStorage.removeItem('vmanous_admin_token');
+  localStorage.removeItem('vmanous_admin_creds');
 };
 
 // Update Admin ID & Password securely

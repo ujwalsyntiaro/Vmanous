@@ -271,7 +271,7 @@ export const AISummitFeature = () => {
             <div className="border-b border-slate-100 pb-2.5 mb-3 flex items-center justify-between">
               <div>
                 <h3 className="text-xl sm:text-2xl font-medium text-slate-900 tracking-tight">
-                  Approach for AI Summit Proposal
+                  Approach for AI Summit
                 </h3>
                 <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
                   Fill in your college details to receive an official proposal & date confirmation.
