@@ -550,12 +550,119 @@ const sendStudentRescheduleEmail = async (student, summitDetails, status, messag
   }
 };
 
+/**
+ * Function to send Automatic Refund Notification Email when workshop capacity is full
+ */
+const sendSeatFullRefundEmail = async (data) => {
+  const transporter = getTransporter();
+  const senderEmail = process.env.EMAIL_USER || 'vmanous.com@gmail.com';
+  const recipientEmail = data.email || 'student@vmanous.com';
+  const studentName = data.studentName || 'Student Participant';
+  const programTitle = data.programTitle || 'AI Summit Workshop';
+  const collegeName = data.collegeName || 'Partner College';
+  const amountPaid = data.amountPaid !== undefined ? Number(data.amountPaid) : 0;
+  const refundId = data.refundId || data.cfRefundId || `REF-${Date.now()}`;
+  const orderId = data.orderId || data.transactionId || 'N/A';
+
+  const mailOptions = {
+    from: `"VMANOUS Admissions & Finance Desk" <${senderEmail}>`,
+    to: recipientEmail,
+    subject: `⚡ 100% Automatic Refund Initiated: ${programTitle} - VMANOUS`,
+    html: `
+      <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; border: 1px solid #e2e8f0; border-radius: 12px; background-color: #ffffff; color: #1e293b;">
+        <div style="text-align: center; border-bottom: 2px solid #f1f5f9; padding-bottom: 16px;">
+          <h1 style="color: #0f172a; margin: 0; font-size: 22px; font-weight: 800; letter-spacing: -0.5px;">VMANOUS ACADEMY</h1>
+          <p style="color: #64748b; margin: 4px 0 0 0; font-size: 13px;">Admissions & Payment Processing Desk</p>
+        </div>
+
+        <div style="padding: 24px 0;">
+          <div style="background-color: #fff7ed; border: 1px solid #fed7aa; border-left: 5px solid #f97316; border-radius: 8px; padding: 14px 18px; margin-bottom: 20px;">
+            <p style="margin: 0; font-weight: 700; color: #9a3412; font-size: 15px;">
+              ⚠️ Summit Reached Maximum Capacity
+            </p>
+            <p style="margin: 6px 0 0 0; font-size: 13px; color: #7c2d12; line-height: 1.5;">
+              Dear <strong>${studentName}</strong>, while your payment was processing, the final remaining seat for <strong>${programTitle}</strong> at <strong>${collegeName}</strong> was confirmed by another participant.
+            </p>
+          </div>
+
+          <p style="font-size: 14px; color: #334155; line-height: 1.6;">
+            We have <strong>automatically triggered an instant 100% refund</strong> of your payment. No manual action is required from your side.
+          </p>
+
+          <!-- Refund Summary Box -->
+          <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 18px; margin: 20px 0;">
+            <h3 style="margin: 0 0 12px 0; font-size: 14px; color: #0f172a; font-weight: 700; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px;">
+              🧾 Refund Details Summary
+            </h3>
+            <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+              <tr>
+                <td style="padding: 6px 0; color: #64748b; width: 45%;">Refund Amount:</td>
+                <td style="padding: 6px 0; color: #16a34a; font-weight: 800; font-size: 16px;">₹${amountPaid.toFixed(2)} (100% Full Refund)</td>
+              </tr>
+              <tr>
+                <td style="padding: 6px 0; color: #64748b;">Refund Status:</td>
+                <td style="padding: 6px 0; color: #0f172a; font-weight: 700;">
+                  <span style="display: inline-block; background-color: #dcfce7; color: #15803d; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 700;">Initiated via Cashfree PG</span>
+                </td>
+              </tr>
+              <tr>
+                <td style="padding: 6px 0; color: #64748b;">Cashfree Refund Reference:</td>
+                <td style="padding: 6px 0; color: #0f172a; font-family: monospace; font-weight: 700;">${refundId}</td>
+              </tr>
+              <tr>
+                <td style="padding: 6px 0; color: #64748b;">Original Order ID:</td>
+                <td style="padding: 6px 0; color: #475569; font-family: monospace;">${orderId}</td>
+              </tr>
+              <tr>
+                <td style="padding: 6px 0; color: #64748b;">Destination:</td>
+                <td style="padding: 6px 0; color: #0f172a; font-weight: 600;">Original Bank / UPI / Card Account</td>
+              </tr>
+            </table>
+          </div>
+
+          <div style="background-color: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 14px 16px; margin: 16px 0;">
+            <p style="margin: 0; font-size: 13px; color: #1e40af; line-height: 1.5;">
+              ⏱️ <strong>When will I see the money in my bank account?</strong><br />
+              UPI & NetBanking refunds typically reflect within <strong>24 to 48 hours</strong>. Credit/Debit Card refunds may take <strong>3 to 5 business days</strong> depending on your bank's clearance cycle.
+            </p>
+          </div>
+
+          <p style="font-size: 13px; color: #475569; line-height: 1.6;">
+            We sincerely apologize for this inconvenience. You are welcome to browse and register for upcoming AI Summits and batches available on our portal.
+          </p>
+
+          <div style="margin-top: 24px; padding: 14px; background-color: #f8fafc; border-radius: 8px; font-size: 12px; color: #475569; text-align: center;">
+            Have questions regarding this refund? Reach our finance team at <a href="mailto:support@vmanous.com" style="color: #2563eb; font-weight: bold; text-decoration: none;">support@vmanous.com</a>
+          </div>
+
+          <hr style="border: none; border-top: 1px solid #f1f5f9; margin: 24px 0 16px 0;" />
+
+          <p style="font-size: 11px; color: #94a3b8; margin: 0; text-align: center;">
+            © ${new Date().getFullYear()} VMANOUS Open Source. CIN: U62099PN2024PTC229219. All rights reserved.
+          </p>
+        </div>
+      </div>
+    `
+  };
+
+  try {
+    const info = await transporter.sendMail(mailOptions);
+    console.log(`[Auto-Refund Email Alert] Sent successfully to ${recipientEmail}:`, info.messageId);
+    return { success: true };
+  } catch (err) {
+    console.error(`[Auto-Refund Email Alert Error] Failed to send to ${recipientEmail}:`, err);
+    return { success: false, error: err.message };
+  }
+};
+
 module.exports = {
   sendCollegeRequestEmail,
   sendStudentPassEmail,
   sendWorkshopCertificateEmail,
   sendAdminOtpEmail,
   sendSecurityEmailChangeOtpEmail,
-  sendStudentRescheduleEmail
+  sendStudentRescheduleEmail,
+  sendSeatFullRefundEmail
 };
+
 

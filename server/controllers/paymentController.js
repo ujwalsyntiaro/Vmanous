@@ -1,6 +1,6 @@
 const axios = require('axios');
 const prisma = require('../config/prisma');
-const { sendStudentPassEmail } = require('../services/emailService');
+const { sendStudentPassEmail, sendSeatFullRefundEmail } = require('../services/emailService');
 
 // In-memory store for pending orders awaiting payment verification
 const pendingOrders = new Map();
@@ -29,6 +29,38 @@ const getCashfreeHeaders = () => {
 };
 
 /**
+ * Helper to trigger Cashfree PG Auto-Refund API
+ */
+const initiateCashfreeRefund = async (orderId, amount, reason = 'Summit seat limit reached') => {
+  const baseUrl = getCashfreeBaseUrl();
+  const headers = getCashfreeHeaders();
+  const refundId = `ref_${orderId.slice(-15)}_${Date.now().toString().slice(-6)}`;
+
+  try {
+    console.log(`[Cashfree Refund Request] Initiating refund of ₹${amount} for Order ${orderId} (Refund ID: ${refundId})`);
+    const response = await axios.post(
+      `${baseUrl}/orders/${orderId}/refunds`,
+      {
+        refund_id: refundId,
+        refund_amount: Number(Number(amount).toFixed(2)),
+        refund_note: reason.slice(0, 100),
+        refund_speed: 'STANDARD'
+      },
+      { headers, timeout: 15000 }
+    );
+    console.log(`[Cashfree Refund Success] Order ${orderId} refunded successfully:`, response.data);
+    return { success: true, data: response.data };
+  } catch (error) {
+    console.error(`[Cashfree Refund Error] Failed to refund Order ${orderId}:`, error.response?.data || error.message);
+    return { 
+      success: false, 
+      error: error.response?.data?.message || error.message,
+      data: error.response?.data || null
+    };
+  }
+};
+
+/**
  * 1. Initiate Cashfree Live Payment Order
  * Route: POST /api/v1/payments/create-order
  */
@@ -54,6 +86,29 @@ const createPaymentOrder = async (req, res) => {
       platformFee,
       amountPaid
     } = req.body;
+
+    // Pre-check: Reject order creation if the summit has already reached maximum capacity
+    if (summitId) {
+      const existingSummit = await prisma.summit.findUnique({
+        where: { id: Number(summitId) },
+        include: {
+          applications: {
+            where: { paymentStatus: 'Paid' }
+          }
+        }
+      });
+      if (existingSummit) {
+        const enrolled = existingSummit.applications.length;
+        const capacity = existingSummit.seatCapacity !== undefined ? Number(existingSummit.seatCapacity) : 100;
+        if (enrolled >= capacity) {
+          return res.status(400).json({
+            success: false,
+            isFull: true,
+            error: `Registration Closed: This AI Summit has reached full seat capacity (${enrolled}/${capacity} seats filled).`
+          });
+        }
+      }
+    }
 
     const totalAmountInINR = (amountPaid !== undefined && amountPaid !== null && !isNaN(Number(amountPaid))) ? Number(amountPaid) : 1999;
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
@@ -308,12 +363,109 @@ const verifyPaymentStatus = async (req, res) => {
     const photoUrl = orderDetails.selfiePhotoUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=300';
 
     if (isSuccess) {
-      // 1. Check if application was already created in a concurrent request
+      // 1. Check if application was already created in a concurrent request (Idempotency Check)
       let app = await prisma.application.findFirst({
         where: { transactionId: targetOrderId }
       });
 
-      if (!app) {
+      if (app) {
+        console.log(`[Cashfree Status Check] Order ${targetOrderId} was already verified as Application ${app.id}.`);
+      } else {
+        // 2. Atomic Capacity Check: Prevent overbooking and auto-refund if capacity is reached
+        let targetSummit = null;
+        if (orderDetails.summitId) {
+          targetSummit = await prisma.summit.findUnique({
+            where: { id: Number(orderDetails.summitId) },
+            include: {
+              applications: {
+                where: { paymentStatus: 'Paid' }
+              }
+            }
+          });
+        } else if (orderDetails.programTitle) {
+          targetSummit = await prisma.summit.findFirst({
+            where: { title: orderDetails.programTitle },
+            include: {
+              applications: {
+                where: { paymentStatus: 'Paid' }
+              }
+            }
+          });
+        }
+
+        if (targetSummit) {
+          const enrolledCount = Array.isArray(targetSummit.applications) ? targetSummit.applications.length : 0;
+          const maxCapacity = targetSummit.seatCapacity !== undefined ? Number(targetSummit.seatCapacity) : 100;
+
+          if (enrolledCount >= maxCapacity) {
+            console.warn(`[Overbooking Detected] Summit #${targetSummit.id} "${targetSummit.title}" is full (${enrolledCount}/${maxCapacity}). Executing instant automated refund for Order ${targetOrderId}...`);
+
+            // Execute Cashfree PG Auto-Refund
+            const refundResult = await initiateCashfreeRefund(
+              targetOrderId,
+              totalPaid,
+              `AI Summit full capacity reached (${enrolledCount}/${maxCapacity}) - Automated Refund`
+            );
+
+            const refundRefId = refundResult.data?.refund_id || refundResult.data?.cf_refund_id || `REF-${Date.now()}`;
+
+            // Record transaction in database as Refunded
+            try {
+              await prisma.paymentTransaction.upsert({
+                where: { transactionId: targetOrderId },
+                update: {
+                  paymentStatus: 'Refunded',
+                  paymentFailureReason: `Summit full capacity (${enrolledCount}/${maxCapacity}). Auto-refund initiated: ${refundResult.success ? 'Success' : 'Pending'} (Refund ID: ${refundRefId})`
+                },
+                create: {
+                  transactionId: targetOrderId,
+                  studentName: orderDetails.studentName,
+                  email: orderDetails.email,
+                  phone: orderDetails.phone,
+                  collegeName: orderDetails.collegeName,
+                  programTitle: orderDetails.programTitle || targetSummit.title,
+                  amountPaid: totalPaid,
+                  baseAmount,
+                  gstAmount,
+                  platformFee: orderDetails.platformFee !== undefined && orderDetails.platformFee !== null ? Number(orderDetails.platformFee) : 0,
+                  paymentStatus: 'Refunded',
+                  paymentMethod: paymentMethod,
+                  paymentFailureReason: `Summit full capacity (${enrolledCount}/${maxCapacity}). Auto-refund initiated: ${refundResult.success ? 'Success' : 'Pending'} (Refund ID: ${refundRefId})`
+                }
+              });
+            } catch (txnErr) {
+              console.error('[PaymentTransaction Refund Logging Error]:', txnErr.message);
+            }
+
+            // Dispatch automated refund notification email to student
+            sendSeatFullRefundEmail({
+              studentName: orderDetails.studentName,
+              email: orderDetails.email,
+              programTitle: orderDetails.programTitle || targetSummit.title,
+              collegeName: orderDetails.collegeName || targetSummit.college,
+              amountPaid: totalPaid,
+              refundId: refundRefId,
+              orderId: targetOrderId
+            }).catch(emailErr =>
+              console.error('[Auto-Refund Email Dispatch Error]:', emailErr.message)
+            );
+
+            pendingOrders.delete(targetOrderId);
+
+            return res.status(200).json({
+              success: false,
+              isOverbooked: true,
+              refundInitiated: refundResult.success,
+              refundId: refundRefId,
+              amountPaid: totalPaid,
+              programTitle: orderDetails.programTitle || targetSummit.title,
+              collegeName: orderDetails.collegeName || targetSummit.college,
+              error: `The last seat for ${targetSummit.title} was booked while your transaction was completing. A 100% automatic refund of ₹${totalPaid.toFixed(2)} has been initiated to your original payment method.`
+            });
+          }
+        }
+
+        // 3. Seat is available -> Create verified Application
         app = await prisma.application.create({
           data: {
             studentName: orderDetails.studentName,
@@ -341,7 +493,7 @@ const verifyPaymentStatus = async (req, res) => {
         });
       }
 
-      // 2. Safely create or find PaymentTransaction record
+      // 4. Safely create or find PaymentTransaction record
       try {
         const existingTxn = await prisma.paymentTransaction.findUnique({
           where: { transactionId: targetOrderId }
@@ -371,7 +523,7 @@ const verifyPaymentStatus = async (req, res) => {
         console.warn('[PaymentTransaction Notice] Transaction record already created or logged:', txnErr.message);
       }
 
-      // 2b. Safely sync into Student model roster
+      // 5. Safely sync into Student model roster
       try {
         const studentEmail = (app.email || '').trim().toLowerCase();
         if (studentEmail) {
@@ -400,7 +552,7 @@ const verifyPaymentStatus = async (req, res) => {
         console.warn('[Student Roster Sync Notice]:', stuErr.message);
       }
 
-      // 3. Automatically Dispatch Workshop Pass PDF via Email in Background
+      // 6. Automatically Dispatch Workshop Pass PDF via Email in Background
       const emailPayload = {
         ...app,
         bloodGroup: orderDetails.bloodGroup || null

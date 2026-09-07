@@ -23,6 +23,7 @@ export const PaymentCallback = () => {
 
   const [loading, setLoading] = useState(true);
   const [statusResult, setStatusResult] = useState(null);
+  const [overbookedData, setOverbookedData] = useState(null);
   const [failedData, setFailedData] = useState(null);
   const [errorMsg, setErrorMsg] = useState('');
   const hasVerifiedRef = useRef(false);
@@ -43,6 +44,7 @@ export const PaymentCallback = () => {
   const verifyPayment = async () => {
     setLoading(true);
     setErrorMsg('');
+    setOverbookedData(null);
     setFailedData(null);
 
     let pendingData = null;
@@ -108,13 +110,30 @@ export const PaymentCallback = () => {
         // Automatically redirect to Pass Page after 1.8s
         const timer = setTimeout(navigateToPass, 1800);
         return () => clearTimeout(timer);
+      } else if (result.isOverbooked) {
+        // Seat capacity full & Auto-refund triggered
+        setOverbookedData({
+          refundInitiated: result.refundInitiated !== false,
+          refundId: result.refundId || `REF-${Date.now().toString().slice(-6)}`,
+          amountPaid: result.amountPaid || pendingData?.totalAmount || pendingData?.amountPaid || 0,
+          programTitle: result.programTitle || pendingData?.programInterest || 'AI Summit Workshop',
+          collegeName: result.collegeName || pendingData?.institution || 'Partner College',
+          error: result.error || 'The last seat was booked right before your transaction completed. A 100% automatic refund has been initiated.'
+        });
+
+        // Trigger reactive seat count updates
+        broadcastSummitUpdate();
+
+        try {
+          sessionStorage.removeItem('vmanous_pending_payment');
+        } catch (e) {}
       } else {
         // Payment is strictly FAILED
         const reason = result.error || (result.paymentCode ? `Gateway status: ${result.paymentCode}` : 'Transaction Cancelled / Declined');
         setErrorMsg(reason);
         setFailedData({
           ...pendingData,
-          transactionId: merchantTransactionId,
+          transactionId: orderId,
           failureReason: reason,
           amountPaid: result.amountPaid || pendingData?.totalAmount || pendingData?.amountPaid || 0,
           programTitle: result.programTitle || pendingData?.programInterest || 'AI Summit Workshop',
@@ -124,7 +143,7 @@ export const PaymentCallback = () => {
     } catch (err) {
       console.error('Callback error:', err);
       setErrorMsg('Failed to communicate with payment verification server');
-      setFailedData(pendingData ? { ...pendingData, transactionId: merchantTransactionId } : null);
+      setFailedData(pendingData ? { ...pendingData, transactionId: orderId } : null);
     } finally {
       setLoading(false);
     }
@@ -254,6 +273,73 @@ export const PaymentCallback = () => {
                 <span>View Digital Pass</span>
                 <ArrowRight size={14} />
               </button>
+            </div>
+          </div>
+        ) : overbookedData ? (
+          /* Summit Overbooked & Auto-Refund Initiated State */
+          <div className="space-y-4 py-3 animate-in fade-in duration-300">
+            <div className="w-16 h-16 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mx-auto shadow-sm">
+              <RotateCcw size={32} />
+            </div>
+
+            <div>
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-50 text-amber-800 text-[11px] font-bold rounded-full border border-amber-200 mb-2">
+                <span>Capacity Reached</span>
+                <span>•</span>
+                <span>100% Refund Initiated</span>
+              </div>
+              <h2 className="text-xl font-bold text-slate-900">Seat Full — Auto-Refunded</h2>
+              <p className="text-xs text-slate-600 mt-1 leading-relaxed">
+                The final seat for <strong className="text-slate-900">{overbookedData.programTitle}</strong> was booked milliseconds before your transaction finished.
+              </p>
+            </div>
+
+            {/* Refund Confirmation Card */}
+            <div className="bg-gradient-to-br from-amber-50/80 to-orange-50/50 border border-amber-200 rounded-xl p-4 text-left text-xs space-y-2.5">
+              <div className="flex items-start gap-2">
+                <ShieldCheck size={16} className="text-emerald-600 shrink-0 mt-0.5" />
+                <p className="text-slate-800 font-semibold leading-tight">
+                  Full automatic refund of <span className="text-emerald-700 font-bold text-sm">₹{Number(overbookedData.amountPaid).toLocaleString('en-IN')}</span> has been initiated to your original payment method.
+                </p>
+              </div>
+
+              <div className="border-t border-amber-200/70 pt-2.5 space-y-1.5 text-[11px] text-slate-600">
+                <div className="flex justify-between">
+                  <span className="text-slate-500">Refund Reference ID:</span>
+                  <span className="font-mono font-bold text-slate-800 truncate max-w-[180px]">{overbookedData.refundId}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-500">Original Order ID:</span>
+                  <span className="font-mono text-slate-700 truncate max-w-[180px]">{orderId}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-500">Expected In Bank:</span>
+                  <span className="font-semibold text-slate-800">24–48 Hours (UPI) / 3–5 Days (Cards)</span>
+                </div>
+              </div>
+            </div>
+
+            <p className="text-[11px] text-slate-500 italic">
+              A refund confirmation receipt has also been dispatched to your email address.
+            </p>
+
+            {/* Action CTAs */}
+            <div className="pt-2 flex flex-col gap-2.5">
+              <Link
+                to="/workshops"
+                className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-2 cursor-pointer shadow-sm hover:shadow active:scale-[0.99]"
+              >
+                <span>Browse Other AI Summits & Batches</span>
+                <ArrowRight size={15} />
+              </Link>
+
+              <Link
+                to="/"
+                className="w-full py-2.5 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-1.5"
+              >
+                <Home size={14} />
+                <span>Return to Homepage</span>
+              </Link>
             </div>
           </div>
         ) : (
