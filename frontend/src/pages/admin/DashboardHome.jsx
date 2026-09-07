@@ -469,7 +469,7 @@ const DashboardHome = () => {
         <div className="bg-white p-3 rounded-lg border border-gray-200/90 shadow-2xs">
           <div className="flex justify-between items-start mb-1">
             <span className="text-xs font-bold text-slate-500">
-              Total Gross Revenue
+              Gross Revenue
             </span>
             <span className="p-1 bg-emerald-50 text-emerald-600 rounded-md">
               <TrendingUp size={15} />
@@ -492,7 +492,7 @@ const DashboardHome = () => {
         <div className="bg-white p-3 rounded-lg border border-gray-200/90 shadow-2xs">
           <div className="flex justify-between items-start mb-1">
             <span className="text-xs font-bold text-slate-500">
-              Base Net Value (Excl. Tax)
+              Net Revenue (Excl. Tax)
             </span>
             <span className="p-1 bg-sky-50 text-sky-600 rounded-md">
               <PieChartIcon size={15} />
@@ -510,7 +510,7 @@ const DashboardHome = () => {
         <div className="bg-white p-3 rounded-lg border border-gray-200/90 shadow-2xs">
           <div className="flex justify-between items-start mb-1">
             <span className="text-xs font-bold text-slate-500">
-              GST Collected
+              GST
             </span>
             <span className="p-1 bg-amber-50 text-amber-600 rounded-md">
               <Receipt size={15} />
@@ -550,30 +550,43 @@ const DashboardHome = () => {
           0
         );
         const displayTotalStudents = filteredApps.length > 0 ? filteredApps.length : (totalAllEnrolled > 0 ? totalAllEnrolled : students.length);
+        const activeUpcomingSummits = summits.filter(
+          (s) =>
+            isSummitActive(s) &&
+            s.status !== "Event Completed" &&
+            s.status !== "Completed"
+        );
+        const activeCollegesCount = new Set(
+          activeUpcomingSummits.map((s) => s.college?.trim()).filter(Boolean)
+        ).size;
 
         return (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2.5">
+            {/* 1st: Total Active Colleges */}
             <StatCard
-              title="Total Students"
+              title="Total Active Colleges"
+              value={activeCollegesCount.toString()}
+              icon={Building2}
+              onClick={() => navigate('/vpanel/ai-summits')}
+              isLoading={isLoading}
+            />
+            {/* 2nd: Total Enrolled Students */}
+            <StatCard
+              title="Total Enrolled Students"
               value={displayTotalStudents.toString()}
               icon={Users}
               onClick={() => navigate('/vpanel/applications')}
               isLoading={isLoading}
             />
+            {/* 3rd: Registered Students */}
             <StatCard
-              title="Active Programs"
-              value={summits.length.toString()}
-              icon={BookOpen}
-              onClick={() => navigate('/vpanel/ai-summits')}
-              isLoading={isLoading}
-            />
-            <StatCard
-              title="Paid Registrations"
+              title="Registered Students"
               value={revMetrics.totalPaidCount.toString()}
               icon={CheckCircle2}
               onClick={() => navigate('/vpanel/applications')}
               isLoading={isLoading}
             />
+            {/* 4th: Failed Payments */}
             <StatCard
               title="Failed Payments"
               value={revMetrics.failedCount.toString()}
@@ -581,6 +594,7 @@ const DashboardHome = () => {
               onClick={() => navigate('/vpanel/applications')}
               isLoading={isLoading}
             />
+            {/* 5th: Pending Audits */}
             <StatCard
               title="Pending Audits"
               value={revMetrics.pendingAuditCount.toString()}

@@ -32,7 +32,7 @@ export const AISummitFeature = () => {
     phone: '',
     whatsapp: '',
     preferredProgram: 'AI SUMMIT WORKSHOP',
-    message: ''
+    description: ''
   });
 
   const [errors, setErrors] = useState({});
@@ -183,7 +183,7 @@ export const AISummitFeature = () => {
         phone: '',
         whatsapp: '',
         preferredProgram: 'AI SUMMIT WORKSHOP',
-        message: ''
+        description: ''
       });
     }
   };
@@ -493,17 +493,17 @@ export const AISummitFeature = () => {
                 </div>
 
                 {/* Description */}
-                <div>
+                <div className="w-full">
                   <label className="block text-xs sm:text-sm font-normal text-slate-700 mb-1">
                     Description
                   </label>
                   <textarea
-                    rows={3}
+                    rows={2}
                     name="description"
                     placeholder="Expected dates, student count, notes..."
                     value={formData.description || ''}
                     onChange={handleChange}
-                    className="w-full max-w-full min-w-[160px] p-3 border border-slate-200 rounded-md bg-slate-50/50 focus:bg-white focus:outline-none focus:border-slate-800 focus:ring-2 focus:ring-slate-800/10 text-xs sm:text-sm text-slate-900 placeholder:font-normal placeholder:text-slate-400 transition-colors resize shadow-2xs box-border"
+                    className="w-full sm:w-[calc(50%-0.375rem)] min-w-[120px] max-w-full h-[54px] min-h-[54px] max-h-64 px-3.5 py-2 border border-slate-200 rounded-md bg-slate-50/50 focus:bg-white focus:outline-none focus:border-slate-800 focus:ring-2 focus:ring-slate-800/10 text-xs sm:text-sm text-slate-900 placeholder:font-normal placeholder:text-slate-400 transition-colors resize box-border shadow-2xs block"
                   />
                 </div>
 

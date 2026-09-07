@@ -1,8 +1,6 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import Container from '../ui/Container';
-import { ArrowRight } from 'lucide-react';
 
 const DataScienceHero = () => {
   return (
@@ -40,16 +38,6 @@ const DataScienceHero = () => {
           >
             Explore the tools, technologies and practical experiences that power modern Data Science — from data preparation and visualization to machine learning and AI.
           </p>
-
-          <div className="flex flex-row items-center gap-2.5 sm:gap-4">
-            <Link
-              to="/enroll"
-              className="inline-flex justify-center items-center gap-1.5 px-6 py-2.5 sm:px-7 sm:py-3 border border-emerald-500 text-white bg-transparent hover:border-emerald-400 transition-all text-xs sm:text-sm font-semibold rounded-full whitespace-nowrap cursor-pointer group"
-            >
-              <span>Get Started</span>
-              <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 transform group-hover:translate-x-1 transition-transform" />
-            </Link>
-          </div>
         </motion.div>
       </Container>
     </section>

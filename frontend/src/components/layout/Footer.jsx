@@ -5,6 +5,13 @@ import Logo from '../ui/Logo';
 import { Phone, Mail } from 'lucide-react';
 
 const Footer = () => {
+  const handleReloadToTop = () => {
+    if ('scrollRestoration' in window.history) {
+      window.history.scrollRestoration = 'manual';
+    }
+    window.location.reload();
+  };
+
   return (
     <footer className="bg-white text-vmanous-navy-dark pt-6 md:pt-8 pb-3 border-t border-gray-200">
       <Container>
@@ -134,7 +141,14 @@ const Footer = () => {
         {/* Bottom Bar */}
         <div className="pt-3 mt-2 border-t border-gray-200 text-center">
           <p className="text-gray-600 text-xs font-medium">
-            All rights reserved by <span onClick={() => window.location.reload()} className="font-bold text-vmanous-navy-dark hover:text-emerald-600 cursor-pointer transition-colors">VMANOUS</span>
+            All rights reserved by{' '}
+            <button
+              type="button"
+              onClick={handleReloadToTop}
+              className="font-bold text-vmanous-navy-dark hover:text-emerald-600 cursor-pointer transition-colors inline-block"
+            >
+              VMANOUS
+            </button>
           </p>
         </div>
       </Container>

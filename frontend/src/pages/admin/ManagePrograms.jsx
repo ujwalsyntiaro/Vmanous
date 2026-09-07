@@ -34,6 +34,148 @@ const parseTimeStr = (timeStr) => {
   };
 };
 
+export const getScheduleDateRules = (actionType, originalDateStr, newDateStr) => {
+  const toIso = (str) => {
+    if (!str) return '';
+    if (/^\d{4}-\d{2}-\d{2}$/.test(str)) return str;
+    const p = String(str).split('/');
+    if (p.length === 3) return `${p[2]}-${p[1].padStart(2, '0')}-${p[0].padStart(2, '0')}`;
+    return str;
+  };
+
+  const toDisplay = (str) => {
+    if (!str) return '';
+    if (/^\d{2}\/\d{2}\/\d{4}$/.test(str)) return str;
+    const p = String(str).split('-');
+    if (p.length === 3 && p[0].length === 4) return `${p[2].padStart(2, '0')}/${p[1].padStart(2, '0')}/${p[0]}`;
+    return str;
+  };
+
+  const today = new Date();
+  const todayIso = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
+  const todayDisplay = toDisplay(todayIso);
+
+  const origIso = toIso(originalDateStr);
+  const origDisplay = toDisplay(origIso);
+
+  const newIso = toIso(newDateStr);
+  const newDisplay = toDisplay(newIso);
+
+  if (!origIso || !/^\d{4}-\d{2}-\d{2}$/.test(origIso)) {
+    return {
+      isValid: Boolean(newIso && newIso >= todayIso),
+      minIso: todayIso,
+      maxIso: undefined,
+      minDisplay: todayDisplay,
+      maxDisplay: undefined,
+      helperText: `Valid date: on or after ${todayDisplay}`,
+      errorMsg: (newIso && newIso < todayIso) ? `Date cannot be in the past. Must be on or after ${todayDisplay}.` : ''
+    };
+  }
+
+  const [oYear, oMonth, oDay] = origIso.split('-').map(Number);
+  const origDateObj = new Date(oYear, oMonth - 1, oDay);
+
+  const dayBeforeObj = new Date(origDateObj);
+  dayBeforeObj.setDate(dayBeforeObj.getDate() - 1);
+  const dayBeforeIso = dayBeforeObj.getFullYear() + '-' + String(dayBeforeObj.getMonth() + 1).padStart(2, '0') + '-' + String(dayBeforeObj.getDate()).padStart(2, '0');
+  const dayBeforeDisplay = toDisplay(dayBeforeIso);
+
+  const dayAfterObj = new Date(origDateObj);
+  dayAfterObj.setDate(dayAfterObj.getDate() + 1);
+  const dayAfterIso = dayAfterObj.getFullYear() + '-' + String(dayAfterObj.getMonth() + 1).padStart(2, '0') + '-' + String(dayAfterObj.getDate()).padStart(2, '0');
+  const dayAfterDisplay = toDisplay(dayAfterIso);
+
+  if (actionType === 'Preponed') {
+    const minIso = todayIso;
+    const maxIso = dayBeforeIso;
+    const minDisplay = todayDisplay;
+    const maxDisplay = dayBeforeDisplay;
+
+    if (maxIso < minIso) {
+      return {
+        isValid: false,
+        minIso,
+        maxIso,
+        minDisplay,
+        maxDisplay,
+        helperText: `Current date (${origDisplay}) is today or in the past, cannot be preponed.`,
+        errorMsg: `Cannot prepone an event scheduled on or before today (${origDisplay}).`
+      };
+    }
+
+    let isValid = false;
+    let errorMsg = '';
+    if (newIso) {
+      if (newIso < minIso) {
+        errorMsg = `Date cannot be in the past. Must be on or after today (${minDisplay}).`;
+      } else if (newIso >= origIso) {
+        errorMsg = `For Preponed events, the new date must be earlier than the current date (${origDisplay}).`;
+      } else {
+        isValid = true;
+      }
+    }
+
+    return {
+      isValid,
+      minIso,
+      maxIso,
+      minDisplay,
+      maxDisplay,
+      helperText: `Allowed date range: ${minDisplay} (Today) to ${maxDisplay}`,
+      errorMsg
+    };
+  }
+
+  if (actionType === 'Postponed') {
+    const minIso = dayAfterIso;
+    const minDisplay = dayAfterDisplay;
+
+    let isValid = false;
+    let errorMsg = '';
+    if (newIso) {
+      if (newIso <= origIso) {
+        errorMsg = `For Postponed events, the new date must be after the original date (${origDisplay}).`;
+      } else {
+        isValid = true;
+      }
+    }
+
+    return {
+      isValid,
+      minIso,
+      maxIso: undefined,
+      minDisplay,
+      maxDisplay: undefined,
+      helperText: `Allowed date range: On or after ${minDisplay}`,
+      errorMsg
+    };
+  }
+
+  // Action: Rescheduled
+  let isValid = false;
+  let errorMsg = '';
+  if (newIso) {
+    if (newIso < todayIso) {
+      errorMsg = `Date cannot be in the past. Must be on or after today (${todayDisplay}).`;
+    } else if (newIso === origIso) {
+      errorMsg = `Please select a new date different from the current date (${origDisplay}).`;
+    } else {
+      isValid = true;
+    }
+  }
+
+  return {
+    isValid,
+    minIso: todayIso,
+    maxIso: undefined,
+    minDisplay: todayDisplay,
+    maxDisplay: undefined,
+    helperText: `Allowed date range: Any date on or after ${todayDisplay} (excluding ${origDisplay})`,
+    errorMsg
+  };
+};
+
 const ManagePrograms = () => {
   const [summits, setSummits] = useState([]);
   const [applications, setApplications] = useState([]);
@@ -45,6 +187,7 @@ const ManagePrograms = () => {
   const [historyModalSummit, setHistoryModalSummit] = useState(null);
   const [historySearchQuery, setHistorySearchQuery] = useState("");
   const [formError, setFormError] = useState("");
+  const [editingEnrolledCount, setEditingEnrolledCount] = useState(0);
 
   const [authorizedAdminEmail, setAuthorizedAdminEmail] = useState('am@vmanous.com');
   const [isEmailChangeModalOpen, setIsEmailChangeModalOpen] = useState(false);
@@ -324,6 +467,7 @@ const ManagePrograms = () => {
 
   const openAddModal = () => {
     setEditingId(null);
+    setEditingEnrolledCount(0);
     setFormError("");
     setFormData({
       title: "",
@@ -358,6 +502,11 @@ const ManagePrograms = () => {
   const openEditModal = (summit) => {
     setEditingId(summit.id);
     setFormError("");
+    const enrolled = (summit.enrolledCount !== undefined && summit.enrolledCount !== null)
+      ? Number(summit.enrolledCount)
+      : (getAttendeesForSummit(summit, applications).length || 0);
+    setEditingEnrolledCount(enrolled);
+
     const parsedDays = parseInt(summit.duration) || 2;
     const timeParsed = parseTimeStr(summit.time);
     let parsedHours = (summit.totalHours !== undefined && summit.totalHours !== null) ? String(summit.totalHours) : "";
@@ -408,6 +557,13 @@ const ManagePrograms = () => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
 
+    if (name === "seatCapacity" && editingId && editingEnrolledCount > 0) {
+      const valNum = Number(value);
+      if (valNum < editingEnrolledCount) {
+        setFormError(`Seats Limit / Capacity cannot be less than enrolled students (${editingEnrolledCount}).`);
+      }
+    }
+
     // If selecting Preponed/Rescheduled/Postponed and editing an existing summit
     if (name === "scheduleStatus" && ["Preponed", "Rescheduled", "Postponed"].includes(value) && editingId) {
       setRescheduleData({
@@ -448,6 +604,12 @@ const ManagePrograms = () => {
     }    // Validate proposed dates
     if (!rescheduleData.date) {
       setRescheduleEmailError("Please provide a new Summit Date for this schedule update.");
+      return;
+    }
+
+    const dateRules = getScheduleDateRules(rescheduleData.actionType, formData.date, rescheduleData.date);
+    if (!dateRules.isValid) {
+      setRescheduleEmailError(dateRules.errorMsg || "Invalid date selected for this schedule update.");
       return;
     }
 
@@ -595,6 +757,12 @@ const ManagePrograms = () => {
         setFormError(`Entry code '${normalizedEntryCode}' is already assigned to "${duplicate.college || duplicate.title}". Please use a unique code.`);
         return;
       }
+    }
+
+    // Validate that seatCapacity is not less than currently enrolled students
+    if (editingId && editingEnrolledCount > 0 && Number(formData.seatCapacity) < editingEnrolledCount) {
+      setFormError(`Seats Limit / Capacity cannot be less than the number of currently enrolled students (${editingEnrolledCount}). Minimum allowed capacity is ${editingEnrolledCount}.`);
+      return;
     }
 
     const summitData = {
@@ -1323,19 +1491,41 @@ const ManagePrograms = () => {
                     )}
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                      Seats Limit / Capacity <span className="text-rose-500">*</span>
-                    </label>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <label className="block text-xs font-semibold text-slate-700">
+                        Seats Limit / Capacity <span className="text-rose-500">*</span>
+                      </label>
+                      {editingId && editingEnrolledCount > 0 && (
+                        <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                          {editingEnrolledCount} Enrolled
+                        </span>
+                      )}
+                    </div>
                     <input
                       type="number"
-                      min="1"
+                      min={editingId && editingEnrolledCount > 0 ? editingEnrolledCount : 1}
                       required
                       name="seatCapacity"
                       value={formData.seatCapacity}
                       onChange={handleInputChange}
-                      className="w-full h-10 px-3 border border-slate-200 rounded-md focus:border-[#2D73B4] focus:ring-2 focus:ring-[#2D73B4]/15 outline-none text-xs font-semibold text-slate-800 placeholder:text-slate-400 transition-all shadow-2xs"
+                      className={`w-full h-10 px-3 border rounded-md focus:border-[#2D73B4] focus:ring-2 focus:ring-[#2D73B4]/15 outline-none text-xs font-semibold text-slate-800 placeholder:text-slate-400 transition-all shadow-2xs ${
+                        editingId && editingEnrolledCount > 0 && Number(formData.seatCapacity) < editingEnrolledCount
+                          ? 'border-rose-500 ring-1 ring-rose-500/20 bg-rose-50/30'
+                          : 'border-slate-200'
+                      }`}
                       placeholder="Seats Limit"
                     />
+                    {editingId && editingEnrolledCount > 0 && (
+                      <p className={`text-[10px] mt-1 ${
+                        Number(formData.seatCapacity) < editingEnrolledCount
+                          ? 'text-rose-600 font-semibold'
+                          : 'text-slate-500'
+                      }`}>
+                        {Number(formData.seatCapacity) < editingEnrolledCount
+                          ? `⚠️ Cannot set capacity less than ${editingEnrolledCount} (current enrolled students).`
+                          : `Capacity cannot be reduced below ${editingEnrolledCount} (current enrolled students).`}
+                      </p>
+                    )}
                   </div>
                 </div>
 
@@ -1660,70 +1850,96 @@ const ManagePrograms = () => {
               </p>
             </div>
 
-            {rescheduleStep === 'email' ? (
-              <div className="space-y-3.5">
-                {/* Date Input in Reschedule Modal */}
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">
-                    New Summit Date <span className="text-rose-500">*</span>
-                  </label>
-                  <DateInput
-                    name="rescheduleSummitDate"
-                    value={rescheduleData.date || ''}
-                    onChange={(e) => setRescheduleData(prev => ({ ...prev, date: e.target.value }))}
-                    className="w-full h-10 px-3 border border-slate-200 rounded-lg focus:border-[#2D73B4] focus:ring-2 focus:ring-[#2D73B4]/15 outline-none text-xs font-medium text-slate-800 bg-white placeholder:text-slate-400 shadow-2xs"
-                    placeholder="DD/MM/YYYY"
-                  />
-                </div>
+            {rescheduleStep === 'email' ? (() => {
+              const dateRules = getScheduleDateRules(rescheduleData.actionType, formData.date, rescheduleData.date);
+              return (
+                <div className="space-y-3.5">
+                  {/* Date Input in Reschedule Modal */}
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="block text-xs font-semibold text-slate-700">
+                        New Summit Date <span className="text-rose-500">*</span>
+                      </label>
+                      {formData.date && (
+                        <span className="text-[10px] text-slate-500 font-medium">
+                          Current: <strong className="text-slate-700">{isoToDDMMYYYY(formData.date)}</strong>
+                        </span>
+                      )}
+                    </div>
+                    <DateInput
+                      name="rescheduleSummitDate"
+                      value={rescheduleData.date || ''}
+                      min={dateRules.minIso}
+                      max={dateRules.maxIso}
+                      onChange={(e) => {
+                        setRescheduleData(prev => ({ ...prev, date: e.target.value }));
+                        if (rescheduleEmailError) setRescheduleEmailError('');
+                      }}
+                      className={`w-full h-10 px-3 border rounded-lg focus:border-[#2D73B4] focus:ring-2 focus:ring-[#2D73B4]/15 outline-none text-xs font-medium text-slate-800 bg-white placeholder:text-slate-400 shadow-2xs ${
+                        dateRules.errorMsg ? 'border-rose-500 ring-1 ring-rose-500/20 bg-rose-50/20' : 'border-slate-200'
+                      }`}
+                      placeholder="DD/MM/YYYY"
+                    />
+                    {dateRules.errorMsg ? (
+                      <p className="text-rose-600 text-[11px] mt-1 font-semibold leading-tight">
+                        ⚠️ {dateRules.errorMsg}
+                      </p>
+                    ) : (
+                      <p className="text-slate-500 text-[10px] mt-1 font-medium">
+                        ℹ️ {dateRules.helperText}
+                      </p>
+                    )}
+                  </div>
 
-                {/* Email Verification Box */}
-                <div>
-                  <div className="flex items-center justify-between mb-1">
-                    <label className="text-xs font-semibold text-slate-700">
-                      Authorized Mail
-                    </label>
+                  {/* Email Verification Box */}
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="text-xs font-semibold text-slate-700">
+                        Authorized Mail
+                      </label>
+                      <button
+                        type="button"
+                        onClick={openEmailChangeModal}
+                        className="text-[10px] text-emerald-700 hover:text-emerald-800 font-bold flex items-center gap-1 cursor-pointer bg-emerald-50 hover:bg-emerald-100 px-2 py-0.5 rounded border border-emerald-200 transition-colors shadow-2xs"
+                        title="Transfer / Change Authorized Webmail with 2-Factor Authentication"
+                      >
+                        <Lock size={10} className="text-emerald-600" />
+                        <span>Change 🔒</span>
+                      </button>
+                    </div>
+                    <input
+                      type="email"
+                      value={rescheduleEmail || authorizedAdminEmail || 'am@vmanous.com'}
+                      onChange={(e) => {
+                        setRescheduleEmail(e.target.value);
+                        if (rescheduleEmailError) setRescheduleEmailError('');
+                      }}
+                      disabled={true}
+                      placeholder="am@vmanous.com"
+                      className={`w-full h-10 px-3 border border-slate-200 rounded-lg outline-none transition-colors text-center text-xs font-semibold text-slate-700 bg-slate-50/80 shadow-2xs cursor-not-allowed`}
+                    />
+                    {rescheduleEmailError && (
+                      <p className="text-red-500 text-[11px] mt-1 text-center font-medium">{rescheduleEmailError}</p>
+                    )}
+                  </div>
+
+                  <div className="flex justify-center pt-1">
                     <button
-                      type="button"
-                      onClick={openEmailChangeModal}
-                      className="text-[10px] text-emerald-700 hover:text-emerald-800 font-bold flex items-center gap-1 cursor-pointer bg-emerald-50 hover:bg-emerald-100 px-2 py-0.5 rounded border border-emerald-200 transition-colors shadow-2xs"
-                      title="Transfer / Change Authorized Webmail with 2-Factor Authentication"
+                      onClick={handleSendOtp}
+                      disabled={isSendingOtp || !rescheduleEmail || !dateRules.isValid}
+                      className="w-full sm:w-auto px-6 h-[38px] bg-white text-emerald-700 font-bold text-xs rounded-lg border-2 border-emerald-600/80 hover:border-emerald-600 hover:bg-emerald-50 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center gap-2 shadow-xs"
                     >
-                      <Lock size={10} className="text-emerald-600" />
-                      <span>Change 🔒</span>
+                      {isSendingOtp ? (
+                        <>
+                          <div className="w-3.5 h-3.5 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin"></div>
+                          <span>Sending OTP...</span>
+                        </>
+                      ) : 'Send OTP'}
                     </button>
                   </div>
-                  <input
-                    type="email"
-                    value={rescheduleEmail || authorizedAdminEmail || 'am@vmanous.com'}
-                    onChange={(e) => {
-                      setRescheduleEmail(e.target.value);
-                      if (rescheduleEmailError) setRescheduleEmailError('');
-                    }}
-                    disabled={true}
-                    placeholder="am@vmanous.com"
-                    className={`w-full h-10 px-3 border border-slate-200 rounded-lg outline-none transition-colors text-center text-xs font-semibold text-slate-700 bg-slate-50/80 shadow-2xs cursor-not-allowed`}
-                  />
-                  {rescheduleEmailError && (
-                    <p className="text-red-500 text-[11px] mt-1 text-center font-medium">{rescheduleEmailError}</p>
-                  )}
                 </div>
-
-                <div className="flex justify-center pt-1">
-                  <button
-                    onClick={handleSendOtp}
-                    disabled={isSendingOtp || !rescheduleEmail}
-                    className="w-full sm:w-auto px-6 h-[38px] bg-white text-emerald-700 font-bold text-xs rounded-lg border-2 border-emerald-600/80 hover:border-emerald-600 hover:bg-emerald-50 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center gap-2 shadow-xs"
-                  >
-                    {isSendingOtp ? (
-                      <>
-                        <div className="w-3.5 h-3.5 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin"></div>
-                        <span>Sending OTP...</span>
-                      </>
-                    ) : 'Send OTP'}
-                  </button>
-                </div>
-              </div>
-            ) : (
+              );
+            })() : (
               <div className="space-y-3.5">
                 <div className="p-3.5 bg-white border border-slate-200 rounded-xl text-center shadow-2xs">
                   <p className="text-xs text-[#2D73B4] font-semibold">

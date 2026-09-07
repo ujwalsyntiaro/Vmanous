@@ -14,7 +14,6 @@ import {
   Building2,
   Award,
   ArrowRight,
-  Droplet,
   MapPin,
   BookOpen
 } from 'lucide-react';
@@ -311,9 +310,8 @@ export const Payment = () => {
                             </p>
                           )}
                           {formData.bloodGroup && (
-                            <p className="text-slate-800 flex items-center gap-1 font-semibold shrink-0">
-                              <Droplet size={11} className="fill-red-500 text-red-600 shrink-0" />
-                              <span>Blood: {formData.bloodGroup}</span>
+                            <p className="text-slate-500 flex items-center shrink-0">
+                              <span>Blood Group: {formData.bloodGroup}</span>
                             </p>
                           )}
                         </div>

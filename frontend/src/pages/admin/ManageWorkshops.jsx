@@ -38,6 +38,7 @@ const ManageWorkshops = () => {
   const [workshops, setWorkshops] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState(null);
+  const [editingEnrolledCount, setEditingEnrolledCount] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
 
   const [formData, setFormData] = useState({
@@ -87,6 +88,7 @@ const ManageWorkshops = () => {
 
   const openAddModal = () => {
     setEditingId(null);
+    setEditingEnrolledCount(0);
     setFormData({
       title: '',
       subtitle: '',
@@ -117,6 +119,7 @@ const ManageWorkshops = () => {
 
   const openEditModal = (item) => {
     setEditingId(item.id);
+    setEditingEnrolledCount(Number(item.enrolledCount || 0));
     const parsedDays = parseInt(item.duration) || 1;
     const timeParsed = parseTimeStr(item.time);
     let parsedHours = (item.totalHours !== undefined && item.totalHours !== null) ? String(item.totalHours) : "";
@@ -191,6 +194,11 @@ const ManageWorkshops = () => {
       ? formatEventDates(formData.startDate, finalEndDate)
       : formData.date;
 
+    if (editingId && editingEnrolledCount > 0 && Number(formData.seatCapacity) < editingEnrolledCount) {
+      alert(`Seats Limit / Capacity cannot be less than the number of currently enrolled students (${editingEnrolledCount}). Minimum allowed capacity is ${editingEnrolledCount}.`);
+      return;
+    }
+
     const featStr = typeof formData.features === 'string' ? formData.features : '';
     const workshopData = {
       ...formData,
@@ -207,10 +215,16 @@ const ManageWorkshops = () => {
       features: featStr.split('\n').filter(f => f.trim() !== '')
     };
 
+    let result;
     if (editingId) {
-      await updateSummit(editingId, workshopData);
+      result = await updateSummit(editingId, workshopData);
     } else {
-      await addSummit(workshopData);
+      result = await addSummit(workshopData);
+    }
+
+    if (result && !result.success) {
+      alert(result.error || "Failed to save workshop. Please try again.");
+      return;
     }
 
     await loadWorkshops();
@@ -431,17 +445,39 @@ const ManageWorkshops = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">Seats Limit / Capacity</label>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block text-xs font-semibold text-slate-700">Seats Limit / Capacity</label>
+                    {editingId && editingEnrolledCount > 0 && (
+                      <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                        {editingEnrolledCount} Enrolled
+                      </span>
+                    )}
+                  </div>
                   <input
                     type="number"
-                    min="1"
+                    min={editingId && editingEnrolledCount > 0 ? editingEnrolledCount : 1}
                     required
                     name="seatCapacity"
                     value={formData.seatCapacity}
                     onChange={handleInputChange}
                     placeholder="Seats Limit"
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg outline-none font-bold"
+                    className={`w-full px-3 py-2 border rounded-lg outline-none font-bold ${
+                      editingId && editingEnrolledCount > 0 && Number(formData.seatCapacity) < editingEnrolledCount
+                        ? 'border-rose-500 ring-1 ring-rose-500/20 bg-rose-50/30'
+                        : 'border-gray-200'
+                    }`}
                   />
+                  {editingId && editingEnrolledCount > 0 && (
+                    <p className={`text-[10px] mt-1 ${
+                      Number(formData.seatCapacity) < editingEnrolledCount
+                        ? 'text-rose-600 font-semibold'
+                        : 'text-slate-500'
+                    }`}>
+                      {Number(formData.seatCapacity) < editingEnrolledCount
+                        ? `⚠️ Cannot set capacity less than ${editingEnrolledCount} (current enrolled students).`
+                        : `Capacity cannot be reduced below ${editingEnrolledCount} (current enrolled students).`}
+                    </p>
+                  )}
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 mb-1">Status</label>

@@ -66,10 +66,6 @@ export const AIProjectLab = ({ projects }) => {
                     ))}
                   </div>
                 </div>
-                
-                <div className="mt-6 pt-4 border-t border-gray-100">
-                  <span className="text-xs text-gray-400 font-medium italic">* Example Summit Project</span>
-                </div>
               </div>
             </motion.div>
           ))}

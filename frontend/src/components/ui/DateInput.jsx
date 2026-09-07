@@ -24,7 +24,7 @@ export const ddmmYYYYToISO = (str) => {
       return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
     }
   }
-  return str;
+  return '';
 };
 
 // Helper: Validates if DD/MM/YYYY is a real calendar date
@@ -50,13 +50,25 @@ const DateInput = ({
   required = false,
   disabled = false,
   className = "",
-  placeholder = "DD/MM/YYYY"
+  placeholder = "DD/MM/YYYY",
+  min,
+  max
 }) => {
   const hiddenDateRef = useRef(null);
 
+  const minIso = min ? ddmmYYYYToISO(min) : undefined;
+  const maxIso = max ? ddmmYYYYToISO(max) : undefined;
+
   // Derive display value in DD/MM/YYYY format
   const displayValue = isoToDDMMYYYY(value);
-  const isValid = isValidDDMMYYYY(displayValue);
+  const isValidDate = isValidDDMMYYYY(displayValue);
+
+  // Check min/max bounds if 10 characters are present
+  const currentIso = value ? ddmmYYYYToISO(value) : '';
+  const isBelowMin = Boolean(minIso && currentIso && currentIso < minIso);
+  const isAboveMax = Boolean(maxIso && currentIso && currentIso > maxIso);
+  const isOutOfRange = isBelowMin || isAboveMax;
+  const hasError = (!isValidDate && displayValue.length === 10) || isOutOfRange;
 
   // Handle manual text entry with DD/MM/YYYY validation
   const handleTextChange = (e) => {
@@ -139,13 +151,15 @@ const DateInput = ({
         disabled={disabled}
         placeholder={placeholder}
         maxLength={10}
-        className={`${className} pr-10 ${!isValid && displayValue.length === 10 ? 'border-red-500 ring-2 ring-red-200' : ''} ${disabled ? 'cursor-not-allowed select-none bg-slate-100/90 text-slate-500' : ''}`}
+        className={`${className} pr-10 ${hasError ? 'border-red-500 ring-2 ring-red-200' : ''} ${disabled ? 'cursor-not-allowed select-none bg-slate-100/90 text-slate-500' : ''}`}
       />
       
       {/* Hidden native date picker for browser popup */}
       <input
         ref={hiddenDateRef}
         type="date"
+        min={minIso}
+        max={maxIso}
         value={ddmmYYYYToISO(value)}
         onChange={handleNativeDateChange}
         disabled={disabled}
