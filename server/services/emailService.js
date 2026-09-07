@@ -38,11 +38,11 @@ const sendCollegeRequestEmail = async (data) => {
   const mailOptions = {
     from: `"VMANOUS College Requests" <${senderEmail}>`,
     to: recipientEmail,
-    subject: `🚨 New College AI Summit Request: ${data.collegeName || 'Institution Request'}`,
+    subject: `New College AI Summit Request: ${data.collegeName || 'Institution Request'}`,
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 10px; background-color: #ffffff;">
         <h2 style="color: #0f172a; border-bottom: 2px solid #2563eb; padding-bottom: 10px;">
-          🎓 New AI Workshop / Summit Proposal Request
+          Proposal For AI Summit - ${data.collegeName || 'Institution'}
         </h2>
         
         <p style="font-size: 14px; color: #475569;">
@@ -82,6 +82,12 @@ const sendCollegeRequestEmail = async (data) => {
             <td style="padding: 10px; font-weight: bold; color: #334155; border-bottom: 1px solid #e2e8f0;">Preferred Workshop Program:</td>
             <td style="padding: 10px; color: #059669; font-weight: bold; border-bottom: 1px solid #e2e8f0;">${data.preferredProgram || 'N/A'}</td>
           </tr>
+          ${(data.description || data.message) ? `
+          <tr>
+            <td style="padding: 10px; font-weight: bold; color: #334155; border-bottom: 1px solid #e2e8f0;">Description / Notes:</td>
+            <td style="padding: 10px; color: #0f172a; border-bottom: 1px solid #e2e8f0;">${data.description || data.message}</td>
+          </tr>
+          ` : ''}
         </table>
 
         <div style="margin-top: 20px; padding: 12px; background-color: #eff6ff; border-left: 4px solid #2563eb; font-size: 12px; color: #1e40af;">
@@ -241,76 +247,37 @@ const sendWorkshopCertificateEmail = async (data) => {
     }
 
     const mailOptions = {
-      from: `"VMANOUS Academy" <${senderEmail}>`,
+      from: `"VMANOUS" <${senderEmail}>`,
       to: recipientEmail,
-      subject: `🎓 Certificate of Completion | ${workshopTitle} – ${studentName}`,
+      subject: `Certificate of AI Completion`,
       html: `
         <!DOCTYPE html>
         <html>
         <head>
           <meta charset="utf-8">
-          <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <title>Workshop Certificate</title>
         </head>
-        <body style="margin: 0; padding: 24px 10px; background-color: #f1f5f9; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
-          <div style="max-width: 560px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
-            
-            <!-- Gold & Blue Header Banner -->
-            <div style="background: linear-gradient(135deg, #0B1B3D 0%, #1e3a8a 100%); padding: 28px 24px; text-align: center; color: #ffffff;">
-              <p style="font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: #C59B27; margin: 0 0 6px 0;">
-                ⚡ VMANOUS ACADEMY OF ARTIFICIAL INTELLIGENCE
-              </p>
-              <h1 style="font-size: 22px; font-weight: 800; margin: 0 0 6px 0; letter-spacing: 0.5px;">
-                Certificate of Completion
-              </h1>
-              <p style="font-size: 13px; color: #cbd5e1; margin: 0;">
-                Official Digital Credential & Verification
-              </p>
-            </div>
-
-            <!-- Body Content -->
-            <div style="padding: 28px 24px;">
-              <p style="font-size: 15px; color: #334155; margin: 0 0 16px 0;">
-                Dear <strong>${studentName}</strong>,
-              </p>
-              <p style="font-size: 14px; line-height: 1.6; color: #475569; margin: 0 0 20px 0;">
-                Congratulations! We are pleased to issue your official <strong>Certificate of Completion</strong> for actively participating in and completing the intensive hands-on workshop:
-              </p>
-
-              <!-- Highlight Box -->
-              <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-left: 4px solid #C59B27; border-radius: 8px; padding: 16px; margin-bottom: 24px;">
-                <p style="font-size: 15px; font-weight: 700; color: #0F172A; margin: 0 0 6px 0;">
-                  ${workshopTitle}
-                </p>
-                <p style="font-size: 13px; color: #64748B; margin: 0 0 4px 0;">
-                  🏛️ <strong>Venue / College:</strong> ${collegeName}
-                </p>
-                <p style="font-size: 13px; color: #64748B; margin: 0 0 4px 0;">
-                  📅 <strong>Date:</strong> ${dateStr}
-                </p>
-                <p style="font-size: 12px; font-weight: 700; color: #2563EB; margin: 6px 0 0 0;">
-                  🆔 <strong>Certificate ID:</strong> ${certificateCode}
-                </p>
-              </div>
-
-              <p style="font-size: 13px; color: #475569; line-height: 1.5; margin: 0 0 20px 0;">
-                Your verified PDF certificate is attached directly to this email. You can download, print, or attach it to your LinkedIn profile and resume.
-              </p>
-
-              <div style="text-align: center; margin: 24px 0;">
-                <span style="display: inline-block; background-color: #0B1B3D; color: #ffffff; padding: 10px 24px; border-radius: 6px; font-size: 13px; font-weight: 700; text-decoration: none;">
-                  ✓ Verified by VMANOUS Certification Authority
-                </span>
-              </div>
-
-              <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 24px 0 16px 0;" />
-
-              <p style="font-size: 11px; color: #94a3b8; text-align: center; margin: 0;">
-                This is an automated certification email. For any queries, please reach out to support@vmanous.com.
-              </p>
-            </div>
-
-          </div>
+        <body style="margin: 0; padding: 20px; font-family: Arial, sans-serif; color: #333; line-height: 1.6;">
+          
+          <p>Dear ${studentName},</p>
+          
+          <p>Greetings from the VMANOUS Team!</p>
+          
+          <p>Congratulations! We are pleased to issue your official <strong>Certificate of AI Completion</strong> for actively participating in and successfully completing the intensive hands-on workshop.</p>
+          
+          <p><strong>Certificate Details:</strong><br>
+          <strong>Participant Name:</strong> ${studentName}<br>
+          <strong>Workshop / Event:</strong> ${workshopTitle}<br>
+          <strong>College / Institute:</strong> ${collegeName}<br>
+          <strong>Date:</strong> ${dateStr}<br>
+          <strong>Certificate ID:</strong> ${certificateCode}</p>
+          
+          <p>Your official Certificate of Completion is attached to this email as a PDF document. You may download, print, or share it on your LinkedIn profile and resume.</p>
+          
+          <p>We wish you all the very best in your academic and professional journey ahead!</p>
+          
+          <p>Best Regards,<br>
+          <strong>VMANOUS Team</strong></p>
+          
         </body>
         </html>
       `,
@@ -333,8 +300,6 @@ const sendWorkshopCertificateEmail = async (data) => {
     return { success: false, error: errMsg };
   }
 };
-
-module.exports = { sendCollegeRequestEmail, sendStudentPassEmail, sendWorkshopCertificateEmail };
 
 /**
  * Function to send OTP Email to Admin for Preponed/Reschedule/Postpone Verification
@@ -509,7 +474,7 @@ const sendStudentRescheduleEmail = async (student, summitDetails, status, messag
   const passCode = student.passCode || 'VERIFIED-PASS';
 
   const mailOptions = {
-    from: `"VMANOUS Academy" <${senderEmail}>`,
+    from: `"VMANOUS" <${senderEmail}>`,
     to: recipientEmail,
     subject: `${subjectPrefix} - ${summitDetails.title || 'AI Summit Workshop'}`,
     html: `

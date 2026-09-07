@@ -254,14 +254,21 @@ const updateSummit = async (req, res) => {
       ? `${baseDuration.replace(/\s*\(\d+\s*(?:hrs|hours)\)/i, '')} (${validData.totalHours} Hrs)`
       : baseDuration;
 
-    const normalizedEntryCode = validData.entryCode ? String(validData.entryCode).trim().toUpperCase() : null;
+    const summitIdNum = Number(id);
+    const existingSummit = await prisma.summit.findUnique({
+      where: { id: summitIdNum }
+    });
+
+    if (!existingSummit) {
+      return res.status(404).json({ success: false, error: 'Summit not found' });
+    }
 
     // Check for duplicate entry code across other summits
     if (normalizedEntryCode) {
       const existingWithCode = await prisma.summit.findFirst({
         where: {
           entryCode: normalizedEntryCode,
-          NOT: { id: Number(id) }
+          NOT: { id: summitIdNum }
         }
       });
       if (existingWithCode) {
@@ -272,8 +279,59 @@ const updateSummit = async (req, res) => {
       }
     }
 
+    // Validate that new seatCapacity is not less than currently enrolled students
+    if (validData.seatCapacity !== undefined && validData.seatCapacity !== null && validData.seatCapacity !== '') {
+      const newCapacity = Number(validData.seatCapacity);
+      if (isNaN(newCapacity) || newCapacity < 1) {
+        return res.status(400).json({
+          success: false,
+          error: 'Seat capacity must be a valid positive number.'
+        });
+      }
+
+      const paidApplications = await prisma.application.findMany({
+        where: { paymentStatus: 'Paid' },
+        select: {
+          id: true,
+          summitId: true,
+          programTitle: true,
+          collegeName: true,
+          paymentStatus: true
+        }
+      });
+
+      const sumTitle = (existingSummit.title || '').trim().toLowerCase();
+      const matched = paidApplications.filter(app => {
+        if (app.paymentStatus && app.paymentStatus !== 'Paid') return false;
+        if (app.summitId !== null && app.summitId !== undefined && Number(app.summitId) === summitIdNum) {
+          return true;
+        }
+        const progTitle = (app.programTitle || '').trim().toLowerCase();
+        const titleMatches = progTitle && sumTitle && (progTitle === sumTitle || progTitle.includes(sumTitle) || sumTitle.includes(progTitle));
+        if (titleMatches) {
+          if (!existingSummit.college || !app.collegeName || isCollegeMatch(app.collegeName, existingSummit.college)) {
+            return true;
+          }
+        }
+        if (existingSummit.college && isCollegeMatch(app.collegeName, existingSummit.college)) {
+          if (!app.summitId && (titleMatches || !app.programTitle || progTitle.includes('ai') || sumTitle.includes('ai') || sumTitle === 'eeee')) {
+            return true;
+          }
+        }
+        return false;
+      });
+
+      const currentEnrolled = matched.length;
+      if (newCapacity < currentEnrolled) {
+        return res.status(400).json({
+          success: false,
+          error: `Seats Limit / Capacity cannot be less than the number of currently enrolled students (${currentEnrolled}). Minimum allowed capacity is ${currentEnrolled}.`
+        });
+      }
+    }
+
     const updated = await prisma.summit.update({
-      where: { id: Number(id) },
+      where: { id: summitIdNum },
       data: {
         title: validData.title !== undefined ? validData.title : undefined,
         subtitle: validData.subtitle !== undefined ? validData.subtitle : undefined,
@@ -326,6 +384,43 @@ const sendRescheduleOtp = async (req, res) => {
     
     if (!summitId || !newData) {
       return res.status(400).json({ success: false, error: 'Missing required fields' });
+    }
+
+    const summit = await prisma.summit.findUnique({
+      where: { id: Number(summitId) }
+    });
+
+    if (!summit) {
+      return res.status(404).json({ success: false, error: 'Workshop / Summit not found' });
+    }
+
+    const toIso = (str) => {
+      if (!str) return '';
+      if (/^\d{4}-\d{2}-\d{2}$/.test(str)) return str;
+      const p = String(str).split('/');
+      if (p.length === 3) return `${p[2]}-${p[1].padStart(2, '0')}-${p[0].padStart(2, '0')}`;
+      return str;
+    };
+
+    const actionType = newData.scheduleStatus || newData.status;
+    const newDateIso = toIso(newData.date || newData.startDate);
+    const origDateIso = toIso(summit.date || summit.startDate);
+    const todayIso = new Date().toISOString().split('T')[0];
+
+    if (actionType === 'Preponed') {
+      if (!newDateIso || newDateIso < todayIso || (origDateIso && newDateIso >= origDateIso)) {
+        return res.status(400).json({
+          success: false,
+          error: `For Preponed events, the date must be earlier than the original date (${origDateIso || 'current'}) and on or after today (${todayIso}).`
+        });
+      }
+    } else if (actionType === 'Postponed') {
+      if (!newDateIso || (origDateIso && newDateIso <= origDateIso)) {
+        return res.status(400).json({
+          success: false,
+          error: `For Postponed events, the date must be after the original date (${origDateIso || 'current'}).`
+        });
+      }
     }
 
     const adminEmail = (email && String(email).trim()) || getAuthorizedEmail();
