@@ -87,7 +87,12 @@ const Footer = () => {
                   <Phone size={14} className="text-vmanous-green flex-shrink-0" />
                   <span className="text-[11px] sm:text-xs">IN +91 911 211 3322</span>
                 </a>
-                <a href="mailto:info@vmanous.com" className="flex items-center gap-2 text-gray-600 hover:text-vmanous-green transition-colors font-medium">
+                <a
+                  href="https://mail.google.com/mail/?view=cm&fs=1&to=info@vmanous.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 text-gray-600 hover:text-vmanous-green transition-colors font-medium"
+                >
                   <Mail size={14} className="text-vmanous-green flex-shrink-0" />
                   <span className="text-[11px] sm:text-xs">info@vmanous.com</span>
                 </a>
@@ -125,7 +130,9 @@ const Footer = () => {
 
                 {/* Messenger / Chat Icon */}
                 <a
-                  href="mailto:info@vmanous.com"
+                  href="https://mail.google.com/mail/?view=cm&fs=1&to=info@vmanous.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   aria-label="Email Us"
                   className="hover:opacity-75 transition-opacity"
                 >

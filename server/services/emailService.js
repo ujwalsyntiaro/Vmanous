@@ -4,22 +4,23 @@ const { generatePassPDF } = require('./pdfPassService');
 
 const getTransporter = () => {
   const host = process.env.EMAIL_HOST;
-  const port = parseInt(process.env.EMAIL_PORT || '465', 10);
+  const port = parseInt(process.env.EMAIL_PORT || '587', 10);
   const user = process.env.EMAIL_USER || 'vmanous.com@gmail.com';
   const pass = (process.env.EMAIL_PASS || '').replace(/\s+/g, '');
 
   if (host) {
+    const isPort465 = port === 465;
     return nodemailer.createTransport({
       host: host,
       port: port,
-      secure: port === 465,     // true for 465 SSL
+      secure: isPort465,        // true for 465 (SSL), false for 587 (STARTTLS)
       auth: { user, pass },
       tls: {
         rejectUnauthorized: false
       },
-      connectionTimeout: 8000,
-      greetingTimeout: 5000,
-      socketTimeout: 15000
+      connectionTimeout: 15000,
+      greetingTimeout: 10000,
+      socketTimeout: 30000
     });
   } else {
     return nodemailer.createTransport({

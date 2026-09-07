@@ -112,7 +112,9 @@ const FounderProfile = () => {
                   </svg>
                 </a>
                 <a
-                  href="mailto:am@vmanous.com"
+                  href="https://mail.google.com/mail/?view=cm&fs=1&to=am@vmanous.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="text-[#64748b] hover:text-[#0f172a] transition-colors inline-flex items-center justify-center"
                   aria-label="Email Contact"
                 >
