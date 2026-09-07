@@ -1,6 +1,12 @@
 const PDFDocument = require('pdfkit');
 const QRCode = require('qrcode');
 const axios = require('axios');
+let sharp;
+try {
+  sharp = require('sharp');
+} catch (e) {
+  console.warn('[PDF Generator] Sharp is not installed. Images may fail to render if not PNG/JPEG.');
+}
 
 /**
  * Safely fetches or converts photo input to Node Buffer
@@ -82,11 +88,19 @@ const generatePassPDF = async (data) => {
 
       // 1. Fetch QR Code Buffer and Student Photo Buffer in Parallel
       const qrDataText = `=== VMANOUS WORKSHOP PASS ===\nPass ID: ${passId}\nParticipant: ${studentName}\nEmail: ${data.email || 'N/A'}\nMobile: ${phone}\nBlood Group: ${bloodGroup}\nCollege: ${collegeName}\nAddress: ${collegeAddress}\nDegree: ${degree}\nSpecialization: ${branch}\nSemester: ${semester}\nProgram: ${programTitle}\nTiming: ${timingStr}\nStatus: VERIFIED & PAID`;
-      const [qrDataUrl, photoBuffer] = await Promise.all([
+      let [qrDataUrl, photoBuffer] = await Promise.all([
         QRCode.toDataURL(qrDataText, { width: 120, margin: 1 }),
         getPhotoBuffer(data.selfiePhotoUrl)
       ]);
       const qrBuffer = Buffer.from(qrDataUrl.split(',')[1], 'base64');
+
+      if (photoBuffer && sharp) {
+        try {
+          photoBuffer = await sharp(photoBuffer).png().toBuffer();
+        } catch (convErr) {
+          console.warn('[PDF Generator] Image conversion to PNG failed:', convErr.message);
+        }
+      }
 
       // 3. Main Card Background & Plain Rectangle Border
       doc.save();
@@ -203,6 +217,7 @@ const generatePassPDF = async (data) => {
         } catch (imgErr) {
           console.warn('[PDF Generator] Photo buffer render error:', imgErr.message);
           doc.circle(avatarCenterX, avatarCenterY, avatarRadius).fillAndStroke('#f1f5f9', '#cbd5e1');
+          doc.circle(avatarCenterX, avatarCenterY - 6, 12).fill('#94a3b8');
         }
       } else {
         doc.circle(avatarCenterX, avatarCenterY, avatarRadius).fillAndStroke('#f1f5f9', '#cbd5e1');
