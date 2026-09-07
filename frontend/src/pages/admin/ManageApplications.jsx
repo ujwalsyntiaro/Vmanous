@@ -42,6 +42,21 @@ const ManageApplications = () => {
   const [selectedApp, setSelectedApp] = useState(null); // For Inspect Drawer / Modal
   const [isLoading, setIsLoading] = useState(false);
 
+  const handleInspectApp = async (app) => {
+    setSelectedApp(app);
+    try {
+      const res = await fetch(`/api/v1/applications/${app.id}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success && data.data) {
+          setSelectedApp(data.data);
+        }
+      }
+    } catch (e) {
+      console.error('Error fetching application detail:', e);
+    }
+  };
+
   // Contextual Dynamic Styling for Status Dropdown
   const getStatusStyles = (tab) => {
     switch (tab) {
@@ -524,7 +539,7 @@ const ManageApplications = () => {
                     <td className="py-3.5 px-4">
                       <div className="flex items-center gap-3">
                         <img
-                          src={app.selfiePhotoUrl}
+                          src={app.selfiePhotoUrl || 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?q=80&w=400&auto=format&fit=crop'}
                           alt={app.studentName}
                           className="w-9 h-9 rounded-full object-cover border border-gray-200 shadow-xs"
                         />
@@ -592,7 +607,7 @@ const ManageApplications = () => {
                     <td className="py-3.5 px-4 text-right">
                       <div className="flex items-center justify-end gap-2">
                         <button
-                          onClick={() => setSelectedApp(app)}
+                          onClick={() => handleInspectApp(app)}
                           className="px-2.5 py-1.5 bg-gray-100 hover:bg-[#2D73B4] hover:text-white rounded-lg text-slate-700 text-xs font-semibold transition-all flex items-center gap-1 cursor-pointer"
                         >
                           <Eye size={14} />

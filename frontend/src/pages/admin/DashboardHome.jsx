@@ -51,8 +51,23 @@ const DashboardHome = () => {
   // Table Filters State
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCollege, setSelectedCollege] = useState("All");
-  const [activeTab, setActiveTab] = useState("All"); // All, Paid, Failed, Pending Audit
+  const [activeTab, setActiveTab] = useState("All");
   const [selectedApp, setSelectedApp] = useState(null); // Inspect Modal
+
+  const handleInspectApp = async (app) => {
+    setSelectedApp(app);
+    try {
+      const res = await fetch(`/api/v1/applications/${app.id}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success && data.data) {
+          setSelectedApp(data.data);
+        }
+      }
+    } catch (e) {
+      console.error('Error fetching application detail:', e);
+    }
+  };
 
   const [isStatusOpen, setIsStatusOpen] = useState(false);
   const [isCollegeOpen, setIsCollegeOpen] = useState(false);
@@ -904,7 +919,7 @@ const DashboardHome = () => {
                       <td className="py-2.5 px-3.5 text-right">
                         <div className="flex items-center justify-end gap-2">
                           <button
-                            onClick={() => setSelectedApp(app)}
+                            onClick={() => handleInspectApp(app)}
                             className="px-2.5 py-1.5 bg-gray-100 hover:bg-[#2D73B4] hover:text-white rounded-lg text-slate-700 text-xs font-semibold transition-all flex items-center gap-1 cursor-pointer"
                           >
                             <Eye size={14} />

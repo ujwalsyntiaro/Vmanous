@@ -26,10 +26,39 @@ const getApplications = async (req, res) => {
       whereClause.createdAt = { gte: cutOff };
     }
 
+    const includeSelfie = req.query.includeSelfie === 'true';
+
     const applications = await prisma.application.findMany({
       where: whereClause,
       orderBy: { createdAt: 'desc' },
-      include: { summit: true }
+      select: {
+        id: true,
+        studentName: true,
+        email: true,
+        phone: true,
+        collegeName: true,
+        venueLocation: true,
+        branch: true,
+        year: true,
+        degree: true,
+        marksTenth: true,
+        marksTwelfth: true,
+        programTitle: true,
+        summitId: true,
+        paymentStatus: true,
+        paymentFailureReason: true,
+        verificationStatus: true,
+        transactionId: true,
+        amountPaid: true,
+        baseAmount: true,
+        gstAmount: true,
+        platformFee: true,
+        passCode: true,
+        createdAt: true,
+        updatedAt: true,
+        summit: true,
+        selfiePhotoUrl: includeSelfie ? true : false
+      }
     });
 
     const transactions = await prisma.paymentTransaction.findMany({
@@ -201,6 +230,26 @@ const updateVerificationStatus = async (req, res) => {
   }
 };
 
+// Get single application by ID (including full selfie photo)
+const getApplicationById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const application = await prisma.application.findUnique({
+      where: { id },
+      include: { summit: true }
+    });
+
+    if (!application) {
+      return res.status(404).json({ success: false, error: 'Application not found' });
+    }
+
+    res.json({ success: true, data: application });
+  } catch (error) {
+    console.error('Error fetching application details:', error);
+    res.status(500).json({ success: false, error: 'Server Error' });
+  }
+};
+
 // Delete single application
 const deleteApplication = async (req, res) => {
   try {
@@ -235,6 +284,7 @@ const deleteAllApplications = async (req, res) => {
 
 module.exports = {
   getApplications,
+  getApplicationById,
   createApplication,
   getPaymentTransactions,
   updateVerificationStatus,

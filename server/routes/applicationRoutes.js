@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const {
   getApplications,
+  getApplicationById,
   createApplication,
   getPaymentTransactions,
   updateVerificationStatus,
@@ -25,6 +26,7 @@ router.route('/transactions')
   .get(getPaymentTransactions);
 
 router.route('/:id')
+  .get(getApplicationById)
   .delete(verifyAdminToken, deleteApplication);
 
 router.route('/:id/status')

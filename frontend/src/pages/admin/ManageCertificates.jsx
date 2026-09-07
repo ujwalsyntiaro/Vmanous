@@ -32,6 +32,7 @@ import {
   sendBulkCertificatesApi,
   getCertificatePdfUrl
 } from '../../services/certificateService';
+import DateInput, { ddmmYYYYToISO } from '../../components/ui/DateInput';
 
 const MONTH_NAMES = [
   'January', 'February', 'March', 'April', 'May', 'June',
@@ -233,9 +234,10 @@ const ManageCertificates = () => {
         if (workshopMonth !== targetMonthNum) return false;
       }
 
-      // 4. Exact Date Filter (Optional)
+      // 4. Exact Date Filter (Optional - supports DD/MM/YYYY and YYYY-MM-DD)
       if (selectedDate) {
-        if (workshopFullDate !== selectedDate) return false;
+        const selectedIso = ddmmYYYYToISO(selectedDate) || selectedDate;
+        if (workshopFullDate !== selectedIso && workshopFullDate !== selectedDate) return false;
       }
 
       return true;
@@ -246,7 +248,8 @@ const ManageCertificates = () => {
   const counterInfo = useMemo(() => {
     let label = 'Total Workshops';
     if (selectedDate) {
-      const d = new Date(selectedDate);
+      const selectedIso = ddmmYYYYToISO(selectedDate) || selectedDate;
+      const d = new Date(selectedIso);
       const formatted = !isNaN(d.getTime())
         ? d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
         : selectedDate;
@@ -517,18 +520,18 @@ const ManageCertificates = () => {
                   />
                 </div>
 
-                {/* Exact Date Picker (Optional, Min: Aug 2026) */}
+                {/* Exact Date Picker (Optional, DD/MM/YYYY format) */}
                 <div>
                   <label className="block text-xs font-bold text-slate-500 mb-1">
                     Date <span className="text-slate-400 font-normal lowercase">(optional)</span>
                   </label>
-                  <input
-                    type="date"
-                    min={dateInputConstraints.min}
-                    max={dateInputConstraints.max || undefined}
+                  <DateInput
                     value={selectedDate}
                     onChange={(e) => setSelectedDate(e.target.value)}
-                    className="w-full px-2.5 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold text-slate-800 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition cursor-pointer"
+                    min={dateInputConstraints.min}
+                    max={dateInputConstraints.max || undefined}
+                    placeholder="DD/MM/YYYY"
+                    className="w-full px-2.5 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold text-slate-800 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition"
                   />
                 </div>
 

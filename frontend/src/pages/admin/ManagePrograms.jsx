@@ -241,14 +241,10 @@ const ManagePrograms = () => {
 
   const loadSummits = async () => {
     try {
-      const [{ applications: apps }, data] = await Promise.all([
-        fetchApplicationsAsync(),
-        fetchSummitsAsync()
-      ]);
-      setApplications(apps || []);
+      const data = await fetchSummitsAsync();
       setSummits(data || []);
     } catch (err) {
-      console.error("Error loading programs and applications:", err);
+      console.error("Error loading programs:", err);
     } finally {
       setIsLoading(false);
     }
@@ -1932,9 +1928,9 @@ const ManagePrograms = () => {
                       {isSendingOtp ? (
                         <>
                           <div className="w-3.5 h-3.5 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin"></div>
-                          <span>Sending Authorization...</span>
+                          <span>Verifying Authentication...</span>
                         </>
-                      ) : 'Send Authorization'}
+                      ) : 'Verify Authentication'}
                     </button>
                   </div>
                 </div>

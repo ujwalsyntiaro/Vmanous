@@ -263,6 +263,10 @@ const updateSummit = async (req, res) => {
       return res.status(404).json({ success: false, error: 'Summit not found' });
     }
 
+    const normalizedEntryCode = validData.entryCode !== undefined
+      ? (validData.entryCode ? String(validData.entryCode).trim().toUpperCase() : null)
+      : (existingSummit.entryCode ? String(existingSummit.entryCode).trim().toUpperCase() : null);
+
     // Check for duplicate entry code across other summits
     if (normalizedEntryCode) {
       const existingWithCode = await prisma.summit.findFirst({
