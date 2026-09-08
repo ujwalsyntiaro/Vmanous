@@ -11,7 +11,7 @@ const LegalLayout = ({ title, subtitle, icon: Icon = FileText, lastUpdated = 'Au
           <div className="mb-5 border-b border-gray-200 pb-4">
             <div className="flex items-center gap-1.5 text-vmanous-green font-normal text-xs mb-1">
               <Icon size={16} />
-              <span>Vmanous Legal & Governance</span>
+              <span>VMANOUS Legal & Governance</span>
             </div>
 
             <h1 className="text-2xl md:text-3xl font-medium text-vmanous-navy-dark tracking-tight mb-2">

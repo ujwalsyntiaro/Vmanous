@@ -30,6 +30,35 @@ const getTransporter = () => {
   }
 };
 
+/**
+ * Dedicated Webmail Transporter (Directly connects to am@vmanous.com SMTP server)
+ */
+const getWebmailTransporter = () => {
+  const host = process.env.WEBMAIL_SMTP_HOST;
+  const port = parseInt(process.env.WEBMAIL_SMTP_PORT || '465', 10);
+  const user = process.env.WEBMAIL_SMTP_USER || process.env.AUTHORIZED_ADMIN_EMAIL || 'am@vmanous.com';
+  const pass = (process.env.WEBMAIL_SMTP_PASS || '').replace(/\s+/g, '');
+
+  if (host && pass) {
+    const isPort465 = port === 465;
+    return nodemailer.createTransport({
+      host: host,
+      port: port,
+      secure: isPort465,        // true for 465 (SSL), false for 587 (TLS/STARTTLS)
+      auth: { user, pass },
+      tls: {
+        rejectUnauthorized: false
+      },
+      connectionTimeout: 15000,
+      greetingTimeout: 10000,
+      socketTimeout: 30000
+    });
+  }
+
+  // Fallback to standard transporter if WEBMAIL_SMTP_PASS is not set yet
+  return getTransporter();
+};
+
 // Function to send College AI Summit Request Notification Email
 const sendCollegeRequestEmail = async (data) => {
   const transporter = getTransporter();
@@ -305,16 +334,31 @@ const sendWorkshopCertificateEmail = async (data) => {
 /**
  * Function to send OTP Email to Admin for Preponed/Reschedule/Postpone Verification
  */
-const sendAdminOtpEmail = async (otp, summitDetails = {}, email = 'am@vmanous.com') => {
-  const transporter = getTransporter();
-  const senderEmail = process.env.EMAIL_USER || 'vmanous.com@gmail.com';
-  const recipientEmail = (email || 'am@vmanous.com').trim();
+const sendAdminOtpEmail = async (otp, summitDetails = {}, email) => {
+  const transporter = getWebmailTransporter();
+  const senderEmail = process.env.WEBMAIL_FROM || process.env.WEBMAIL_SMTP_USER || process.env.EMAIL_USER || 'am@vmanous.com';
+  const defaultAdmin = process.env.AUTHORIZED_ADMIN_EMAIL || process.env.ADMIN_DEFAULT_EMAIL || '';
+  const recipientEmail = (email || defaultAdmin).trim();
   const actionStatus = summitDetails.scheduleStatus || summitDetails.status || 'Schedule Change';
 
+  console.log(`[Admin OTP Dispatch] Dispatching security OTP to ${recipientEmail} for workshop update (${actionStatus})...`);
+
+  const plainText = `VMANOUS Security Authorization\n\n` +
+    `Workshop ${actionStatus} Request\n` +
+    `Workshop: ${summitDetails.title || 'AI Summit'}\n` +
+    `College / Venue: ${summitDetails.college || 'Partner Institution'}\n` +
+    `New Date: ${summitDetails.date || summitDetails.startDate || 'N/A'}\n` +
+    `Timing: ${summitDetails.time || 'N/A'}\n\n` +
+    `Your 6-digit One-Time Password (OTP) is: ${otp}\n\n` +
+    `This OTP is valid for 10 minutes. Do not share this code with anyone.\n` +
+    `If you did not initiate this change in VMANOUS VPanel, please secure your account immediately.`;
+
   const mailOptions = {
-    from: `"VMANOUS Security" <${senderEmail}>`,
+    from: `"VMANOUS" <${senderEmail}>`,
     to: recipientEmail,
-    subject: `🔐 Security OTP: Authorize Workshop ${actionStatus} (${summitDetails.title || 'Summit'})`,
+    replyTo: senderEmail,
+    subject: `Verification Code: ${otp} - Workshop ${actionStatus}`,
+    text: plainText,
     html: `
       <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; border: 1px solid #e2e8f0; border-radius: 12px; background-color: #ffffff; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);">
         <div style="background: linear-gradient(135deg, #0B1B3D 0%, #1e3a8a 100%); padding: 20px; text-align: center; color: #ffffff; border-radius: 8px 8px 0 0;">
@@ -333,7 +377,7 @@ const sendAdminOtpEmail = async (otp, summitDetails = {}, email = 'am@vmanous.co
             <p style="margin: 0 0 6px 0; font-size: 13px; color: #1e293b;"><strong>Workshop:</strong> ${summitDetails.title || 'AI Summit'}</p>
             <p style="margin: 0 0 6px 0; font-size: 13px; color: #1e293b;"><strong>College / Venue:</strong> ${summitDetails.college || 'Partner Institution'}</p>
             <p style="margin: 0 0 6px 0; font-size: 13px; color: #1e293b;"><strong>New Date:</strong> ${summitDetails.date || summitDetails.startDate || 'N/A'}</p>
-            <p style="margin: 0; font-size: 13px; color: #1e293b;"><strong>Timing:</strong> ${summitDetails.time || 'N/A'}</p>
+            <p style="margin: 0 0 6px 0; font-size: 13px; color: #1e293b;"><strong>Timing:</strong> ${summitDetails.time || 'N/A'}</p>
           </div>
 
           <p style="font-size: 13px; color: #475569; text-align: center; margin-bottom: 8px;">
@@ -373,15 +417,25 @@ const sendAdminOtpEmail = async (otp, summitDetails = {}, email = 'am@vmanous.co
 /**
  * Function to send Security Email Change Authorization OTP to Current Admin Email
  */
-const sendSecurityEmailChangeOtpEmail = async (otp, newEmail, currentEmail = 'am@vmanous.com') => {
-  const transporter = getTransporter();
-  const senderEmail = process.env.EMAIL_USER || 'vmanous.com@gmail.com';
-  const recipientEmail = (currentEmail || 'am@vmanous.com').trim();
+const sendSecurityEmailChangeOtpEmail = async (otp, newEmail, currentEmail) => {
+  const transporter = getWebmailTransporter();
+  const senderEmail = process.env.WEBMAIL_FROM || process.env.WEBMAIL_SMTP_USER || process.env.EMAIL_USER || 'am@vmanous.com';
+  const defaultAdmin = process.env.AUTHORIZED_ADMIN_EMAIL || process.env.ADMIN_DEFAULT_EMAIL || '';
+  const recipientEmail = (currentEmail || defaultAdmin).trim();
+
+  console.log(`[Email Transfer Dispatch] Dispatching transfer OTP to ${recipientEmail}...`);
+
+  const plainText = `VMANOUS Security Alert: Change of Authorized Webmail\n\n` +
+    `A request has been initiated in VPanel to change the primary Authorized Webmail to: ${newEmail}\n\n` +
+    `Your 6-digit Security Transfer OTP is: ${otp}\n\n` +
+    `This code expires in 10 minutes. If you did not initiate this change, do not share this code.`;
 
   const mailOptions = {
     from: `"VMANOUS Root Security" <${senderEmail}>`,
     to: recipientEmail,
-    subject: `🚨 CRITICAL ALERT: Request to Change Authorized Webmail to ${newEmail}`,
+    replyTo: senderEmail,
+    subject: `Security Alert: Request to Change Authorized Webmail to ${newEmail}`,
+    text: plainText,
     html: `
       <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; border: 1px solid #e2e8f0; border-radius: 12px; background-color: #ffffff; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);">
         <div style="background: linear-gradient(135deg, #7f1d1d 0%, #b91c1c 100%); padding: 20px; text-align: center; color: #ffffff; border-radius: 8px 8px 0 0;">

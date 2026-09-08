@@ -1,7 +1,7 @@
 import React from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import Logo from '../ui/Logo';
-import { logoutAdmin } from '../../services/adminAuthService';
+import { logoutAdmin, getAdminCredentials } from '../../services/adminAuthService';
 import {
   LayoutDashboard,
   Users,
@@ -84,25 +84,33 @@ const AdminSidebar = ({ isMobileOpen, setIsMobileOpen }) => {
 
       {/* Footer Area */}
       <div className="p-4 border-t border-gray-200">
-        <div className="flex items-center justify-between gap-2.5 px-3 py-2.5 bg-gray-50 rounded-xl border border-gray-100">
-          <div className="flex items-center gap-2.5 min-w-0">
-            <div className="w-8 h-8 rounded-full bg-slate-900 flex items-center justify-center text-white font-bold text-xs shrink-0">
-              AM
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-xs font-bold text-gray-900 truncate">AM</p>
-              <p className="text-[11px] text-gray-500 truncate">am@vmanous.com</p>
-            </div>
-          </div>
+        {(() => {
+          const adminCreds = getAdminCredentials();
+          const adminEmail = adminCreds?.id || import.meta.env.VITE_AUTHORIZED_ADMIN_EMAIL || import.meta.env.VITE_ADMIN_EMAIL || 'Admin';
+          const adminName = adminEmail.includes('@') ? adminEmail.split('@')[0].toUpperCase() : 'ADMIN';
+          const adminInitials = adminName.slice(0, 2);
+          return (
+            <div className="flex items-center justify-between gap-2.5 px-3 py-2.5 bg-gray-50 rounded-xl border border-gray-100">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="w-8 h-8 rounded-full bg-slate-900 flex items-center justify-center text-white font-bold text-xs shrink-0">
+                  {adminInitials}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-bold text-gray-900 truncate">{adminName}</p>
+                  <p className="text-[11px] text-gray-500 truncate">{adminEmail}</p>
+                </div>
+              </div>
 
-          <button
-            onClick={handleLogout}
-            className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all cursor-pointer shrink-0"
-            title="Logout from Admin Panel"
-          >
-            <LogOut size={16} />
-          </button>
-        </div>
+              <button
+                onClick={handleLogout}
+                className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all cursor-pointer shrink-0"
+                title="Logout from Admin Panel"
+              >
+                <LogOut size={16} />
+              </button>
+            </div>
+          );
+        })()}
       </div>
     </div>
   );

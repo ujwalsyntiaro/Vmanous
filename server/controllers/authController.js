@@ -21,8 +21,9 @@ const getStoredCredentials = () => {
     console.error('Error reading credentials from securityConfig.json:', e);
   }
 
+  const envAdminEmail = (process.env.ADMIN_DEFAULT_EMAIL || process.env.AUTHORIZED_ADMIN_EMAIL || '').trim();
   return {
-    id: process.env.ADMIN_DEFAULT_EMAIL || 'am@vmanous.com',
+    id: envAdminEmail || 'admin',
     password: process.env.ADMIN_DEFAULT_PASSWORD || 'admin123'
   };
 };
@@ -67,8 +68,9 @@ const adminLogin = async (req, res) => {
 
     const currentCreds = getStoredCredentials();
     const storedId = currentCreds.id.toLowerCase();
+    const envEmail = (process.env.ADMIN_DEFAULT_EMAIL || process.env.AUTHORIZED_ADMIN_EMAIL || '').toLowerCase();
 
-    const isMatch = (inputId === storedId || inputId === 'am@vmanous.com' || inputId === 'admin') &&
+    const isMatch = (inputId === storedId || (envEmail && inputId === envEmail) || inputId === 'admin') &&
                     inputPassword === currentCreds.password;
 
     if (!isMatch) {

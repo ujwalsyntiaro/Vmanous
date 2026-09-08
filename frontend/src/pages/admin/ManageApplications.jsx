@@ -537,16 +537,9 @@ const ManageApplications = () => {
 
                     {/* Student Info */}
                     <td className="py-3.5 px-4">
-                      <div className="flex items-center gap-3">
-                        <img
-                          src={app.selfiePhotoUrl || 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?q=80&w=400&auto=format&fit=crop'}
-                          alt={app.studentName}
-                          className="w-9 h-9 rounded-full object-cover border border-gray-200 shadow-xs"
-                        />
-                        <div>
-                          <p className="font-bold text-slate-800 text-sm">{app.studentName}</p>
-                          <p className="text-[11px] text-slate-500">{app.email} &bull; {app.phone}</p>
-                        </div>
+                      <div>
+                        <p className="font-bold text-slate-800 text-sm">{app.studentName}</p>
+                        <p className="text-[11px] text-slate-500">{app.email} &bull; {app.phone}</p>
                       </div>
                     </td>
 

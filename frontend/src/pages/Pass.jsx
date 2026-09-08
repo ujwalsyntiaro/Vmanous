@@ -235,7 +235,7 @@ Issued On: ${currentDate}
 
       const opt = {
         margin: [0, 0, 0, 0],
-        filename: `Vmanous_Workshop_Pass_${passId}.pdf`,
+        filename: `VMANOUS_Workshop_Pass_${passId}.pdf`,
         image: { type: 'jpeg', quality: 1.0 },
         html2canvas: {
           scale: 3,

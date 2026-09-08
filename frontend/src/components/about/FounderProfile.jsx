@@ -112,7 +112,7 @@ const FounderProfile = () => {
                   </svg>
                 </a>
                 <a
-                  href="https://mail.google.com/mail/?view=cm&fs=1&to=am@vmanous.com"
+                  href={`https://mail.google.com/mail/?view=cm&fs=1&to=${import.meta.env.VITE_FOUNDER_EMAIL || import.meta.env.VITE_ADMIN_EMAIL || import.meta.env.VITE_AUTHORIZED_ADMIN_EMAIL || 'am@vmanous.com'}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-[#64748b] hover:text-[#0f172a] transition-colors inline-flex items-center justify-center"

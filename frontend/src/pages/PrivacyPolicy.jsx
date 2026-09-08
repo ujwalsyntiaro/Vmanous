@@ -6,7 +6,7 @@ const PrivacyPolicy = () => {
   return (
     <LegalLayout
       title="Privacy Policy"
-      subtitle="At Vmanous Open Source, we respect your privacy and are committed to protecting your personal data."
+      subtitle="At VMANOUS Open Source, we respect your privacy and are committed to protecting your personal data."
       icon={ShieldCheck}
     >
       <section className="space-y-2">
@@ -15,7 +15,7 @@ const PrivacyPolicy = () => {
           1. Information We Collect
         </h2>
         <p>
-          When you interact with Vmanous Open Source (CIN: U62099PN2024PTC229219) through our platform, workshop forms, or college partnership applications, we collect the following types of information:
+          When you interact with VMANOUS Open Source (CIN: U62099PN2024PTC229219) through our platform, workshop forms, or college partnership applications, we collect the following types of information:
         </p>
         <ul className="list-disc pl-5 space-y-1 text-gray-600">
           <li>Personal Details: Full name, email address, contact number, and permanent/correspondence address.</li>
@@ -58,7 +58,7 @@ const PrivacyPolicy = () => {
           4. Third-Party Sharing
         </h2>
         <p>
-          Vmanous does not trade, sell, or rent student or institution data. Data is shared exclusively with:
+          VMANOUS does not trade, sell, or rent student or institution data. Data is shared exclusively with:
         </p>
         <ul className="list-disc pl-5 space-y-1 text-gray-600">
           <li>Partner Institutions: Designated host colleges for verifying registered campus attendees.</li>
@@ -74,7 +74,7 @@ const PrivacyPolicy = () => {
           For data access, correction requests, or privacy inquiries, contact our data protection team:
         </p>
         <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 mt-2 space-y-1.5 text-xs text-gray-700 font-normal">
-          <p className="font-medium text-vmanous-navy-dark">Vmanous Open Source</p>
+          <p className="font-medium text-vmanous-navy-dark">VMANOUS Open Source</p>
           <p className="flex items-center gap-2"><MapPin size={14} className="text-vmanous-green flex-shrink-0" /> ABC Junction Sector 26 Nigdi Pradhikaran, Near Akurdi Railway Station, Pune - 411044</p>
           <p className="flex items-center gap-2"><Mail size={14} className="text-vmanous-green flex-shrink-0" /> info@vmanous.com</p>
           <p className="flex items-center gap-2"><Phone size={14} className="text-vmanous-green flex-shrink-0" /> +91 911 211 3322</p>

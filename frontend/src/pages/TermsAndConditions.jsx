@@ -6,7 +6,7 @@ const TermsAndConditions = () => {
   return (
     <LegalLayout
       title="Terms & Conditions"
-      subtitle="Terms governing the use of Vmanous Open Source website, workshop passes, and educational programs."
+      subtitle="Terms governing the use of VMANOUS Open Source website, workshop passes, and educational programs."
       icon={Scale}
     >
       <section className="space-y-2">
@@ -15,7 +15,7 @@ const TermsAndConditions = () => {
           1. Acceptance of Terms
         </h2>
         <p>
-          By accessing or using the platform at vmanous.com or registering for any workshop, AI summit, or technical program hosted by Vmanous Open Source (CIN: U62099PN2024PTC229219), you agree to comply with and be bound by these Terms and Conditions.
+          By accessing or using the platform at vmanous.com or registering for any workshop, AI summit, or technical program hosted by VMANOUS Open Source (CIN: U62099PN2024PTC229219), you agree to comply with and be bound by these Terms and Conditions.
         </p>
       </section>
 
@@ -37,7 +37,7 @@ const TermsAndConditions = () => {
           3. Intellectual Property Rights
         </h2>
         <p>
-          All workshop materials, power BI dashboards, sample datasets, slide decks, and code repositories created by Vmanous belong to Vmanous Open Source. You are granted a limited, personal, non-commercial license to use these materials for learning purposes only.
+          All workshop materials, power BI dashboards, sample datasets, slide decks, and code repositories created by VMANOUS belong to VMANOUS Open Source. You are granted a limited, personal, non-commercial license to use these materials for learning purposes only.
         </p>
       </section>
 
@@ -46,7 +46,7 @@ const TermsAndConditions = () => {
           4. Payments & Billing
         </h2>
         <p>
-          Prices for workshops and programs are clearly stated in Indian Rupees (INR). Fees must be paid through official Vmanous transaction links. Registration fees are non-refundable except under explicit circumstances outlined in our Refund Policy.
+          Prices for workshops and programs are clearly stated in Indian Rupees (INR). Fees must be paid through official VMANOUS transaction links. Registration fees are non-refundable except under explicit circumstances outlined in our Refund Policy.
         </p>
       </section>
 
@@ -59,7 +59,7 @@ const TermsAndConditions = () => {
         </p>
 
         <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 mt-2 space-y-1.5 text-xs text-gray-700 font-normal">
-          <p className="font-medium text-vmanous-navy-dark">Legal Desk — Vmanous Open Source</p>
+          <p className="font-medium text-vmanous-navy-dark">Legal Desk — VMANOUS Open Source</p>
           <p className="flex items-center gap-2"><MapPin size={14} className="text-vmanous-green flex-shrink-0" /> ABC Junction Sector 26 Nigdi Pradhikaran, Near Akurdi Railway Station, Pune - 411044</p>
           <p className="flex items-center gap-2"><Mail size={14} className="text-vmanous-green flex-shrink-0" /> info@vmanous.com</p>
           <p className="flex items-center gap-2"><Phone size={14} className="text-vmanous-green flex-shrink-0" /> +91 911 211 3322</p>

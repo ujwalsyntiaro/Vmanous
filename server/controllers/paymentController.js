@@ -171,7 +171,7 @@ const createPaymentOrder = async (req, res) => {
       order_meta: {
         return_url: returnUrl
       },
-      order_note: `Workshop: ${(programTitle || 'Vmanous AI').slice(0, 50)}`
+      order_note: `Workshop: ${(programTitle || 'VMANOUS AI').slice(0, 50)}`
     };
 
     console.log(`[Cashfree Init] Creating Live Order ${orderId} for ₹${totalAmountInINR} at ${baseUrl}/orders`);

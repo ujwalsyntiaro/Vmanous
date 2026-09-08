@@ -26,10 +26,10 @@ const CancellationPolicy = () => {
       <section className="space-y-2 border-t border-gray-100 pt-4">
         <h2 className="text-base md:text-lg font-medium text-vmanous-navy-dark flex items-center gap-2">
           <RefreshCw className="text-vmanous-green flex-shrink-0" size={18} />
-          2. Event Rescheduling or Cancellation by Vmanous
+          2. Event Rescheduling or Cancellation by VMANOUS
         </h2>
         <p>
-          In rare circumstances such as severe weather events, trainer illness, or technical issues beyond control, Vmanous Open Source reserves the right to reschedule or cancel a session.
+          In rare circumstances such as severe weather events, trainer illness, or technical issues beyond control, VMANOUS Open Source reserves the right to reschedule or cancel a session.
         </p>
         <p>
           In such cases, registered participants are entitled to:
@@ -46,7 +46,7 @@ const CancellationPolicy = () => {
           3. Institutional & College Partnership Cancellations
         </h2>
         <p>
-          Colleges or universities partnering with Vmanous for campus workshops or AI Summits must provide a minimum of 7 business days written notice for event date modifications or cancellations to prevent logistics forfeiture.
+          Colleges or universities partnering with VMANOUS for campus workshops or AI Summits must provide a minimum of 7 business days written notice for event date modifications or cancellations to prevent logistics forfeiture.
         </p>
       </section>
 

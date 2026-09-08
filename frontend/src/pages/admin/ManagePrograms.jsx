@@ -189,7 +189,7 @@ const ManagePrograms = () => {
   const [formError, setFormError] = useState("");
   const [editingEnrolledCount, setEditingEnrolledCount] = useState(0);
 
-  const [authorizedAdminEmail, setAuthorizedAdminEmail] = useState('am@vmanous.com');
+  const [authorizedAdminEmail, setAuthorizedAdminEmail] = useState(import.meta.env.VITE_AUTHORIZED_ADMIN_EMAIL || import.meta.env.VITE_ADMIN_EMAIL || '');
   const [isEmailChangeModalOpen, setIsEmailChangeModalOpen] = useState(false);
   const [emailChangeStep, setEmailChangeStep] = useState('input'); // 'input' | 'otp'
   const [newEmailInput, setNewEmailInput] = useState('');
@@ -409,7 +409,7 @@ const ManagePrograms = () => {
       return;
     }
 
-    if (emailToSubmit === (authorizedAdminEmail || 'am@vmanous.com').toLowerCase()) {
+    if (emailToSubmit === (authorizedAdminEmail || import.meta.env.VITE_AUTHORIZED_ADMIN_EMAIL || '').toLowerCase()) {
       setEmailChangeError('This email is already the active authorized webmail.');
       return;
     }
@@ -569,7 +569,7 @@ const ManagePrograms = () => {
         endDate: formData.endDate || ''
       });
       setRescheduleStep('email');
-      setRescheduleEmail(authorizedAdminEmail || 'am@vmanous.com');
+      setRescheduleEmail(authorizedAdminEmail || import.meta.env.VITE_AUTHORIZED_ADMIN_EMAIL || '');
       setRescheduleEmailError('');
       setOtpValue('');
       setIsRescheduleModalOpen(true);
@@ -587,7 +587,7 @@ const ManagePrograms = () => {
 
   const handleSendOtp = async () => {
     setRescheduleEmailError('');
-    const currentActiveEmail = authorizedAdminEmail || 'am@vmanous.com';
+    const currentActiveEmail = authorizedAdminEmail || import.meta.env.VITE_AUTHORIZED_ADMIN_EMAIL || '';
     const targetEmail = (rescheduleEmail || currentActiveEmail).trim();
     if (!targetEmail) {
       setRescheduleEmailError("Please enter an email address.");
@@ -1905,13 +1905,13 @@ const ManagePrograms = () => {
                     </div>
                     <input
                       type="email"
-                      value={rescheduleEmail || authorizedAdminEmail || 'am@vmanous.com'}
+                      value={rescheduleEmail || authorizedAdminEmail || import.meta.env.VITE_AUTHORIZED_ADMIN_EMAIL || ''}
                       onChange={(e) => {
                         setRescheduleEmail(e.target.value);
                         if (rescheduleEmailError) setRescheduleEmailError('');
                       }}
                       disabled={true}
-                      placeholder="am@vmanous.com"
+                      placeholder={authorizedAdminEmail || import.meta.env.VITE_AUTHORIZED_ADMIN_EMAIL || 'admin@vmanous.com'}
                       className={`w-full h-10 px-3 border border-slate-200 rounded-lg outline-none transition-colors text-center text-xs font-semibold text-slate-700 bg-slate-50/80 shadow-2xs cursor-not-allowed`}
                     />
                     {rescheduleEmailError && (
@@ -1942,7 +1942,7 @@ const ManagePrograms = () => {
                     Proposed New Date: {rescheduleData.date || rescheduleData.startDate || 'N/A'}
                   </p>
                   <p className="text-[11px] text-slate-500 mt-0.5">
-                    6-digit code has been sent to <strong>{rescheduleEmail || authorizedAdminEmail || 'am@vmanous.com'}</strong>
+                    6-digit code has been sent to <strong>{rescheduleEmail || authorizedAdminEmail || import.meta.env.VITE_AUTHORIZED_ADMIN_EMAIL || ''}</strong>
                   </p>
                 </div>
 
@@ -2011,7 +2011,7 @@ const ManagePrograms = () => {
               </h4>
               <div className="mt-1.5 inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-slate-50 border border-slate-200/90 text-xs">
                 <span className="text-slate-500 font-medium">Current:</span>
-                <span className="text-slate-800 font-bold">{authorizedAdminEmail || 'am@vmanous.com'}</span>
+                <span className="text-slate-800 font-bold">{authorizedAdminEmail || import.meta.env.VITE_AUTHORIZED_ADMIN_EMAIL || ''}</span>
               </div>
             </div>
 
@@ -2053,7 +2053,7 @@ const ManagePrograms = () => {
                 <div className="p-3 bg-slate-50 border border-slate-200/90 rounded-lg text-[11px] text-slate-600 leading-relaxed flex items-start gap-2 shadow-2xs">
                   <ShieldCheck size={16} className="text-emerald-600 shrink-0 mt-0.5" />
                   <div>
-                    <strong className="text-slate-800 font-semibold">Anti-Hijack Verification:</strong> A 6-digit confirmation code will be dispatched to current owner (<strong className="text-emerald-700">{authorizedAdminEmail || 'am@vmanous.com'}</strong>) to authorize this transfer.
+                    <strong className="text-slate-800 font-semibold">Anti-Hijack Verification:</strong> A 6-digit confirmation code will be dispatched to current owner (<strong className="text-emerald-700">{authorizedAdminEmail || import.meta.env.VITE_AUTHORIZED_ADMIN_EMAIL || ''}</strong>) to authorize this transfer.
                   </div>
                 </div>
 

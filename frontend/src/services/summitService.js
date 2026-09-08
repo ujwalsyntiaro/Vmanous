@@ -382,7 +382,7 @@ export const getAuthorizedAdminEmail = async () => {
   } catch (err) {
     console.error("Error fetching authorized email:", err);
   }
-  return "am@vmanous.com";
+  return import.meta.env.VITE_AUTHORIZED_ADMIN_EMAIL || import.meta.env.VITE_ADMIN_EMAIL || "";
 };
 
 /**

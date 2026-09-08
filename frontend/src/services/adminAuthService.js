@@ -1,6 +1,6 @@
 // Default initial credentials fallback
 const DEFAULT_CREDS = {
-  id: 'am@vmanous.com',
+  id: import.meta.env.VITE_ADMIN_EMAIL || import.meta.env.VITE_AUTHORIZED_ADMIN_EMAIL || 'admin',
   password: 'admin123'
 };
 
@@ -68,8 +68,9 @@ export const verifyAdminLogin = async (id, password) => {
     const creds = getAdminCredentials();
     const currentId = (creds.id || '').trim().toLowerCase();
     const cleanId = inputId.toLowerCase();
+    const envAdmin = (import.meta.env.VITE_ADMIN_EMAIL || import.meta.env.VITE_AUTHORIZED_ADMIN_EMAIL || '').toLowerCase();
 
-    if ((cleanId === currentId || cleanId === 'am@vmanous.com' || cleanId === 'admin') && inputPassword === creds.password) {
+    if ((cleanId === currentId || (envAdmin && cleanId === envAdmin) || cleanId === 'admin') && inputPassword === creds.password) {
       sessionStorage.setItem('vmanous_admin_session', 'true');
       return { success: true };
     }

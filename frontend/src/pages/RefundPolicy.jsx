@@ -15,7 +15,7 @@ const RefundPolicy = () => {
           1. General Policy & Registration Fees
         </h2>
         <p>
-          At Vmanous Open Source (CIN: U62099PN2024PTC229219), registration fees paid for online/offline workshops, Power BI masterclasses, and AI Summits are non-refundable once enrollment passes are generated, except under the qualifying conditions listed below.
+          At VMANOUS Open Source (CIN: U62099PN2024PTC229219), registration fees paid for online/offline workshops, Power BI masterclasses, and AI Summits are non-refundable once enrollment passes are generated, except under the qualifying conditions listed below.
         </p>
       </section>
 
@@ -29,7 +29,7 @@ const RefundPolicy = () => {
         </p>
         <ul className="list-disc pl-5 space-y-1 text-gray-600">
           <li>Duplicate Transaction: You were charged multiple times for a single workshop registration due to a payment gateway glitch.</li>
-          <li>Event Cancellation: A workshop or program is cancelled by Vmanous and no alternative dates/batches suit your schedule.</li>
+          <li>Event Cancellation: A workshop or program is cancelled by VMANOUS and no alternative dates/batches suit your schedule.</li>
           <li>Failed Pass Generation: Payment debited successfully from your account, but backend verification failed to generate your workshop pass/ticket within 48 hours.</li>
         </ul>
       </section>

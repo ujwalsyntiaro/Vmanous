@@ -22,7 +22,7 @@ const getAuthorizedEmail = () => {
   } catch (e) {
     console.error('Error reading securityConfig.json:', e);
   }
-  return (process.env.AUTHORIZED_ADMIN_EMAIL || 'am@vmanous.com').trim().toLowerCase();
+  return (process.env.AUTHORIZED_ADMIN_EMAIL || process.env.ADMIN_DEFAULT_EMAIL || '').trim().toLowerCase();
 };
 
 const setAuthorizedEmail = (newEmail) => {
