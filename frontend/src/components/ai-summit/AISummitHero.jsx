@@ -1,11 +1,9 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 
 export const AISummitHero = ({ data }) => {
-  const [isHovered, setIsHovered] = useState(false);
-
   return (
     <section className="relative h-[220px] sm:h-[280px] md:min-h-[46vh] flex items-end pt-12 pb-3 md:pt-24 md:pb-10 overflow-hidden bg-[#050816]">
       <div className="absolute inset-0 z-0 opacity-90">
@@ -41,44 +39,26 @@ export const AISummitHero = ({ data }) => {
           </motion.div>
         </div>
 
-        <motion.div
-          animate={
-            isHovered
-              ? { scale: 1, opacity: 1, boxShadow: '0 0 8px rgba(255, 255, 255, 0.45)' }
-              : {
-                  scale: [1, 1.05, 1],
-                  opacity: [0.7, 1, 0.7],
-                  boxShadow: [
-                    '0 0 0px rgba(255, 255, 255, 0.1)',
-                    '0 0 11px rgba(255, 255, 255, 0.5)',
-                    '0 0 0px rgba(255, 255, 255, 0.1)'
-                  ]
-                }
-          }
-          transition={
-            isHovered
-              ? { duration: 0.2 }
-              : {
-                  duration: 1.7,
-                  repeat: Infinity,
-                  ease: "easeInOut"
-                }
-          }
-          onMouseEnter={() => setIsHovered(true)}
-          onMouseLeave={() => setIsHovered(false)}
-          className="flex-shrink-0 ml-auto rounded-lg"
-        >
+        <div className="flex-shrink-0 ml-auto">
           <Link
             to="/enroll"
-            className="inline-flex items-center justify-center px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-lg text-xs sm:text-sm font-semibold text-white border-2 border-white bg-white/10 backdrop-blur-md hover:bg-white/25 hover:border-white transform hover:-translate-y-0.5 transition-all duration-200 group cursor-pointer whitespace-nowrap shadow-md"
+            className="relative inline-flex items-center justify-center px-4 py-2 sm:px-5 sm:py-2.5 rounded-lg text-xs sm:text-sm font-semibold text-white border border-white/70 bg-white/10 backdrop-blur-md overflow-hidden group cursor-pointer whitespace-nowrap shadow-sm hover:border-[rgb(69_191_100)] transition-colors duration-300"
           >
-            <span className="flex items-center gap-2">
+            {/* Bottom-to-Top Green Fill Animation Layer */}
+            <span
+              className="absolute inset-0 bg-[rgb(69_191_100)] translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out"
+              aria-hidden="true"
+            />
+
+            {/* Button Content */}
+            <span className="relative z-10 flex items-center gap-2">
               Enroll Now
-              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-200" />
             </span>
           </Link>
-        </motion.div>
+        </div>
       </div>
     </section>
   );
 };
+
