@@ -139,6 +139,7 @@ const sendCollegeRequestEmail = async (data) => {
 
 /**
  * Function to send Workshop Entry Pass Email with matching Pass Card and attached PDF
+ * Optimized for high inbox deliverability (DKIM/SPF, Multipart plain-text, anti-spam headers)
  * @param {Object} data - Application & Pass Data
  */
 const sendStudentPassEmail = async (data) => {
@@ -163,12 +164,14 @@ const sendStudentPassEmail = async (data) => {
   const semester = data.year || data.semester || '3rd Year';
   const bloodGroup = data.bloodGroup || 'O+';
   const phone = data.phone || data.mobileNumber || 'N/A';
+  const amountPaid = data.amountPaid !== undefined && data.amountPaid !== null ? Number(data.amountPaid) : (data.amount !== undefined ? Number(data.amount) : 1);
 
   const bookingDate = data.createdAt ? new Date(data.createdAt) : new Date();
   const eventDateStr = data.eventDate || data.startDate
     ? new Date(data.eventDate || data.startDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Asia/Kolkata' })
     : bookingDate.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Asia/Kolkata' });
   const timingStr = data.timing || data.workshopTime || '10:00 AM - 04:00 PM';
+  const bookingDateTimeStr = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'long', timeStyle: 'short' });
 
   console.log(`[Pass Email Dispatch] Sending Pass Card email to ${recipientEmail} with Transaction ID: ${passId}...`);
 
@@ -176,7 +179,7 @@ const sendStudentPassEmail = async (data) => {
     // 1. Generate PDF Pass Attachment Buffer
     const pdfBuffer = await generatePassPDF(data);
 
-    // 2. Build Email Attachments (Only PDF)
+    // 2. Build Email Attachments (PDF)
     const emailAttachments = [
       {
         filename: `VMANOUS_Workshop_Pass_${data.passCode || data.transactionId || 'Entry'}.pdf`,
@@ -185,54 +188,177 @@ const sendStudentPassEmail = async (data) => {
       }
     ];
 
-    const avatarUrl = data.selfiePhotoUrl || data.selfie || null;
+    // 3. High-Deliverability Plain Text Fallback (RFC 2046 Multipart/Alternative)
+    const plainTextBody = `Dear ${studentName},
 
-    // 5. Configure Email HTML matching Pass.jsx design exactly
+Greetings from the VMANOUS Team!
+
+We are pleased to confirm that your seat registration for ${programTitle} has been successfully completed and verified.
+
+EVENT & BOOKING DETAILS
+==================================================
+Participant Name   : ${studentName}
+College / Venue    : ${collegeName} (${collegeAddress})
+Workshop Program   : ${programTitle}
+Event Date         : ${eventDateStr}
+Event Timing       : ${timingStr}
+Pass ID / Ref Code : ${passId}
+Booking Date & Time: ${bookingDateTimeStr}
+Registration Status: CONFIRMED & VERIFIED
+==================================================
+
+OFFICIAL ENTRY PASS ATTACHED:
+Your official digital Workshop Entry Pass (with secure verification QR code) is attached to this email as a PDF document. Please keep it handy on your phone or carry a printed copy for gate check-in on the day of the event.
+
+We look forward to welcoming you to ${programTitle} at ${collegeName}!
+
+Need Assistance?
+If you have any questions or require support, please write to us at support@vmanous.com.
+
+Best Regards,
+VMANOUS Education & Innovation Services
+Website: https://vmanous.com | Support: support@vmanous.com
+CIN: U62099PN2024PTC229219
+© ${new Date().getFullYear()} VMANOUS. All rights reserved.`;
+
+    // 4. Clean, Professional HTML Template (Inbox-friendly, spam-safe structure)
+    const htmlBody = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Workshop Registration Confirmed</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #f4f7fb; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; color: #1e293b;">
+  <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #f4f7fb; padding: 24px 12px;">
+    <tr>
+      <td align="center">
+        <!-- Main Card Container -->
+        <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="max-width: 600px; background-color: #ffffff; border-radius: 12px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);">
+          
+          <!-- Header Banner -->
+          <tr>
+            <td style="background: linear-gradient(135deg, #0B1B3D 0%, #1e3a8a 100%); padding: 26px 24px; text-align: center; color: #ffffff;">
+              <div style="display: inline-block; padding: 4px 12px; background-color: rgba(16, 185, 129, 0.2); border: 1px solid rgba(16, 185, 129, 0.4); border-radius: 20px; font-size: 11px; font-weight: 700; color: #34d399; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 8px;">
+                ✓ Official Confirmation
+              </div>
+              <h1 style="margin: 0; font-size: 22px; font-weight: 800; letter-spacing: -0.5px; color: #ffffff;">
+                Registration Confirmed!
+              </h1>
+              <p style="margin: 6px 0 0 0; font-size: 13px; color: #93c5fd;">
+                ${programTitle}
+              </p>
+            </td>
+          </tr>
+
+          <!-- Body Content -->
+          <tr>
+            <td style="padding: 24px 24px 16px 24px;">
+              <p style="margin: 0 0 12px 0; font-size: 15px; color: #1e293b; line-height: 1.5;">
+                Dear <strong>${studentName}</strong>,
+              </p>
+              <p style="margin: 0 0 18px 0; font-size: 14px; color: #475569; line-height: 1.6;">
+                Greetings from the <strong>VMANOUS Team</strong>! We are delighted to confirm that your seat registration for <strong>${programTitle}</strong> at <strong>${collegeName}</strong> has been successfully processed and verified.
+              </p>
+
+              <!-- Event Details Table Box -->
+              <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 20px;">
+                <tr>
+                  <td style="padding: 16px;">
+                    <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="font-size: 13px;">
+                      <tr>
+                        <td style="padding: 6px 0; color: #64748b; font-weight: 600; width: 38%;">Participant Name:</td>
+                        <td style="padding: 6px 0; color: #0f172a; font-weight: 700;">${studentName}</td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 6px 0; color: #64748b; font-weight: 600;">College / Institute:</td>
+                        <td style="padding: 6px 0; color: #0f172a; font-weight: 700;">${collegeName}</td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 6px 0; color: #64748b; font-weight: 600;">Campus Venue:</td>
+                        <td style="padding: 6px 0; color: #0f172a;">${collegeAddress}</td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 6px 0; color: #64748b; font-weight: 600;">Event Date:</td>
+                        <td style="padding: 6px 0; color: #059669; font-weight: 800;">${eventDateStr}</td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 6px 0; color: #64748b; font-weight: 600;">Workshop Time:</td>
+                        <td style="padding: 6px 0; color: #0f172a; font-weight: 600;">${timingStr}</td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 6px 0; color: #64748b; font-weight: 600;">Pass ID / Ref Code:</td>
+                        <td style="padding: 6px 0; color: #1e3a8a; font-family: monospace; font-weight: 700;">${passId}</td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 6px 0; color: #64748b; font-weight: 600;">Status:</td>
+                        <td style="padding: 6px 0;">
+                          <span style="display: inline-block; background-color: #d1fae5; color: #047857; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; text-transform: uppercase;">
+                            Confirmed & Verified
+                          </span>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Attachment Notice Box -->
+              <div style="background-color: #eff6ff; border-left: 4px solid #2563eb; padding: 14px 16px; border-radius: 6px; margin-bottom: 20px;">
+                <p style="margin: 0; font-size: 13px; color: #1e40af; line-height: 1.5;">
+                  <strong>📎 PDF Pass Attached:</strong> Your official digital Workshop Entry Pass with QR verification code is attached to this email. Please download and keep it ready on your mobile device for gate check-in on the workshop day.
+                </p>
+              </div>
+
+              <p style="margin: 0 0 16px 0; font-size: 13px; color: #475569; line-height: 1.6;">
+                We look forward to an interactive, high-value hands-on learning experience with you at ${collegeName}!
+              </p>
+
+              <p style="margin: 0; font-size: 13px; color: #334155; line-height: 1.5;">
+                Warm Regards,<br>
+                <strong>VMANOUS Education Team</strong>
+              </p>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="background-color: #f8fafc; border-top: 1px solid #e2e8f0; padding: 16px 24px; text-align: center;">
+              <p style="margin: 0 0 6px 0; font-size: 12px; color: #64748b;">
+                Questions or support? Reach out to us at <a href="mailto:support@vmanous.com" style="color: #2563eb; text-decoration: none; font-weight: 600;">support@vmanous.com</a>
+              </p>
+              <p style="margin: 0; font-size: 11px; color: #94a3b8; line-height: 1.4;">
+                This is an automated confirmation email regarding your registration for ${programTitle}.<br>
+                © ${new Date().getFullYear()} VMANOUS Open Source & Educational Services. CIN: U62099PN2024PTC229219. All rights reserved.
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+
+    // 5. Configure Email Options with RFC Compliance & Anti-Spam Headers
     const mailOptions = {
-      from: `"VMANOUS Team" <${senderEmail}>`,
+      from: `"VMANOUS Education" <${senderEmail}>`,
       to: recipientEmail,
-      subject: `Registration Successful | ${programTitle} – ${collegeName}`,
-      html: `
-        <!DOCTYPE html>
-        <html>
-        <head>
-          <meta charset="utf-8">
-        </head>
-        <body style="margin: 0; padding: 20px; font-family: Arial, sans-serif; color: #333; line-height: 1.6;">
-          
-          <p>Dear ${studentName},</p>
-          <p>Greetings from the VMANOUS Team!</p>
-          <p>We are pleased to confirm your seat booking for ${programTitle}, scheduled to be held at ${collegeName}.</p>
-          
-          <p>
-            <strong>Booking Date & Time:</strong> ${new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'long', timeStyle: 'short' })}<br>
-            <strong>Payment:</strong> ₹${data.amount || '1'}
-          </p>
-
-          <p><strong>Event Details:</strong><br>
-          <strong>Participant Name:</strong> ${studentName}<br>
-          <strong>College/Institute:</strong> ${collegeName}<br>
-          <strong>Event:</strong> ${programTitle}<br>
-          <strong>Event Date:</strong> ${eventDateStr}<br>
-          <strong>Event Time:</strong> ${timingStr}</p>
-          
-          <p>Your payment of ₹${data.amount || '1'} has been successfully received, and your seat has been reserved for the event.</p>
-          
-          <p>Please make sure to carry your registration/booking confirmation Pass on the day of the event.</p>
-          
-          <p>We look forward to welcoming you to ${programTitle} at ${collegeName} and hope you have an insightful and rewarding experience.</p>
-          
-          <p>Best Regards,<br>
-          <strong>VMANOUS Team</strong></p>
-          
-        </body>
-        </html>
-      `,
-      attachments: emailAttachments
+      replyTo: senderEmail,
+      subject: `Registration Confirmed: ${programTitle} - ${collegeName}`,
+      text: plainTextBody,
+      html: htmlBody,
+      attachments: emailAttachments,
+      headers: {
+        'X-Entity-Ref-ID': String(passId),
+        'X-Auto-Response-Suppress': 'OOF, AutoReply',
+        'X-Mailer': 'VMANOUS-Mailer/2.0'
+      }
     };
 
     const info = await transporter.sendMail(mailOptions);
-    console.log(`[Pass Email Success] Full HTML Pass email dispatched to ${recipientEmail}:`, info.messageId);
+    console.log(`[Pass Email Success] Full Pass email dispatched to ${recipientEmail}:`, info.messageId);
     return { success: true, messageId: info.messageId };
   } catch (err) {
     console.error('[Pass Email Error] Failed to send HTML pass email:', err);
@@ -242,10 +368,10 @@ const sendStudentPassEmail = async (data) => {
 
 /**
  * Function to send Workshop Certificate of Completion Email with attached PDF Certificate
+ * Optimized for high inbox deliverability
  * @param {Object} data - Student & Certificate Data
  */
 const sendWorkshopCertificateEmail = async (data) => {
-
   const transporter = getTransporter();
   const senderEmail = process.env.EMAIL_USER || 'vmanous.com@gmail.com';
   const recipientEmail = (data.email || '').trim();
@@ -276,42 +402,148 @@ const sendWorkshopCertificateEmail = async (data) => {
       });
     }
 
+    const plainTextBody = `Dear ${studentName},
+
+Congratulations! Greetings from the VMANOUS Team.
+
+We are pleased to issue your official Certificate of Completion for actively participating in and successfully completing the ${workshopTitle} held at ${collegeName}.
+
+CERTIFICATE DETAILS
+==================================================
+Participant Name : ${studentName}
+Workshop / Event : ${workshopTitle}
+College / Venue  : ${collegeName}
+Date of Workshop : ${dateStr}
+Certificate ID   : ${certificateCode}
+==================================================
+
+Your official Certificate of Completion is attached to this email as a PDF document. You may download, print, or share it on your LinkedIn profile and resume.
+
+We wish you all the very best in your academic and professional journey ahead!
+
+Best Regards,
+VMANOUS Education & Innovation Services
+Website: https://vmanous.com | Support: support@vmanous.com
+CIN: U62099PN2024PTC229219`;
+
+    const htmlBody = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Certificate of Completion</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #f4f7fb; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #1e293b;">
+  <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #f4f7fb; padding: 24px 12px;">
+    <tr>
+      <td align="center">
+        <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="max-width: 600px; background-color: #ffffff; border-radius: 12px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);">
+          
+          <!-- Header Banner -->
+          <tr>
+            <td style="background: linear-gradient(135deg, #064e3b 0%, #059669 100%); padding: 26px 24px; text-align: center; color: #ffffff;">
+              <div style="display: inline-block; padding: 4px 12px; background-color: rgba(255, 255, 255, 0.2); border-radius: 20px; font-size: 11px; font-weight: 700; color: #ffffff; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 8px;">
+                🎓 Certificate Issued
+              </div>
+              <h1 style="margin: 0; font-size: 22px; font-weight: 800; color: #ffffff;">
+                Certificate of Completion
+              </h1>
+              <p style="margin: 6px 0 0 0; font-size: 13px; color: #a7f3d0;">
+                ${workshopTitle}
+              </p>
+            </td>
+          </tr>
+
+          <!-- Body Content -->
+          <tr>
+            <td style="padding: 24px 24px 16px 24px;">
+              <p style="margin: 0 0 12px 0; font-size: 15px; color: #1e293b;">
+                Dear <strong>${studentName}</strong>,
+              </p>
+              <p style="margin: 0 0 18px 0; font-size: 14px; color: #475569; line-height: 1.6;">
+                Congratulations! We are delighted to issue your official <strong>Certificate of Completion</strong> for actively participating in and successfully completing the intensive hands-on workshop.
+              </p>
+
+              <!-- Certificate Details Table Box -->
+              <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 20px;">
+                <tr>
+                  <td style="padding: 16px;">
+                    <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="font-size: 13px;">
+                      <tr>
+                        <td style="padding: 6px 0; color: #64748b; font-weight: 600; width: 38%;">Participant:</td>
+                        <td style="padding: 6px 0; color: #0f172a; font-weight: 700;">${studentName}</td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 6px 0; color: #64748b; font-weight: 600;">Workshop / Event:</td>
+                        <td style="padding: 6px 0; color: #0f172a; font-weight: 700;">${workshopTitle}</td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 6px 0; color: #64748b; font-weight: 600;">College / Institute:</td>
+                        <td style="padding: 6px 0; color: #0f172a;">${collegeName}</td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 6px 0; color: #64748b; font-weight: 600;">Issue Date:</td>
+                        <td style="padding: 6px 0; color: #059669; font-weight: 700;">${dateStr}</td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 6px 0; color: #64748b; font-weight: 600;">Certificate ID:</td>
+                        <td style="padding: 6px 0; color: #1e3a8a; font-family: monospace; font-weight: 700;">${certificateCode}</td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Attachment Callout -->
+              <div style="background-color: #ecfdf5; border-left: 4px solid #059669; padding: 14px 16px; border-radius: 6px; margin-bottom: 20px;">
+                <p style="margin: 0; font-size: 13px; color: #065f46; line-height: 1.5;">
+                  <strong>📎 PDF Certificate Attached:</strong> Your high-resolution certificate is attached to this email. You can download, print, or share it on your professional portfolio and LinkedIn.
+                </p>
+              </div>
+
+              <p style="margin: 0 0 16px 0; font-size: 13px; color: #475569; line-height: 1.6;">
+                We wish you the very best in your academic and professional endeavors!
+              </p>
+
+              <p style="margin: 0; font-size: 13px; color: #334155; line-height: 1.5;">
+                Warm Regards,<br>
+                <strong>VMANOUS Team</strong>
+              </p>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="background-color: #f8fafc; border-top: 1px solid #e2e8f0; padding: 16px 24px; text-align: center;">
+              <p style="margin: 0 0 6px 0; font-size: 12px; color: #64748b;">
+                Need help? Contact us at <a href="mailto:support@vmanous.com" style="color: #2563eb; text-decoration: none; font-weight: 600;">support@vmanous.com</a>
+              </p>
+              <p style="margin: 0; font-size: 11px; color: #94a3b8; line-height: 1.4;">
+                © ${new Date().getFullYear()} VMANOUS Open Source & Educational Services. All rights reserved.
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+
     const mailOptions = {
-      from: `"VMANOUS" <${senderEmail}>`,
+      from: `"VMANOUS Education" <${senderEmail}>`,
       to: recipientEmail,
-      subject: `Certificate of AI Completion`,
-      html: `
-        <!DOCTYPE html>
-        <html>
-        <head>
-          <meta charset="utf-8">
-        </head>
-        <body style="margin: 0; padding: 20px; font-family: Arial, sans-serif; color: #333; line-height: 1.6;">
-          
-          <p>Dear ${studentName},</p>
-          
-          <p>Greetings from the VMANOUS Team!</p>
-          
-          <p>Congratulations! We are pleased to issue your official <strong>Certificate of AI Completion</strong> for actively participating in and successfully completing the intensive hands-on workshop.</p>
-          
-          <p><strong>Certificate Details:</strong><br>
-          <strong>Participant Name:</strong> ${studentName}<br>
-          <strong>Workshop / Event:</strong> ${workshopTitle}<br>
-          <strong>College / Institute:</strong> ${collegeName}<br>
-          <strong>Date:</strong> ${dateStr}<br>
-          <strong>Certificate ID:</strong> ${certificateCode}</p>
-          
-          <p>Your official Certificate of Completion is attached to this email as a PDF document. You may download, print, or share it on your LinkedIn profile and resume.</p>
-          
-          <p>We wish you all the very best in your academic and professional journey ahead!</p>
-          
-          <p>Best Regards,<br>
-          <strong>VMANOUS Team</strong></p>
-          
-        </body>
-        </html>
-      `,
-      attachments: emailAttachments
+      replyTo: senderEmail,
+      subject: `Certificate of Completion: ${workshopTitle} - VMANOUS`,
+      text: plainTextBody,
+      html: htmlBody,
+      attachments: emailAttachments,
+      headers: {
+        'X-Entity-Ref-ID': String(certificateCode),
+        'X-Auto-Response-Suppress': 'OOF, AutoReply',
+        'X-Mailer': 'VMANOUS-Mailer/2.0'
+      }
     };
 
     const info = await transporter.sendMail(mailOptions);

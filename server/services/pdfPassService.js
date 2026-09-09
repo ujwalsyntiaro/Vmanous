@@ -157,14 +157,28 @@ const generatePassPDF = async (data) => {
 
       const headerBottomY = doc.y;
 
-      // 7. Program Badge Tag
+      // 7. Program Badge Tag (Dynamic width and centered text)
       const badgeY = Math.max(132, headerBottomY + 10);
+      const programBadgeH = 18;
+      const programPadX = 9;
+      doc.font('Helvetica-Bold').fontSize(8.5);
+      const programTextW = doc.widthOfString(programTitle);
+      const programBadgeW = Math.min(210, Math.round(programTextW + (programPadX * 2)));
+
       doc.save();
-      doc.roundedRect(25, badgeY, 115, 18, 9).fill('#ecfdf5');
+      doc.roundedRect(25, badgeY, programBadgeW, programBadgeH, programBadgeH / 2)
+         .lineWidth(0.75)
+         .strokeColor('#a7f3d0')
+         .fillAndStroke('#ecfdf5', '#a7f3d0');
+
       doc.font('Helvetica-Bold')
          .fontSize(8.5)
          .fillColor('#059669')
-         .text(programTitle, 32, badgeY + 4, { width: 104, align: 'left' });
+         .text(programTitle, 25, badgeY + 5.5, {
+           width: programBadgeW,
+           align: 'center',
+           lineBreak: false
+         });
       doc.restore();
 
       // 8. Participant Name
@@ -301,10 +315,38 @@ const generatePassPDF = async (data) => {
       doc.font('Helvetica-Bold').fontSize(8).fillColor('#64748b').text('WORKSHOP TIME', 37, bottomY + 36);
       doc.font('Helvetica-Bold').fontSize(11).fillColor('#0f172a').text(timingStr, 25, bottomY + 48);
 
-      // OFFICIAL PASS Badge Tag
-      doc.roundedRect(25, bottomY + 74, 90, 18, 9).fill('#d1fae5');
-      doc.circle(33, bottomY + 83, 2.5).fill('#047857');
-      doc.font('Helvetica-Bold').fontSize(8).fillColor('#047857').text('OFFICIAL PASS', 39, bottomY + 79);
+      // OFFICIAL PASS Badge Tag (Dynamically measured, aligned with indicator dot)
+      const passBadgeH = 18;
+      const passBadgeY = bottomY + 74;
+      const passCenterY = passBadgeY + (passBadgeH / 2);
+
+      doc.font('Helvetica-Bold').fontSize(7.5);
+      const passText = 'OFFICIAL PASS';
+      const passTextW = doc.widthOfString(passText);
+      const dotRadius = 2.5;
+      const passPadLeft = 7;
+      const dotGap = 4.5;
+      const passPadRight = 8;
+      const passBadgeW = Math.round(passPadLeft + (dotRadius * 2) + dotGap + passTextW + passPadRight);
+
+      doc.save();
+      doc.roundedRect(25, passBadgeY, passBadgeW, passBadgeH, passBadgeH / 2)
+         .lineWidth(0.75)
+         .strokeColor('#a7f3d0')
+         .fillAndStroke('#d1fae5', '#a7f3d0');
+
+      const dotCenterX = 25 + passPadLeft + dotRadius;
+      doc.circle(dotCenterX, passCenterY, dotRadius).fill('#047857');
+
+      const textStartX = dotCenterX + dotRadius + dotGap;
+      doc.font('Helvetica-Bold')
+         .fontSize(7.5)
+         .fillColor('#047857')
+         .text(passText, textStartX, passBadgeY + 5.8, {
+           width: passTextW + 4,
+           align: 'left',
+           lineBreak: false
+         });
       doc.restore();
 
       // 15. QR Code Image & Corner Brackets
